@@ -1,7 +1,7 @@
 # Notes 
 A simple app for taking notes.
 
-I created it using Claude.ai to record information and gather data during pentests or bug bounty. However, it can also be used in many other situations.
+It was created to record information and gather data during pentests or bug bounty. However, it can also be used in many other situations.
 
 ## Key Features:
 
