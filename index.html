@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="app">
+
+        <div class="header">
+            <div id="section-rename-modal" class="modal ">
+                <div class="modal-content">
+                    <h2>Rename Section</h2>
+                    <input type="text" id="section-rename-input">
+                    <div class="modal-actions">
+                        <button id="section-rename-cancel">Cancel</button>
+                        <button id="section-rename-confirm">Confirm</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="global-actions">
+                <button id="add-section-btn">+ New Section</button>
+                <button id="add-note-btn">+ New Note</button>
+                <button id="save-notes-btn">Save Notes</button>
+                <button id="load-notes-btn">Load Notes</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+                <button id="export-btn">Export JSON</button>
+                <button id="import-btn">Import JSON</button>
+            </div>
+        </div>
+
+        <div id="sections-container">
+            <div id="sections-tabs"></div>
+            <div id="sections-content"></div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>
