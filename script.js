@@ -335,7 +335,7 @@ class NotesApp {
             const colorBtn = document.createElement('button');
             colorBtn.className = 'color-preset-btn';
             colorBtn.title = label;
-            colorBtn.style.backgroundColor = color;               
+            colorBtn.style.backgroundColor = color;
 
             colorBtn.addEventListener('click', () => {
                 document.execCommand('foreColor', false, color);
@@ -370,6 +370,23 @@ class NotesApp {
     }
 
     saveNotesToLocalStorage() {
+        this.sections.forEach(section => {
+            const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
+
+            section.notes.forEach(note => {
+                const noteElement = sectionContent.querySelector(`.note[data-note-id="${note.id}"]`);
+
+                if (noteElement) {
+                    note.title = noteElement.querySelector('.note-title').innerHTML;
+                    note.content = noteElement.querySelector('.note-content').innerHTML;
+                    note.x = parseInt(noteElement.style.left);
+                    note.y = parseInt(noteElement.style.top);
+                    note.width = parseInt(noteElement.style.width);
+                    note.height = parseInt(noteElement.style.height);
+                }
+            });
+        });
+
         localStorage.setItem('notesApp', JSON.stringify(this.sections));
 
         const saveMessage = document.createElement('div');
