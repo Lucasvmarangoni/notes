@@ -6,8 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notes App</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><text y=%22.9em%22 font-size=%2230%22>🗒️</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><text y=%22.9em%22 font-size=%2230%22>🗒️</text></svg>">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Winky+Sans:ital,wght@0,300..900;1,300..900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
@@ -27,13 +32,32 @@
 
 
             <div class="global-actions">
-                <button id="add-section-btn">+ New Section</button>
-                <button id="add-note-btn">+ New Note</button>
-                <button id="save-notes-btn">Save Notes</button>
-                <button id="load-notes-btn">Load Notes</button>
+                <button id="add-section-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Section
+                </button>
+                <button id="add-note-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Note
+                </button>
+                <button id="save-notes-btn">Save</button>
+                <button id="load-notes-btn">Load</button>
                 <input type="file" id="import-file" accept=".json" style="display: none;">
-                <button id="export-btn">Export JSON</button>
-                <button id="import-btn">Import JSON</button>
+                <button id="export-btn">Export</button>
+                <button id="import-btn">Import</button>
+            </div>
+            <div class="auto-save-container">
+                <span>Auto Save</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-save-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
             </div>
         </div>
 

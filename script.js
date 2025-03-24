@@ -5,10 +5,18 @@ class NotesApp {
         this.draggingNote = null;
         this.resizingNote = null;
         this.currentRenamingSection = null;
+        this.autoSaveEnabled = false;
+        this.autoSaveInterval = null;
 
         this.setupEventListeners();
         this.createDefaultSection();
         this.setupKeyboardShortcuts();
+
+        this.initAutoSave();
+    
+        if (this.sections.length === 0) {
+            this.createDefaultSection();
+        }
     }
 
     setupEventListeners() {
@@ -41,6 +49,12 @@ class NotesApp {
         });
 
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+
+        window.addEventListener('beforeunload', () => {
+            if (this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
+        });
     }
 
     setupKeyboardShortcuts() {
@@ -369,7 +383,49 @@ class NotesApp {
         });
     }
 
-    saveNotesToLocalStorage() {
+    initAutoSave() {
+        const autoSaveEnabled = localStorage.getItem('autoSaveEnabled') === 'true';
+        const autoSaveToggle = document.getElementById('auto-save-toggle');
+
+        autoSaveToggle.checked = autoSaveEnabled;
+        this.autoSaveEnabled = autoSaveEnabled;
+
+        if (this.autoSaveEnabled) {
+            this.loadNotesFromLocalStorage(true); 
+            this.startAutoSave();
+        }
+
+        autoSaveToggle.addEventListener('change', () => {
+            this.autoSaveEnabled = autoSaveToggle.checked;
+            localStorage.setItem('autoSaveEnabled', this.autoSaveEnabled);
+
+            if (this.autoSaveEnabled) {
+                this.startAutoSave();
+                this.showNotification('Auto Save enabled', 'success-message');
+            } else {
+                this.stopAutoSave();
+                this.showNotification('Auto Save disabled', 'info-message');
+            }
+        });
+    }
+
+    startAutoSave() {
+        this.stopAutoSave();
+
+        this.autoSaveInterval = setInterval(() => {
+            this.saveNotesToLocalStorage(true);
+        }, 30000);
+    }
+
+    stopAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+            this.autoSaveInterval = null;
+        }
+    }
+
+
+    saveNotesToLocalStorage(silent = false) {
         this.sections.forEach(section => {
             const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
 
@@ -389,26 +445,30 @@ class NotesApp {
 
         localStorage.setItem('notesApp', JSON.stringify(this.sections));
 
-        const saveMessage = document.createElement('div');
-        saveMessage.textContent = 'Notes saved successfully!';
-        saveMessage.className = 'save-message';
+        if (!silent) {
+            const saveMessage = document.createElement('div');
+            saveMessage.textContent = 'Notes saved successfully!';
+            saveMessage.className = 'save-message';
 
-        document.body.appendChild(saveMessage);
-
-        setTimeout(() => {
-            saveMessage.classList.add('fade-out');
+            document.body.appendChild(saveMessage);
 
             setTimeout(() => {
-                document.body.removeChild(saveMessage);
-            }, 1500);
-        }, 1000);
+                saveMessage.classList.add('fade-out');
+
+                setTimeout(() => {
+                    document.body.removeChild(saveMessage);
+                }, 1500);
+            }, 1000);
+        }
     }
 
-    loadNotesFromLocalStorage() {
+    loadNotesFromLocalStorage(silent = false) {
         const savedSections = JSON.parse(localStorage.getItem('notesApp') || '[]');
 
         if (savedSections.length === 0) {
-            this.showNotification('No notes found in local storage', 'error-message');
+            if (!silent) {
+                this.showNotification('No notes found in local storage', 'error-message');
+            }
             return;
         }
 
@@ -430,7 +490,10 @@ class NotesApp {
                 );
             });
         });
-        this.showNotification('Notes loaded successfully', 'success-message');
+
+        if (!silent) {
+            this.showNotification('Notes loaded successfully', 'success-message');
+        }
     }
 
     showNotification(message, className) {
