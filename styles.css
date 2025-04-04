@@ -36,7 +36,7 @@ body {
     flex-wrap: wrap;
 }
 
-button {
+.button {
     background-color: #5f6368;
     color: #ffffff;
     font-weight: bold;
@@ -52,7 +52,7 @@ button {
     gap: 2px;
 }
 
-button:hover {
+.button:hover {
     background-color: #7a7e83;
 }
 
