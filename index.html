@@ -51,6 +51,21 @@
                 <input type="file" id="import-file" accept=".json" style="display: none;">
                 <button id="export-btn">Export</button>
                 <button id="import-btn">Import</button>
+                <div class="info-wrapper" onmouseenter="showPopup(this)" onmouseleave="hidePopup()">
+                    <button class="info-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+                            fill="currentColor">
+                            <circle cx="12" cy="12" r="10" fill="#5a7552" />
+                            <line x1="12" y1="8" x2="12" y2="8" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+                            <line x1="12" y1="12" x2="12" y2="16" stroke="#fff" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+
+                    </button>
+                    <div class="info-popup" id="info-popup"></div>
+                </div>
+
+
             </div>
             <div class="auto-save-container">
                 <span>Auto Save</span>
@@ -59,6 +74,9 @@
                     <span class="toggle-slider"></span>
                 </label>
             </div>
+
+
+
         </div>
 
         <div id="sections-container">

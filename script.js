@@ -13,7 +13,7 @@ class NotesApp {
         this.setupKeyboardShortcuts();
 
         this.initAutoSave();
-    
+
         if (this.sections.length === 0) {
             this.createDefaultSection();
         }
@@ -55,6 +55,99 @@ class NotesApp {
                 this.saveNotesToLocalStorage(true);
             }
         });
+
+        window.showPopup = function (wrapper) {
+            const popup = wrapper.querySelector('.info-popup');
+            const btn = wrapper.querySelector('.info-btn');
+        
+            if (btn.dataset.info) {
+                popup.textContent = btn.dataset.info;
+            } else {
+                popup.innerHTML = infoMap;
+            }
+        
+            popup.style.display = "block";
+        };
+        
+        window.hidePopup = function () {
+            const allPopups = document.querySelectorAll('.info-popup');
+            allPopups.forEach(p => p.style.display = "none");
+        };
+        
+        const infoMap = `
+            <strong>Add Notes</strong>: Create and manage notes easily and quickly.<br>
+            <strong>Add Section</strong>: Create and manage sections like browser tabs easily and quickly.<br>
+            <strong>Drag and Drop</strong>: Move and position notes freely, organizing them however you want.<br>
+            <strong>Bulleted Lists</strong>: Create simple and clean bulleted lists to better structure your information.<br>
+            <strong>Organize by Sections</strong>: Divide notes into different sections for better organization.<br>
+            <strong>Local Storage</strong>: Save notes directly to your browser's local storage.<br>
+            <strong>Auto Save</strong>: Automatically save and load your content.<br>
+            <strong>Export & Import</strong>: Export notes as a JSON file and import them later when needed.
+        `;
+
+        document.addEventListener('focusout', (event) => {
+            this.removeEmptyBullets()
+            if (event.target.classList.contains('note-content')) {
+                event.target.innerHTML = processMarkdown(event.target.innerText);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (!event.target.classList.contains('note-content')) return;
+
+            const selection = window.getSelection();
+            const currentLine = selection.anchorNode?.textContent || "";
+
+            if (event.key === 'Enter') {
+                if (currentLine.trim().startsWith('*')) {
+                    event.preventDefault();
+                    document.execCommand('insertText', false, '\n* ');
+
+                }
+                this.removeEmptyBullets()
+
+            }
+
+            if (event.key === "Backspace") {
+                const selection = window.getSelection();
+                let currentNode = selection.anchorNode;
+
+                if (currentNode && currentNode.nodeType === Node.TEXT_NODE) {
+                    currentNode = currentNode.parentNode;
+                }
+
+                if (currentNode?.tagName === 'LI' && selection.anchorOffset === 0) {
+                    event.preventDefault();
+
+                    const parent = currentNode.parentNode;
+
+                    parent.removeChild(currentNode);
+
+                    const range = document.createRange();
+                    range.setStartAfter(br);
+                    range.collapse(true);
+
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }
+
+        });
+    }
+
+    removeEmptyBullets() {
+        document.querySelectorAll('.note-content li').forEach(li => {
+            if (!li.textContent.trim()) {
+                li.remove();
+            }
+        });
+    }
+
+    processMarkdown(text) {
+        text = text.replace(/^(\*\s)(.*?)$/gm, (_, bullet, content) => {
+            return content.trim() ? `<li id="bulleted">${content.trim()}</li>` : '';
+        });
+        return text;
     }
 
     setupKeyboardShortcuts() {
@@ -73,11 +166,6 @@ class NotesApp {
             else if (e.ctrlKey && e.key === 'u') {
                 e.preventDefault();
                 document.execCommand('underline', false, null);
-            }
-
-            else if (e.ctrlKey && e.key === 'i') {
-                e.preventDefault();
-                document.execCommand('italic', false, null);
             }
 
             else if (e.ctrlKey && e.key === '\\') {
@@ -234,7 +322,6 @@ class NotesApp {
         <div class="note-actions">
             <div class="note-toolbar">
                 <button class="bold-btn" title="Negrito (Ctrl+B)">B</button>
-                <button class="italic-btn" title="Itálico (Ctrl+I)">I</button>
                 <button class="underline-btn" title="Sublinhado (Ctrl+U)">U</button>
                 <input type="color" class="color-picker" value="#ffffff" title="text color">
             </div>
@@ -328,10 +415,19 @@ class NotesApp {
 
     setupNoteActions(noteElement) {
         const boldBtn = noteElement.querySelector('.bold-btn');
-        const italicBtn = noteElement.querySelector('.italic-btn');
         const underlineBtn = noteElement.querySelector('.underline-btn');
         const colorPicker = noteElement.querySelector('.color-picker');
         const deleteBtn = noteElement.querySelector('.delete-btn');
+        const noteContent = noteElement.querySelector('.note-content');
+
+
+        noteContent.addEventListener('blur', () => {
+            const rawText = noteContent.innerText;
+            const processedText = this.processMarkdown(rawText);
+            if (rawText !== processedText) {
+                noteContent.innerHTML = processedText;
+            }
+        });
 
         const predefinedColors = [
             { color: '#FF5252', label: 'Crítico' },      // Vermelho para vulnerabilidades críticas
@@ -363,9 +459,6 @@ class NotesApp {
         boldBtn.addEventListener('click', () => {
             document.execCommand('bold', false, null);
         });
-        italicBtn.addEventListener('click', () => {
-            document.execCommand('italic', false, null);
-        });
         underlineBtn.addEventListener('click', () => {
             document.execCommand('underline', false, null);
         });
@@ -391,7 +484,7 @@ class NotesApp {
         this.autoSaveEnabled = autoSaveEnabled;
 
         if (this.autoSaveEnabled) {
-            this.loadNotesFromLocalStorage(true); 
+            this.loadNotesFromLocalStorage(true);
             this.startAutoSave();
         }
 
@@ -588,8 +681,12 @@ class NotesApp {
 
         reader.readAsText(file);
     }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const notesApp = new NotesApp();
 });
+
+
+
