@@ -128,8 +128,8 @@ body {
     position: absolute;
     min-width: 250px;
     min-height: 150px;
-    background-color: #2c2c2c;
-    border: 1px solid #4a4a4a;
+    background-color: #202124;
+    border: 1px solid #202124;
     border-radius: 8px;
     padding: 15px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -149,7 +149,7 @@ body {
     align-items: center;
     cursor: move;
     padding-bottom: 10px;
-    border-bottom: 1px solid #4a4a4a;
+    border-bottom: 1px solid #313131;
     margin-bottom: 10px;
 }
 
@@ -174,9 +174,9 @@ body {
 .note-actions {
     display: flex;
     justify-content: space-between;
-    background-color: #2c2c2c;
+    background-color: #202124;
     padding-top: 10px;
-    border-top: 1px solid #4a4a4a;
+    border-top: 1px solid #313131;
 }
 
 .note-toolbar {
@@ -435,7 +435,7 @@ input:checked+.toggle-slider:before {
     color: white;
 }
 
-#bulleted{
+#bulleted {
     margin-left: 10px;
 }
 
@@ -465,32 +465,62 @@ input:checked+.toggle-slider:before {
     margin: 0;
 }
 
-
 .info-popup {
     display: none;
     position: absolute;
-    top: 125%; 
-    /* left: 50%; */
+    top: 125%;
+    left: 50%;
     transform: translateX(-50%);
     background-color: #333;
     color: #fff;
     padding: 6px 10px;
     border-radius: 6px;
-    font-size: 17px;
-    white-space: nowrap;
+    font-size: 16px;
+    white-space: normal;
     z-index: 9999;
-    max-width: 200px;
-    text-align: center;
+    max-width: 500px;
+    width: max-content;
+    text-align: left;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.info-popup::after {
+.info-popup::before {
     content: "";
     position: absolute;
-    top: 100%;
+    bottom: 100%;
     left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    border-color: transparent transparent #333 transparent;
+}
+
+/* Responsivo para telas pequenas */
+@media screen and (max-width: 768px) {
+    .info-popup {
+        max-width: 200px;
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .info-popup {
+        width: 80vw;
+        max-width: 280px;
+        left: 0;
+        transform: translateX(-50%);
+        font-size: 11px;
+    }
+
+    /* Ajusta a posição do popup quando está perto da borda direita */
+    .info-wrapper:nth-last-child(-n+2) .info-popup {
+        left: auto;
+        right: -50%;
+        transform: translateX(0);
+    }
+
+    .info-wrapper:nth-last-child(-n+2) .info-popup::before {
+        left: 75%;
+    }
 }

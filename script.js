@@ -59,14 +59,45 @@ class NotesApp {
         window.showPopup = function (wrapper) {
             const popup = wrapper.querySelector('.info-popup');
             const btn = wrapper.querySelector('.info-btn');
-        
+            
+            // Fechar outros popups abertos
+            window.hidePopup();
+            
             if (btn.dataset.info) {
                 popup.textContent = btn.dataset.info;
             } else {
                 popup.innerHTML = infoMap;
             }
-        
+            
             popup.style.display = "block";
+            
+            // Verificar se o popup sai da tela e ajustar se necessário
+            setTimeout(() => {
+                const rect = popup.getBoundingClientRect();
+                if (rect.right > window.innerWidth) {
+                    popup.style.left = 'auto';
+                    popup.style.right = '0';
+                    popup.style.transform = 'translateX(0)';
+                    
+                    // Reposicionar a seta
+                    const arrow = popup.querySelector('::before');
+                    if (arrow) {
+                        arrow.style.left = '75%';
+                    }
+                }
+                
+                if (rect.left < 0) {
+                    popup.style.left = '0';
+                    popup.style.right = 'auto';
+                    popup.style.transform = 'translateX(0)';
+                    
+                    // Reposicionar a seta
+                    const arrow = popup.querySelector('::before');
+                    if (arrow) {
+                        arrow.style.left = '25%';
+                    }
+                }
+            }, 0);
         };
         
         window.hidePopup = function () {
@@ -74,16 +105,49 @@ class NotesApp {
             allPopups.forEach(p => p.style.display = "none");
         };
         
+        // Adicionando evento para fechar o popup quando clicar fora
+        document.addEventListener('click', function(event) {
+            const isInfoBtn = event.target.closest('.info-btn');
+            const isInfoPopup = event.target.closest('.info-popup');
+            
+            if (!isInfoBtn && !isInfoPopup) {
+                window.hidePopup();
+            }
+        });
+        
+        // Atualização do infoMap com estilo responsivo
         const infoMap = `
-            <strong>Add Notes</strong>: Create and manage notes easily and quickly.<br>
-            <strong>Add Section</strong>: Create and manage sections like browser tabs easily and quickly.<br>
-            <strong>Drag and Drop</strong>: Move and position notes freely, organizing them however you want.<br>
-            <strong>Bulleted Lists</strong>: Create simple and clean bulleted lists to better structure your information.<br>
-            <strong>Organize by Sections</strong>: Divide notes into different sections for better organization.<br>
-            <strong>Local Storage</strong>: Save notes directly to your browser's local storage.<br>
-            <strong>Auto Save</strong>: Automatically save and load your content.<br>
-            <strong>Export & Import</strong>: Export notes as a JSON file and import them later when needed.
+            <div style="line-height: 1.4;">
+                <p><strong>Add Notes</strong>: Create and manage notes easily and quickly.</p>
+                <p><strong>Add Section</strong>: Create and manage sections like browser tabs.</p>
+                <p><strong>Drag and Drop</strong>: Move and position notes freely.</p>
+                <p><strong>Bulleted Lists</strong>: Create simple and clean bulleted lists.</p>
+                <p><strong>Organize by Sections</strong>: Divide notes into different sections.</p>
+                <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
+                <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
+                <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
+            </div>
         `;
+        
+        // Adicionar eventos de toque para dispositivos móveis
+        document.addEventListener('DOMContentLoaded', function() {
+            const infoBtns = document.querySelectorAll('.info-btn');
+            
+            infoBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const wrapper = this.closest('.info-wrapper');
+                    window.showPopup(wrapper);
+                });
+                
+                // Adicionar suporte para dispositivos touch
+                btn.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                    const wrapper = this.closest('.info-wrapper');
+                    window.showPopup(wrapper);
+                }, {passive: true});
+            });
+        });
 
         document.addEventListener('focusout', (event) => {
             this.removeEmptyBullets()
