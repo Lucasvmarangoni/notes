@@ -495,7 +495,6 @@ input:checked+.toggle-slider:before {
     border-color: transparent transparent #333 transparent;
 }
 
-/* Responsivo para telas pequenas */
 @media screen and (max-width: 768px) {
     .info-popup {
         max-width: 200px;
@@ -513,7 +512,6 @@ input:checked+.toggle-slider:before {
         font-size: 11px;
     }
 
-    /* Ajusta a posição do popup quando está perto da borda direita */
     .info-wrapper:nth-last-child(-n+2) .info-popup {
         left: auto;
         right: -50%;

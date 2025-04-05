@@ -60,7 +60,6 @@ class NotesApp {
             const popup = wrapper.querySelector('.info-popup');
             const btn = wrapper.querySelector('.info-btn');
             
-            // Fechar outros popups abertos
             window.hidePopup();
             
             if (btn.dataset.info) {
@@ -71,7 +70,6 @@ class NotesApp {
             
             popup.style.display = "block";
             
-            // Verificar se o popup sai da tela e ajustar se necessário
             setTimeout(() => {
                 const rect = popup.getBoundingClientRect();
                 if (rect.right > window.innerWidth) {
@@ -79,7 +77,6 @@ class NotesApp {
                     popup.style.right = '0';
                     popup.style.transform = 'translateX(0)';
                     
-                    // Reposicionar a seta
                     const arrow = popup.querySelector('::before');
                     if (arrow) {
                         arrow.style.left = '75%';
@@ -91,7 +88,6 @@ class NotesApp {
                     popup.style.right = 'auto';
                     popup.style.transform = 'translateX(0)';
                     
-                    // Reposicionar a seta
                     const arrow = popup.querySelector('::before');
                     if (arrow) {
                         arrow.style.left = '25%';
@@ -105,7 +101,6 @@ class NotesApp {
             allPopups.forEach(p => p.style.display = "none");
         };
         
-        // Adicionando evento para fechar o popup quando clicar fora
         document.addEventListener('click', function(event) {
             const isInfoBtn = event.target.closest('.info-btn');
             const isInfoPopup = event.target.closest('.info-popup');
@@ -115,7 +110,6 @@ class NotesApp {
             }
         });
         
-        // Atualização do infoMap com estilo responsivo
         const infoMap = `
             <div style="line-height: 1.4;">
                 <p><strong>Add Notes</strong>: Create and manage notes easily and quickly.</p>
@@ -129,7 +123,6 @@ class NotesApp {
             </div>
         `;
         
-        // Adicionar eventos de toque para dispositivos móveis
         document.addEventListener('DOMContentLoaded', function() {
             const infoBtns = document.querySelectorAll('.info-btn');
             
@@ -140,7 +133,6 @@ class NotesApp {
                     window.showPopup(wrapper);
                 });
                 
-                // Adicionar suporte para dispositivos touch
                 btn.addEventListener('touchstart', function(e) {
                     e.stopPropagation();
                     const wrapper = this.closest('.info-wrapper');
