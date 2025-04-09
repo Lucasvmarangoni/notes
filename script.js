@@ -1,5 +1,10 @@
 class NotesApp {
     constructor() {
+        this.color1 = '#FF5252'
+        this.color2 = '#9B30FF'
+        this.color3 = '#64F25A'
+        this.color4 = '#68c7fd'
+
         this.sections = [];
         this.activeSection = null;
         this.draggingNote = null;
@@ -59,35 +64,35 @@ class NotesApp {
         window.showPopup = function (wrapper) {
             const popup = wrapper.querySelector('.info-popup');
             const btn = wrapper.querySelector('.info-btn');
-            
+
             window.hidePopup();
-            
+
             if (btn.dataset.info) {
                 popup.textContent = btn.dataset.info;
             } else {
                 popup.innerHTML = infoMap;
             }
-            
+
             popup.style.display = "block";
-            
+
             setTimeout(() => {
                 const rect = popup.getBoundingClientRect();
                 if (rect.right > window.innerWidth) {
                     popup.style.left = 'auto';
                     popup.style.right = '0';
                     popup.style.transform = 'translateX(0)';
-                    
+
                     const arrow = popup.querySelector('::before');
                     if (arrow) {
                         arrow.style.left = '75%';
                     }
                 }
-                
+
                 if (rect.left < 0) {
                     popup.style.left = '0';
                     popup.style.right = 'auto';
                     popup.style.transform = 'translateX(0)';
-                    
+
                     const arrow = popup.querySelector('::before');
                     if (arrow) {
                         arrow.style.left = '25%';
@@ -95,21 +100,21 @@ class NotesApp {
                 }
             }, 0);
         };
-        
+
         window.hidePopup = function () {
             const allPopups = document.querySelectorAll('.info-popup');
             allPopups.forEach(p => p.style.display = "none");
         };
-        
-        document.addEventListener('click', function(event) {
+
+        document.addEventListener('click', function (event) {
             const isInfoBtn = event.target.closest('.info-btn');
             const isInfoPopup = event.target.closest('.info-popup');
-            
+
             if (!isInfoBtn && !isInfoPopup) {
                 window.hidePopup();
             }
         });
-        
+
         const infoMap = `
             <div style="line-height: 1.4;">
                 <p><strong>Add Notes</strong>: Create and manage notes easily and quickly.</p>
@@ -120,24 +125,30 @@ class NotesApp {
                 <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
                 <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
                 <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
+                <p><strong>Keyboard Shortcuts</strong>:</p>
+                <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
+                <kbd>Ctrl</kbd> + <kbd>'</kbd>: Set text color to white <br>
+                <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
+                <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
+                <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>
             </div>
         `;
-        
-        document.addEventListener('DOMContentLoaded', function() {
+
+        document.addEventListener('DOMContentLoaded', function () {
             const infoBtns = document.querySelectorAll('.info-btn');
-            
+
             infoBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     const wrapper = this.closest('.info-wrapper');
                     window.showPopup(wrapper);
                 });
-                
-                btn.addEventListener('touchstart', function(e) {
+
+                btn.addEventListener('touchstart', function (e) {
                     e.stopPropagation();
                     const wrapper = this.closest('.info-wrapper');
                     window.showPopup(wrapper);
-                }, {passive: true});
+                }, { passive: true });
             });
         });
 
@@ -227,6 +238,27 @@ class NotesApp {
             else if (e.ctrlKey && e.key === '\\') {
                 e.preventDefault();
                 document.execCommand('removeFormat', false, null);
+            }
+
+            else if (e.ctrlKey && e.key === '1') {
+                e.preventDefault();
+                document.execCommand('foreColor', false, this.color1);
+            }
+            else if (e.ctrlKey && e.key === '2') {
+                e.preventDefault();
+                document.execCommand('foreColor', false, this.color2);
+            }
+            else if (e.ctrlKey && e.key === '3') {
+                e.preventDefault();
+                document.execCommand('foreColor', false, this.color3);
+            }
+            else if (e.ctrlKey && e.key === '4') {
+                e.preventDefault();
+                document.execCommand('foreColor', false, this.color4);
+            }
+            else if (e.ctrlKey && e.key === "'") {
+                e.preventDefault();
+                document.execCommand('foreColor', false, '#FFFFFF');
             }
         });
     }
@@ -486,10 +518,10 @@ class NotesApp {
         });
 
         const predefinedColors = [
-            { color: '#FF5252', label: 'Crítico' },      // Vermelho para vulnerabilidades críticas
-            { color: '#fff740', label: 'Atenção' },      // Amarelo para alertas/avisos
-            { color: '#64F25A', label: 'Sucesso' },      // Verde para explorações bem-sucedidas
-            { color: '#68c7fd', label: 'Informação' }    // Azul para informações relevantes
+            { color: this.color1, label: 'CTRL + 1' },
+            { color: this.color2, label: 'CTRL + 2' },
+            { color: this.color3, label: 'CTRL + 3' },
+            { color: this.color4, label: 'CTRL + 4' }
         ];
 
         const colorBtnsContainer = document.createElement('div');
