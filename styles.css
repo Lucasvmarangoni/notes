@@ -10,7 +10,7 @@
 
 body {
     font-family: 'Winky Sans', sans-serif;
-    background-color: #303134;
+    background-color: #252629;
     color: #e0e0e0;
     margin: 0;
     padding: 0;
@@ -64,7 +64,7 @@ body {
 #sections-tabs {
     display: flex;
     overflow-x: auto;
-    background-color: #303134;
+    background-color: #252629;
     border-radius: 5px 5px 0 0;
     /* padding: 10px 10px 0 10px; */
 }
@@ -123,7 +123,6 @@ body {
     display: block;
 }
 
-/* Estilo das notas */
 .note {
     position: absolute;
     min-width: 250px;
@@ -149,6 +148,7 @@ body {
     align-items: center;
     cursor: move;
     border-bottom: 1px solid #313131;
+    padding: 5px;
 }
 
 .note-title {
@@ -171,13 +171,13 @@ body {
 
 .note-title:focus,
 .note-content:focus {
-  outline: none;
+    outline: none;
 }
 
 .note-content[contenteditable="true"]:focus {
     outline: none;
-  }
-  
+}
+
 
 .note-actions {
     display: flex;
@@ -300,7 +300,7 @@ body {
 }
 
 .modal-content {
-    background-color: #303134;
+    background-color: #252629;
     padding: 20px;
     border-radius: 5px;
     width: 400px;
@@ -499,7 +499,7 @@ input:checked+.toggle-slider:before {
     top: 125%;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333;
+    background-color: #252629;
     color: #fff;
     padding: 6px 10px;
     border-radius: 6px;
