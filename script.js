@@ -158,8 +158,8 @@ class NotesApp {
             // if (event.target.classList.contains('note-content')) {
             //     event.target.innerHTML = this.processMarkdown(event.target.innerText);
             // }
-        });       
-        
+        });
+
         document.addEventListener('keydown', (event) => {
             if (!event.target.classList.contains('note-content')) return;
 
@@ -176,7 +176,7 @@ class NotesApp {
 
             }
 
-           
+
         });
     }
 
@@ -548,21 +548,40 @@ class NotesApp {
             }
         });
 
-        noteContent.addEventListener('focusin', () => {
-            const liElements = noteContent.querySelectorAll('li');
+        noteContent.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
 
-            liElements.forEach(li => {
-                const text = li.textContent.trim();
-                const wrapper = document.createElement('span');
-                wrapper.textContent = `* ${text}`;
-                
-                const br = document.createElement('br');
-        
-                li.parentNode.insertBefore(wrapper, li);
-                li.parentNode.insertBefore(br, li.nextSibling);
-                li.remove();
-            });
+                const range = selection.getRangeAt(0);
+                const li = range.startContainer.closest?.('li');
+
+                if (li && range.startOffset === 0) {
+                    e.preventDefault();
+
+                    const html = li.innerHTML.trim();
+                    const fragment = document.createRange().createContextualFragment(`*<br>`);
+                    li.replaceWith(fragment);
+                }
+
+                const parent = noteContent;
+                const textNodes = Array.from(parent.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+                const lastText = textNodes.find(n => n.textContent.includes('*'));
+
+                if (lastText) {
+                    const newRange = document.createRange();
+                    newRange.setStart(lastText, lastText.textContent.length);
+                    newRange.collapse(true);
+
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                }
+            }
         });
+
+
+
+
 
         deleteBtn.addEventListener('click', () => {
             const noteId = Number(noteElement.dataset.noteId);
