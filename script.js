@@ -16,6 +16,7 @@ class NotesApp {
         this.setupEventListeners();
         this.createDefaultSection();
         this.setupKeyboardShortcuts();
+        this.createToolbar();
 
         this.initAutoSave();
 
@@ -154,11 +155,11 @@ class NotesApp {
 
         document.addEventListener('focusout', (event) => {
             this.removeEmptyBullets()
-            if (event.target.classList.contains('note-content')) {
-                event.target.innerHTML = processMarkdown(event.target.innerText);
-            }
-        });
-
+            // if (event.target.classList.contains('note-content')) {
+            //     event.target.innerHTML = this.processMarkdown(event.target.innerText);
+            // }
+        });       
+        
         document.addEventListener('keydown', (event) => {
             if (!event.target.classList.contains('note-content')) return;
 
@@ -175,30 +176,7 @@ class NotesApp {
 
             }
 
-            if (event.key === "Backspace") {
-                const selection = window.getSelection();
-                let currentNode = selection.anchorNode;
-
-                if (currentNode && currentNode.nodeType === Node.TEXT_NODE) {
-                    currentNode = currentNode.parentNode;
-                }
-
-                if (currentNode?.tagName === 'LI' && selection.anchorOffset === 0) {
-                    event.preventDefault();
-
-                    const parent = currentNode.parentNode;
-
-                    parent.removeChild(currentNode);
-
-                    const range = document.createRange();
-                    range.setStartAfter(br);
-                    range.collapse(true);
-
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                }
-            }
-
+           
         });
     }
 
@@ -216,6 +194,7 @@ class NotesApp {
         });
         return text;
     }
+
 
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
@@ -387,6 +366,68 @@ class NotesApp {
         this.closeRenameModal();
     }
 
+    createToolbar() {
+        const toolbarElement = document.createElement('div');
+        toolbarElement.id = 'global-toolbar';
+        toolbarElement.innerHTML = `
+            <div class="note-actions">
+                <div class="note-toolbar">
+                    <button class="bold-btn" title="Bold (Ctrl+B)">B</button>
+                    <button class="underline-btn" title="Underline (Ctrl+U)">U</button>
+                    <button class="reset-format" title="Reset formatting (Ctrl+\\)">C</button>
+                    <input type="color" class="color-picker" value="#ffffff" title="Text color">
+                    <button class="color-preset" style="background-color: ${this.color1};" title="Color 1 (Ctrl+1)"></button>
+                    <button class="color-preset" style="background-color: ${this.color2};" title="Color 2 (Ctrl+2)"></button>
+                    <button class="color-preset" style="background-color: ${this.color3};" title="Color 3 (Ctrl+3)"></button>
+                    <button class="color-preset" style="background-color: ${this.color4};" title="Color 4 (Ctrl+4)"></button>                    
+                </div>
+            </div>`;
+
+        const sectionsContent = document.getElementById('sections-content');
+        const parentElement = sectionsContent.parentElement;
+        parentElement.insertBefore(toolbarElement, sectionsContent);
+
+        this.setupToolbarEvents(toolbarElement);
+    }
+
+    setupToolbarEvents(toolbar) {
+        const boldBtn = toolbar.querySelector('.bold-btn');
+        const underlineBtn = toolbar.querySelector('.underline-btn');
+        const colorPicker = toolbar.querySelector('.color-picker');
+        const resetFormatBtn = toolbar.querySelector('.reset-format');
+        const colorPresets = toolbar.querySelectorAll('.color-preset');
+
+        boldBtn.addEventListener('click', () => {
+            document.execCommand('bold', false, null);
+            this.focusActiveNote();
+        });
+
+        underlineBtn.addEventListener('click', () => {
+            document.execCommand('underline', false, null);
+            this.focusActiveNote();
+        });
+
+        colorPicker.addEventListener('input', () => {
+            document.execCommand('foreColor', false, colorPicker.value);
+            this.focusActiveNote();
+        });
+
+        resetFormatBtn.addEventListener('click', () => {
+            document.execCommand('removeFormat', false, null);
+            this.focusActiveNote();
+        });
+
+        colorPresets.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const colorProperty = `color${index + 1}`;
+                const color = this[colorProperty];
+                document.execCommand('foreColor', false, color);
+                this.focusActiveNote();
+            });
+        });
+    }
+
+
     addNote(title = 'New Note', content = '', x = 50, y = 50, width = 250, height = 200, style = {}) {
         if (!this.activeSection) return;
 
@@ -406,14 +447,7 @@ class NotesApp {
             <div class="note-title" contenteditable="true">${title}</div>
             <button class="delete-btn" title="Excluir nota">✖</button>
         </div>
-        <div class="note-content" contenteditable="true">${content}</div>
-        <div class="note-actions">
-            <div class="note-toolbar">
-                <button class="bold-btn" title="Negrito (Ctrl+B)">B</button>
-                <button class="underline-btn" title="Sublinhado (Ctrl+U)">U</button>
-                <input type="color" class="color-picker" value="#ffffff" title="text color">
-            </div>
-        </div>
+        <div class="note-content" contenteditable="true">${content}</div>      
         <div class="resize-handle"></div>
     `;
 
@@ -502,9 +536,6 @@ class NotesApp {
     }
 
     setupNoteActions(noteElement) {
-        const boldBtn = noteElement.querySelector('.bold-btn');
-        const underlineBtn = noteElement.querySelector('.underline-btn');
-        const colorPicker = noteElement.querySelector('.color-picker');
         const deleteBtn = noteElement.querySelector('.delete-btn');
         const noteContent = noteElement.querySelector('.note-content');
 
@@ -517,42 +548,22 @@ class NotesApp {
             }
         });
 
-        const predefinedColors = [
-            { color: this.color1, label: 'CTRL + 1' },
-            { color: this.color2, label: 'CTRL + 2' },
-            { color: this.color3, label: 'CTRL + 3' },
-            { color: this.color4, label: 'CTRL + 4' }
-        ];
+        noteContent.addEventListener('focusin', () => {
+            const liElements = noteContent.querySelectorAll('li');
 
-        const colorBtnsContainer = document.createElement('div');
-        colorBtnsContainer.className = 'color-buttons-container';
-        colorBtnsContainer.style.display = 'flex';
-        colorBtnsContainer.style.marginRight = '10px';
-
-        predefinedColors.forEach(({ color, label }) => {
-            const colorBtn = document.createElement('button');
-            colorBtn.className = 'color-preset-btn';
-            colorBtn.title = label;
-            colorBtn.style.backgroundColor = color;
-
-            colorBtn.addEventListener('click', () => {
-                document.execCommand('foreColor', false, color);
+            liElements.forEach(li => {
+                const text = li.textContent.trim();
+                const wrapper = document.createElement('span');
+                wrapper.textContent = `* ${text}`;
+                
+                const br = document.createElement('br');
+        
+                li.parentNode.insertBefore(wrapper, li);
+                li.parentNode.insertBefore(br, li.nextSibling);
+                li.remove();
             });
-
-            colorBtnsContainer.appendChild(colorBtn);
         });
 
-        colorPicker.parentNode.insertBefore(colorBtnsContainer, colorPicker);
-
-        boldBtn.addEventListener('click', () => {
-            document.execCommand('bold', false, null);
-        });
-        underlineBtn.addEventListener('click', () => {
-            document.execCommand('underline', false, null);
-        });
-        colorPicker.addEventListener('input', () => {
-            document.execCommand('foreColor', false, colorPicker.value);
-        });
         deleteBtn.addEventListener('click', () => {
             const noteId = Number(noteElement.dataset.noteId);
             const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
