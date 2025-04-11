@@ -443,12 +443,14 @@ class NotesApp {
         noteElement.style.height = `${height}px`;
 
         noteElement.innerHTML = `
-        <div class="note-header">
+        <div class="drag">
+            <div class="note-header">
             <div class="note-title" contenteditable="true">${title}</div>
             <button class="delete-btn" title="Excluir nota">✖</button>
+            </div>
+            <div class="note-content" contenteditable="true">${content}</div>      
+            <div class="resize-handle"></div>
         </div>
-        <div class="note-content" contenteditable="true">${content}</div>      
-        <div class="resize-handle"></div>
     `;
 
         if (style) {
@@ -478,7 +480,7 @@ class NotesApp {
     }
 
     setupNoteDragAndResize(noteElement) {
-        const header = noteElement.querySelector('.note-header');
+        const header = noteElement.querySelector('.drag');
         const resizeHandle = noteElement.querySelector('.resize-handle');
 
         header.addEventListener('mousedown', (e) => {
@@ -578,10 +580,6 @@ class NotesApp {
                 }
             }
         });
-
-
-
-
 
         deleteBtn.addEventListener('click', () => {
             const noteId = Number(noteElement.dataset.noteId);
