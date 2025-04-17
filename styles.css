@@ -142,11 +142,11 @@ body {
 }
 
 .drag {
+    display: flex;
+    flex-direction: column;
     padding: 5px 10px;
-    width: 100%;
-    height: 100%;
-    /* background-color: white; */
-    
+    width: 100%;  
+    min-height: 0;
 }
 
 .note-header {
@@ -174,6 +174,7 @@ body {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     padding: 5px;
+    
 }
 
 .note-title:focus,
