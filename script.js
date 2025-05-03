@@ -190,7 +190,7 @@ class NotesApp {
 
     processMarkdown(text) {
         text = text.replace(/^(\*\s)(.*?)$/gm, (_, bullet, content) => {
-            return content.trim() ? `<li id="bulleted">${content.trim()}</li>` : '';
+            return content.trim() ? `<li id="bulleted">${content.trim()}</li>` : ``;
         });
         return text;
     }
@@ -428,7 +428,7 @@ class NotesApp {
     }
 
 
-    addNote(title = 'New Note', content = '', x = 50, y = 50, width = 250, height = 200, style = {}) {
+    addNote(title = 'New Note', content = '', x = 50, y = 120, width = 250, height = 200, style = {}) {
         if (!this.activeSection) return;
 
         const sectionContent = document.querySelector(`.section-content[data-section-id="${this.activeSection.id}"]`);
