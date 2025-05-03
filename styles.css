@@ -19,8 +19,7 @@ body {
 #app {
     max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
-    
+    padding: 20px;   
 }
 
 .header {
@@ -29,15 +28,20 @@ body {
     align-items: center;
     margin-bottom: 20px;
     flex-wrap: wrap;
-
     position: fixed;    
-    z-index: 1000;    
+    z-index: 100;    
+    background-color: #252629;
+    padding-top: 10px;
+    top: 0;
+    min-height: 80px;
+    min-width: 100%;
 }
 
 .global-actions {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;        
+    flex-wrap: wrap;   
+    background-color: #252629;     
 }
 
 .button {
@@ -63,6 +67,7 @@ body {
 #sections-container {
     width: 100%;
     margin-top: 20px;
+    z-index: 10000;
 }
 
 #sections-tabs {
@@ -71,11 +76,13 @@ body {
     background-color: #252629;
     border-radius: 5px 5px 0 0;
     /* padding: 10px 10px 0 10px; */    
+    width: 100%;
 
-    padding-top: 20px;
-
+    margin-top: 60px;
+    z-index: 9000000;
     position: fixed;
-
+    top: 0;
+   
 }
 
 .section-tab {
@@ -120,6 +127,7 @@ body {
     /* background-color: #202124; */
     border-radius: 0 0 5px 5px;
     padding: 2px;    
+    padding-top: 84px;    
 }
 
 .section-content {
@@ -207,14 +215,14 @@ body {
     background-color: #202124;
     padding: 3px 10px;
     padding-top: 5px;
-    margin-top: 60px;
+    margin-top: 78px;
     max-height: 18px;
 
     position: fixed;
     top: 10;
     left: 5;
     width: 100%;         
-    z-index: 1000;
+    z-index: 90;
 }
 
 
@@ -223,8 +231,6 @@ body {
     gap: 4px;
     flex-wrap: wrap;
     align-items: center;
-
-
 }
 
 .note-toolbar button {
@@ -439,7 +445,7 @@ body {
 .auto-save-container {
     display: flex;
     align-items: center;
-    margin-right: 10px;
+    margin-right: 40px;
     gap: 8px;
 }
 
@@ -536,7 +542,7 @@ input:checked+.toggle-slider:before {
     border-radius: 6px;
     font-size: 16px;
     white-space: normal;
-    z-index: 9999;
+    z-index: 99999;
     max-width: 500px;
     width: max-content;
     text-align: left;
