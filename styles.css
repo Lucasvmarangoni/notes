@@ -20,6 +20,7 @@ body {
     max-width: 100%;
     margin: 0 auto;
     padding: 20px;
+    
 }
 
 .header {
@@ -28,12 +29,15 @@ body {
     align-items: center;
     margin-bottom: 20px;
     flex-wrap: wrap;
+
+    position: fixed;    
+    z-index: 1000;    
 }
 
 .global-actions {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: wrap;        
 }
 
 .button {
@@ -66,7 +70,12 @@ body {
     overflow-x: auto;
     background-color: #252629;
     border-radius: 5px 5px 0 0;
-    /* padding: 10px 10px 0 10px; */
+    /* padding: 10px 10px 0 10px; */    
+
+    padding-top: 20px;
+
+    position: fixed;
+
 }
 
 .section-tab {
@@ -108,9 +117,9 @@ body {
 }
 
 #sections-content {
-    background-color: #202124;
+    /* background-color: #202124; */
     border-radius: 0 0 5px 5px;
-    padding: 2px;
+    padding: 2px;    
 }
 
 .section-content {
@@ -198,14 +207,24 @@ body {
     background-color: #202124;
     padding: 3px 10px;
     padding-top: 5px;
+    margin-top: 60px;
     max-height: 18px;
+
+    position: fixed;
+    top: 10;
+    left: 5;
+    width: 100%;         
+    z-index: 1000;
 }
+
 
 .note-toolbar {
     display: flex;
     gap: 4px;
     flex-wrap: wrap;
     align-items: center;
+
+
 }
 
 .note-toolbar button {
