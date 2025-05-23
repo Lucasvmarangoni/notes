@@ -16,4 +16,7 @@ It was created to record information and gather data during pentests or bug boun
 
 <br>
 
-![alt text](image.png)
+![alt text](assets/image.png)
+![alt text](assets/image.1.png)
+![alt text](assets/image.2.png)
+
