@@ -155,9 +155,6 @@ class NotesApp {
 
         document.addEventListener('focusout', (event) => {
             this.removeEmptyBullets()
-            // if (event.target.classList.contains('note-content')) {
-            //     event.target.innerHTML = this.processMarkdown(event.target.innerText);
-            // }
         });
 
         document.addEventListener('keydown', (event) => {
@@ -165,34 +162,112 @@ class NotesApp {
 
             const selection = window.getSelection();
             const currentLine = selection.anchorNode?.textContent || "";
-
             if (event.key === 'Enter') {
                 if (currentLine.trim().startsWith('*')) {
                     event.preventDefault();
                     document.execCommand('insertText', false, '\n* ');
-
+                    this.processMarkdown(noteContent);
                 }
                 this.removeEmptyBullets()
-
-            }
-
-
-        });
-    }
-
-    removeEmptyBullets() {
-        document.querySelectorAll('.note-content li').forEach(li => {
-            if (!li.textContent.trim()) {
-                li.remove();
             }
         });
     }
 
-    processMarkdown(text) {
-        text = text.replace(/^(\*\s)(.*?)$/gm, (_, bullet, content) => {
-            return content.trim() ? `<li id="bulleted">${content.trim()}</li>` : ``;
+    removeEmptyBullets(specificElement = null) {
+        const noteContents = specificElement ?
+            [specificElement] :
+            Array.from(document.querySelectorAll('.note-content'));
+
+        noteContents.forEach(noteContent => {
+            const listItems = noteContent.querySelectorAll('li');
+
+            listItems.forEach(li => {
+                const text = li.textContent.trim();
+
+                if (!text) {
+                    li.remove();
+                } else if (text === '*' || text === '* ') {
+                    li.remove();
+                }
+            });
+            const walker = document.createTreeWalker(
+                noteContent,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            const textNodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                textNodes.push(node);
+            }
+
+            textNodes.forEach(textNode => {
+                const text = textNode.textContent.trim();
+                if (text === '*' && !textNode.parentElement.closest('li')) {
+                    textNode.remove();
+                }
+            });
         });
-        return text;
+    }
+
+    processMarkdown(element) {
+
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            if (!node.parentElement.closest('li')) {
+                textNodes.push(node);
+            }
+        }
+
+        textNodes.reverse().forEach(textNode => {
+            const text = textNode.textContent;
+
+            if (text.includes('* ')) {
+                const lines = text.split(/\r?\n/);
+                let hasNewBullets = false;
+
+                for (let line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('* ') && trimmed.length > 2) {
+                        hasNewBullets = true;
+                        break;
+                    }
+                }
+
+                if (hasNewBullets) {
+                    const fragment = document.createDocumentFragment();
+
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        const trimmed = line.trim();
+
+                        if (trimmed.startsWith('* ') && trimmed.length > 2) {
+                            const li = document.createElement('li');
+                            li.textContent = trimmed.substring(2).trim();
+                            fragment.appendChild(li);
+                        } else {
+                            if (line.length > 0 || i === 0) {
+                                fragment.appendChild(document.createTextNode(line));
+                            }
+                            if (i < lines.length - 1) {
+                                fragment.appendChild(document.createElement('br'));
+                            }
+                        }
+                    }
+                    textNode.parentNode.replaceChild(fragment, textNode);
+                }
+            }
+        });
     }
 
 
@@ -476,7 +551,6 @@ class NotesApp {
 
         this.activeSection.notes.push(note);
 
-        // ✅ Auto Save imediato ao adicionar nota
         if (this.autoSaveEnabled) {
             this.saveNotesToLocalStorage(true);
         }
@@ -553,47 +627,56 @@ class NotesApp {
     }
 
     setupNoteActions(noteElement) {
-    const deleteBtn = noteElement.querySelector('.delete-btn');
-    const noteTitle = noteElement.querySelector('.note-title');
-    const noteContent = noteElement.querySelector('.note-content');
+        const deleteBtn = noteElement.querySelector('.delete-btn');
+        const noteContent = noteElement.querySelector('.note-content');
 
-    noteTitle.addEventListener('input', () => {
-        if (this.autoSaveEnabled) {
-            this.saveNotesToLocalStorage(true);
-        }
-    });
+        noteContent.addEventListener('blur', () => {
+            this.processMarkdown(noteContent);
+        });
 
-    noteContent.addEventListener('input', () => {
-        if (this.autoSaveEnabled) {
-            this.saveNotesToLocalStorage(true);
-        }
-    });
+        noteContent.addEventListener('keydown', (e) => {
+            // this.processMarkdown(noteContent);
 
-    noteContent.addEventListener('blur', () => {
-        const rawText = noteContent.innerText;
-        const processedText = this.processMarkdown(rawText);
-        if (rawText !== processedText) {
-            noteContent.innerHTML = processedText;
-            if (this.autoSaveEnabled) {
-                this.saveNotesToLocalStorage(true);
+            if (e.key === 'Backspace') {
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+
+                const range = selection.getRangeAt(0);
+                const li = range.startContainer.closest?.('li');
+
+                if (li && range.startOffset === 0) {
+                    e.preventDefault();
+
+                    const html = li.innerHTML.trim();
+                    const fragment = document.createRange().createContextualFragment(`*<br>`);
+                    li.replaceWith(fragment);
+                }
+
+                const parent = noteContent;
+                const textNodes = Array.from(parent.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+                const lastText = textNodes.find(n => n.textContent.includes('*'));
+
+                if (lastText) {
+                    const newRange = document.createRange();
+                    newRange.setStart(lastText, lastText.textContent.length);
+                    newRange.collapse(true);
+
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                }
             }
-        }
-    });
+        });
 
-    deleteBtn.addEventListener('click', () => {
-        const noteId = Number(noteElement.dataset.noteId);
-        const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
-        noteElement.remove();
-        const section = this.sections.find(section => section.id === sectionId);
-        if (section) {
-            section.notes = section.notes.filter(note => note.id !== noteId);
-            if (this.autoSaveEnabled) {
-                this.saveNotesToLocalStorage(true);
+        deleteBtn.addEventListener('click', () => {
+            const noteId = Number(noteElement.dataset.noteId);
+            const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
+            noteElement.remove();
+            const section = this.sections.find(section => section.id === sectionId);
+            if (section) {
+                section.notes = section.notes.filter(note => note.id !== noteId);
             }
-        }
-    });
-}
-
+        });
+    }
 
     initAutoSave() {
         const autoSaveEnabled = localStorage.getItem('autoSaveEnabled') === 'true';
@@ -702,7 +785,7 @@ class NotesApp {
         this.sections = [];
 
         savedSections.forEach(section => {
-            const newSection = this.addSection(section.title, section.id);  // Mantém o mesmo ID
+            const newSection = this.addSection(section.title, section.id);
             section.notes.forEach(note => {
                 this.addNote(
                     note.title,
@@ -712,7 +795,7 @@ class NotesApp {
                     note.width,
                     note.height,
                     note.style,
-                    note.id  // Mantém o mesmo ID
+                    note.id
                 );
             });
         });
