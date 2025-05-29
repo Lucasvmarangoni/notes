@@ -428,11 +428,11 @@ class NotesApp {
     }
 
 
-    addNote(title = 'New Note', content = '', x = 50, y = 120, width = 250, height = 200, style = {}) {
+    addNote(title = 'New Note', content = '', x = 50, y = 120, width = 250, height = 200, style = {}, id = null) {
         if (!this.activeSection) return;
 
         const sectionContent = document.querySelector(`.section-content[data-section-id="${this.activeSection.id}"]`);
-        const noteId = Date.now();
+        const noteId = id || Date.now();
 
         const noteElement = document.createElement('div');
         noteElement.classList.add('note');
@@ -445,8 +445,8 @@ class NotesApp {
         noteElement.innerHTML = `
         <div class="drag">
             <div class="note-header">
-            <div class="note-title" contenteditable="true">${title}</div>
-            <button class="delete-btn" title="Excluir nota">✖</button>
+                <div class="note-title" contenteditable="true">${title}</div>
+                <button class="delete-btn" title="Excluir nota">✖</button>
             </div>
             <div class="note-content" contenteditable="true">${content}</div>      
             <div class="resize-handle"></div>
@@ -476,8 +476,14 @@ class NotesApp {
 
         this.activeSection.notes.push(note);
 
+        // ✅ Auto Save imediato ao adicionar nota
+        if (this.autoSaveEnabled) {
+            this.saveNotesToLocalStorage(true);
+        }
+
         return noteElement;
     }
+
 
     setupNoteDragAndResize(noteElement) {
         const header = noteElement.querySelector('.drag');
@@ -495,6 +501,15 @@ class NotesApp {
                 offsetX,
                 offsetY
             };
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (this.draggingNote && this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
+            if (this.resizingNote && this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
         });
 
         resizeHandle.addEventListener('mousedown', (e) => {
@@ -538,59 +553,47 @@ class NotesApp {
     }
 
     setupNoteActions(noteElement) {
-        const deleteBtn = noteElement.querySelector('.delete-btn');
-        const noteContent = noteElement.querySelector('.note-content');
+    const deleteBtn = noteElement.querySelector('.delete-btn');
+    const noteTitle = noteElement.querySelector('.note-title');
+    const noteContent = noteElement.querySelector('.note-content');
 
+    noteTitle.addEventListener('input', () => {
+        if (this.autoSaveEnabled) {
+            this.saveNotesToLocalStorage(true);
+        }
+    });
 
-        noteContent.addEventListener('blur', () => {
-            const rawText = noteContent.innerText;
-            const processedText = this.processMarkdown(rawText);
-            if (rawText !== processedText) {
-                noteContent.innerHTML = processedText;
+    noteContent.addEventListener('input', () => {
+        if (this.autoSaveEnabled) {
+            this.saveNotesToLocalStorage(true);
+        }
+    });
+
+    noteContent.addEventListener('blur', () => {
+        const rawText = noteContent.innerText;
+        const processedText = this.processMarkdown(rawText);
+        if (rawText !== processedText) {
+            noteContent.innerHTML = processedText;
+            if (this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
             }
-        });
+        }
+    });
 
-        noteContent.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace') {
-                const selection = window.getSelection();
-                if (!selection.rangeCount) return;
-
-                const range = selection.getRangeAt(0);
-                const li = range.startContainer.closest?.('li');
-
-                if (li && range.startOffset === 0) {
-                    e.preventDefault();
-
-                    const html = li.innerHTML.trim();
-                    const fragment = document.createRange().createContextualFragment(`*<br>`);
-                    li.replaceWith(fragment);
-                }
-
-                const parent = noteContent;
-                const textNodes = Array.from(parent.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
-                const lastText = textNodes.find(n => n.textContent.includes('*'));
-
-                if (lastText) {
-                    const newRange = document.createRange();
-                    newRange.setStart(lastText, lastText.textContent.length);
-                    newRange.collapse(true);
-
-                    selection.removeAllRanges();
-                    selection.addRange(newRange);
-                }
+    deleteBtn.addEventListener('click', () => {
+        const noteId = Number(noteElement.dataset.noteId);
+        const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
+        noteElement.remove();
+        const section = this.sections.find(section => section.id === sectionId);
+        if (section) {
+            section.notes = section.notes.filter(note => note.id !== noteId);
+            if (this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
             }
-        });
+        }
+    });
+}
 
-        deleteBtn.addEventListener('click', () => {
-            const noteId = Number(noteElement.dataset.noteId);
-            const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
-            noteElement.remove();
-            const section = this.sections.find(section => section.id === sectionId);
-            if (section) {
-                section.notes = section.notes.filter(note => note.id !== noteId);
-            }
-        });
-    }
 
     initAutoSave() {
         const autoSaveEnabled = localStorage.getItem('autoSaveEnabled') === 'true';
@@ -598,6 +601,7 @@ class NotesApp {
 
         autoSaveToggle.checked = autoSaveEnabled;
         this.autoSaveEnabled = autoSaveEnabled;
+        this.isLoading = false;
 
         if (this.autoSaveEnabled) {
             this.loadNotesFromLocalStorage(true);
@@ -616,14 +620,26 @@ class NotesApp {
                 this.showNotification('Auto Save disabled', 'info-message');
             }
         });
+
+        let storageTimeout;
+        window.addEventListener('storage', (event) => {
+            F
+            if (event.key === 'notesApp') {
+                clearTimeout(storageTimeout);
+                storageTimeout = setTimeout(() => {
+                    this.loadNotesFromLocalStorage(true);
+                }, 200);
+            }
+        });
     }
 
     startAutoSave() {
         this.stopAutoSave();
-
         this.autoSaveInterval = setInterval(() => {
-            this.saveNotesToLocalStorage(true);
-        }, 30000);
+            if (!this.isLoading) {
+                this.saveNotesToLocalStorage(true);
+            }
+        }, 100);
     }
 
     stopAutoSave() {
@@ -633,14 +649,12 @@ class NotesApp {
         }
     }
 
-
     saveNotesToLocalStorage(silent = false) {
         this.sections.forEach(section => {
             const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
 
             section.notes.forEach(note => {
                 const noteElement = sectionContent.querySelector(`.note[data-note-id="${note.id}"]`);
-
                 if (noteElement) {
                     note.title = noteElement.querySelector('.note-title').innerHTML;
                     note.content = noteElement.querySelector('.note-content').innerHTML;
@@ -663,7 +677,6 @@ class NotesApp {
 
             setTimeout(() => {
                 saveMessage.classList.add('fade-out');
-
                 setTimeout(() => {
                     document.body.removeChild(saveMessage);
                 }, 1500);
@@ -672,12 +685,15 @@ class NotesApp {
     }
 
     loadNotesFromLocalStorage(silent = false) {
+        this.isLoading = true;
+
         const savedSections = JSON.parse(localStorage.getItem('notesApp') || '[]');
 
         if (savedSections.length === 0) {
             if (!silent) {
                 this.showNotification('No notes found in local storage', 'error-message');
             }
+            this.isLoading = false;
             return;
         }
 
@@ -686,7 +702,7 @@ class NotesApp {
         this.sections = [];
 
         savedSections.forEach(section => {
-            const newSection = this.addSection(section.title);
+            const newSection = this.addSection(section.title, section.id);  // Mantém o mesmo ID
             section.notes.forEach(note => {
                 this.addNote(
                     note.title,
@@ -695,7 +711,8 @@ class NotesApp {
                     note.y,
                     note.width,
                     note.height,
-                    note.style
+                    note.style,
+                    note.id  // Mantém o mesmo ID
                 );
             });
         });
@@ -703,7 +720,10 @@ class NotesApp {
         if (!silent) {
             this.showNotification('Notes loaded successfully', 'success-message');
         }
+
+        this.isLoading = false;
     }
+
 
     showNotification(message, className) {
         const notification = document.createElement('div');
