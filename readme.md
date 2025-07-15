@@ -1,7 +1,7 @@
 # Notes 
 A minimalist and fast app for taking notes.
 
-It was created to record information and gather data during pentests or bug bounty sessions. However, it can also be used in many other situations.
+It was created to quickly and offiline record information and gather data during pentests or bug bounty sessions. However, it can also be used in many other situations.
 
 ## Key Features:
 
