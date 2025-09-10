@@ -8,18 +8,17 @@ class NotesApp {
 
         this.sections = [];
         this.activeSection = null;
+        this.activeSectionId = null;
         this.draggingNote = null;
         this.resizingNote = null;
         this.currentRenamingSection = null;
         this.autoSaveEnabled = false;
         this.autoSaveInterval = null;
 
-        // this.setupEventListeners();
         this.createDefaultSection();
         this.setupKeyboardShortcuts();
         this.createToolbar();
         this.initAutoSave();
-
 
         if (!this._listenersSetup) {
             this.setupEventListeners();
@@ -30,7 +29,12 @@ class NotesApp {
     setupEventListeners() {
         document.removeEventListener('paste', this.handlePasteEvent);
 
-        document.getElementById('add-section-btn').addEventListener('click', () => this.addSection());
+        document.getElementById('add-section-btn').addEventListener('click', () => {
+            this.addSection()
+            if (this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
+        });
         document.getElementById('add-note-btn').addEventListener('click', () => {
             if (this.activeSection) {
                 this.addNote();
@@ -179,6 +183,7 @@ class NotesApp {
         document.addEventListener('paste', (e) => {
             this.handlePasteEvent(e)
         })
+
     }
 
     handlePasteEvent(e) {
@@ -367,11 +372,13 @@ class NotesApp {
     }
 
     createDefaultSection() {
-        this.addSection('Section');
+        this.addSection('Section', 1);
     }
 
-    addSection(title = 'New Section') {
-        const sectionId = Date.now();
+
+    addSection(title = 'New Section', id = null) {
+        console.log(this.sections)
+        const sectionId = id || Math.max(...this.sections.map(s => Number(s.id))) + 1
 
         const tabElement = document.createElement('div');
         tabElement.classList.add('section-tab');
@@ -412,9 +419,9 @@ class NotesApp {
         };
 
         this.sections.push(section);
-        this.setActiveSection(sectionId);
+        console.log(section.title + ":" + section.id)
+        this.setActiveSection(section.id);
 
-        return section;
     }
 
     setActiveSection(sectionId) {
@@ -426,15 +433,19 @@ class NotesApp {
             content.classList.remove('active');
         });
 
-        document.querySelector(`.section-tab[data-section-id="${sectionId}"]`).classList.add('active');
-        document.querySelector(`.section-content[data-section-id="${sectionId}"]`).classList.add('active');
+        const tab = document.querySelector(`.section-tab[data-section-id="${sectionId}"]`);
+        const content = document.querySelector(`.section-content[data-section-id="${sectionId}"]`);
+
+        if (tab) tab.classList.add('active');
+        if (content) content.classList.add('active');
 
         this.activeSection = this.sections.find(section => section.id === sectionId);
+        this.activeSectionId = sectionId;
     }
 
     deleteSection(sectionId) {
         if (this.sections.length <= 1) {
-            alert('Você não pode excluir a única seção existente.');
+            alert('You cannot delete the only existing section.');
             return;
         }
 
@@ -448,6 +459,10 @@ class NotesApp {
 
         if (this.activeSection && this.activeSection.id === sectionId) {
             this.setActiveSection(this.sections[0].id);
+        }
+
+        if (this.autoSaveEnabled) {
+            this.saveNotesToLocalStorage(true);
         }
     }
 
@@ -556,7 +571,7 @@ class NotesApp {
         if (!this.activeSection) return;
 
         const sectionContent = document.querySelector(`.section-content[data-section-id="${this.activeSection.id}"]`);
-        const noteId = id || Date.now();
+        const noteId = id || Date.now() + Math.random();
 
         const noteElement = document.createElement('div');
         noteElement.classList.add('note');
@@ -714,6 +729,7 @@ class NotesApp {
                     selection.addRange(newRange);
                 }
             }
+
         });
 
         deleteBtn.addEventListener('click', () => {
@@ -724,7 +740,12 @@ class NotesApp {
             if (section) {
                 section.notes = section.notes.filter(note => note.id !== noteId);
             }
+            if (this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
         });
+
+
     }
 
     initAutoSave() {
@@ -755,7 +776,9 @@ class NotesApp {
 
         window.addEventListener('storage', (event) => {
             if (event.key === 'notesApp') {
-                this.loadNotesFromLocalStorage(true);
+                setTimeout(() => {
+                    this.loadNotesFromLocalStorage(true);
+                }, 1);
             }
         });
     }
@@ -766,7 +789,7 @@ class NotesApp {
                 clearTimeout(this.saveTimeout);
                 this.saveTimeout = setTimeout(() => {
                     this.saveNotesToLocalStorage(true);
-                }, 1000); 
+                }, 100);
             }
         });
     }
@@ -779,6 +802,8 @@ class NotesApp {
     }
 
     saveNotesToLocalStorage(silent = false) {
+        if (this.isLoading) return;
+
         this.sections.forEach(section => {
             const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
 
@@ -816,13 +841,18 @@ class NotesApp {
     loadNotesFromLocalStorage(silent = false) {
         this.isLoading = true;
 
-        const savedSections = JSON.parse(localStorage.getItem('notesApp') || '[]');
+        const savedRaw = JSON.parse(localStorage.getItem('notesApp') || '{}');
+        const savedSections = Array.isArray(savedRaw) ? savedRaw : savedRaw.data || [];
+
+        const wasAutoSaveEnabled = this.autoSaveEnabled;
+        this.autoSaveEnabled = false;
 
         if (savedSections.length === 0) {
             if (!silent) {
                 this.showNotification('No notes found in local storage', 'error-message');
             }
             this.isLoading = false;
+            this.autoSaveEnabled = wasAutoSaveEnabled;
             return;
         }
 
@@ -851,6 +881,10 @@ class NotesApp {
         }
 
         this.isLoading = false;
+
+        setTimeout(() => {
+            this.autoSaveEnabled = wasAutoSaveEnabled;
+        }, 200);
     }
 
 
@@ -946,9 +980,6 @@ class NotesApp {
 
         reader.readAsText(file);
     }
-
-
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
