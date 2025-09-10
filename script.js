@@ -134,12 +134,14 @@ class NotesApp {
                 <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
                 <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
                 <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
+                <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>
                 <p><strong>Keyboard Shortcuts</strong>:</p>
                 <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
                 <kbd>Ctrl</kbd> + <kbd>'</kbd>: Set text color to white <br>
                 <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
                 <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
                 <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>
+                <kbd>Shift</kbd> + <kbd>C</kbd>: Toggle to code formatting <br>
             </div>
         `;
 
