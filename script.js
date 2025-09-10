@@ -1,9 +1,9 @@
 class NotesApp {
     constructor() {
-        this.color1 = '#FF5252'
-        this.color2 = '#9B30FF'
-        this.color3 = '#64F25A'
-        this.color4 = '#68c7fd'
+        this.color1 = '#FFA65C'
+        this.color2 = '#B28DFF'
+        this.color3 = '#00FF88'
+        this.color4 = '#00CFFF'
         this.default = '#FFFFFF'
 
         this.sections = [];
