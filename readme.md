@@ -13,7 +13,8 @@ It was created to quickly and offiline record information and gather data during
 - **Auto Save**: Automatically save and load your content.
 - **Export & Import**: Export notes as a JSON file and import them later when needed.
 - **Bulleted Lists**: Create simple and clean bulleted lists to better structure your information.
-
+- **Event Storage**: Enables real-time synchronization between multiple windows.
+- **Code Formatting**: Format your code snippets easily using the Highlight library.
 <br>
 
 ![alt text](assets/image.png)
