@@ -291,7 +291,9 @@ class NotesApp {
 
             else if (e.ctrlKey && e.key === '\\') {
                 e.preventDefault();
-                document.execCommand('removeFormat', false, null);
+                document.execCommand('foreColor', false, '#FFFFFF'); 
+                document.execCommand('fontName', false, 'inherit'); 
+                document.execCommand('removeFormat', false, null); 
             }
 
             else if (e.ctrlKey && e.key === '1') {
@@ -900,6 +902,8 @@ class NotesApp {
 
         reader.readAsText(file);
     }
+
+
 
 }
 
