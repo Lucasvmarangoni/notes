@@ -4,6 +4,7 @@ class NotesApp {
         this.color2 = '#9B30FF'
         this.color3 = '#64F25A'
         this.color4 = '#68c7fd'
+        this.default = '#FFFFFF'
 
         this.sections = [];
         this.activeSection = null;
@@ -13,19 +14,22 @@ class NotesApp {
         this.autoSaveEnabled = false;
         this.autoSaveInterval = null;
 
-        this.setupEventListeners();
+        // this.setupEventListeners();
         this.createDefaultSection();
         this.setupKeyboardShortcuts();
         this.createToolbar();
-
         this.initAutoSave();
 
-        if (this.sections.length === 0) {
-            this.createDefaultSection();
+
+        if (!this._listenersSetup) {
+            this.setupEventListeners();
+            this._listenersSetup = true;
         }
     }
 
     setupEventListeners() {
+        document.removeEventListener('paste', this.handlePasteEvent);
+
         document.getElementById('add-section-btn').addEventListener('click', () => this.addSection());
         document.getElementById('add-note-btn').addEventListener('click', () => {
             if (this.activeSection) {
@@ -171,7 +175,56 @@ class NotesApp {
                 this.removeEmptyBullets()
             }
         });
+
+        document.addEventListener('paste', (e) => {
+            this.handlePasteEvent(e)
+        })
     }
+
+    handlePasteEvent(e) {
+
+        const noteContent = e.target.closest('.note-content');
+        if (!noteContent) return;
+
+        e.preventDefault();
+
+        const html = (e.clipboardData || window.clipboardData).getData('text/html');
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+
+        const temp = document.createElement('div');
+        temp.innerHTML = html || text;
+
+        // pega o contêiner mais interno do código ou usa o temp mesmo
+        const codeContainer =
+            temp.querySelector('pre') ||
+            temp.querySelector('code') ||
+            temp.querySelector('.highlight') ||
+            temp;
+
+        // percorre todos os elementos dentro e limpa estilos indesejados
+        codeContainer.querySelectorAll('*').forEach((el) => {
+            // guarda cor de texto e cor de fundo, se houver
+            const color = el.style.color;
+            const bg = el.style.backgroundColor;
+
+            // limpa tudo
+            el.removeAttribute('class');
+            el.removeAttribute('style');
+
+            // aplica de volta só as cores que você quer manter
+            if (color) el.style.color = color;
+            if (bg) el.style.backgroundColor = bg;
+        });
+
+        // agora monta um wrapper limpo, se quiser
+        const inner = codeContainer.innerHTML;
+        const wrapper = `<div style="background-color:${window.getComputedStyle(codeContainer).backgroundColor || codeContainer.style.backgroundColor || 'inherit'};padding:8px;border-radius:4px;">${inner}</div>`;
+
+        e.target.focus();
+        document.execCommand('insertHTML', false, wrapper);
+        document.execCommand('insertHTML', false, '<div><br></div>');
+    }
+
 
     removeEmptyBullets(specificElement = null) {
         const noteContents = specificElement ?
@@ -291,9 +344,9 @@ class NotesApp {
 
             else if (e.ctrlKey && e.key === '\\') {
                 e.preventDefault();
-                document.execCommand('foreColor', false, '#FFFFFF'); 
-                document.execCommand('fontName', false, 'inherit'); 
-                document.execCommand('removeFormat', false, null); 
+                document.execCommand('foreColor', false, this.default);
+                document.execCommand('fontName', false, 'inherit');
+                document.execCommand('removeFormat', false, null);
             }
 
             else if (e.ctrlKey && e.key === '1') {
@@ -314,7 +367,7 @@ class NotesApp {
             }
             else if (e.ctrlKey && e.key === "'") {
                 e.preventDefault();
-                document.execCommand('foreColor', false, '#FFFFFF');
+                document.execCommand('foreColor', false, this.default);
             }
         });
     }
