@@ -19,7 +19,7 @@ body {
 #app {
     max-width: 100%;
     margin: 0 auto;
-    padding: 20px;   
+    padding: 20px;
 }
 
 .header {
@@ -28,8 +28,8 @@ body {
     align-items: center;
     margin-bottom: 20px;
     flex-wrap: wrap;
-    position: fixed;    
-    z-index: 100;    
+    position: fixed;
+    z-index: 100;
     background-color: #252629;
     padding-top: 10px;
     top: 0;
@@ -40,8 +40,8 @@ body {
 .global-actions {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;   
-    background-color: #252629;     
+    flex-wrap: wrap;
+    background-color: #252629;
 }
 
 .button {
@@ -75,14 +75,14 @@ body {
     overflow-x: auto;
     background-color: #252629;
     border-radius: 5px 5px 0 0;
-    /* padding: 10px 10px 0 10px; */    
+    /* padding: 10px 10px 0 10px; */
     width: 100%;
 
     margin-top: 60px;
     z-index: 9000000;
     position: fixed;
     top: 0;
-   
+
 }
 
 .section-tab {
@@ -126,8 +126,8 @@ body {
 #sections-content {
     /* background-color: #202124; */
     border-radius: 0 0 5px 5px;
-    padding: 2px;    
-    padding-top: 84px;    
+    padding: 2px;
+    padding-top: 84px;
 }
 
 .section-content {
@@ -162,7 +162,7 @@ body {
     display: flex;
     flex-direction: column;
     padding: 5px 10px;
-    width: 100%;  
+    width: 100%;
     height: 100%;
     min-height: 0;
     cursor: pointer;
@@ -195,7 +195,7 @@ body {
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     padding: 5px;
     cursor: auto;
-    
+
 }
 
 .note-title:focus,
@@ -221,7 +221,7 @@ body {
     position: fixed;
     top: 10;
     left: 5;
-    width: 100%;         
+    width: 100%;
     z-index: 90;
 }
 
@@ -559,7 +559,84 @@ input:checked+.toggle-slider:before {
     border-color: transparent transparent #333 transparent;
 }
 
+.note-code-block {
+    background-color: #1E1E1E;
+    color: #D4D4D4;
+    font-family: 'Consolas', 'Monaco', monospace;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 12px 0;
+    border: 2px solid #3c3c3c;
+    overflow: auto;
+    line-height: 1.5;
+    tab-size: 4;
+    font-size: 14px;
+    position: relative;
+}
 
+.note-code-block {
+    border-radius: 8px;
+    border: 2px solid #444;
+    padding: 20px;
+    margin: 16px 0;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Adicione isto APÓS o tema do highlight.js */
+.note-code-block.hljs {
+    background: #18191aad !important;
+    color: #e1e7e3 !important;
+}
+
+
+.note-code-block .hljs-keyword,
+.note-code-block .hljs-literal,
+.note-code-block .hljs-symbol,
+.note-code-block .hljs-name {
+    color: #be25be !important;
+}
+
+.note-code-block .hljs-string,
+.note-code-block .hljs-regexp,
+.note-code-block .hljs-subst,
+.note-code-block .hljs-title {
+    color: #ffffff !important;
+}
+
+.note-code-block .hljs-number {
+    color: #6dc4da !important;
+}
+
+.note-code-block .hljs-boolean {
+    color: #9d57ec !important;
+}
+
+.note-code-block .hljs-comment,
+.note-code-block .hljs-quote {
+    color: #badfa3 !important;
+    font-style: italic !important;
+}
+
+.code-remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #3c3c3c;
+    border: none;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.note-code-block:hover .code-remove-btn {
+    opacity: 1;
+}
 
 @media screen and (max-width: 768px) {
     .info-popup {
