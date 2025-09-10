@@ -178,6 +178,33 @@ class NotesApp {
                 }
                 this.removeEmptyBullets()
             }
+
+            if (event.key === 'Tab') {
+                event.preventDefault();
+
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return;
+                const range = sel.getRangeAt(0);
+
+                // Se não há seleção: insere espaços normais
+                if (sel.isCollapsed) {
+                    document.execCommand('insertText', false, '    ');
+                    return;
+                }
+
+                // Se há seleção: aplica indentação via span com padding, sem destruir formatação
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'inline-block';
+                wrapper.style.paddingLeft = '2em'; // indentação visual
+                wrapper.appendChild(range.extractContents());
+                range.insertNode(wrapper);
+
+                // reposiciona seleção no wrapper
+                sel.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.selectNodeContents(wrapper);
+                sel.addRange(newRange);
+            }
         });
 
         document.addEventListener('paste', (e) => {
@@ -187,7 +214,6 @@ class NotesApp {
     }
 
     handlePasteEvent(e) {
-
         const noteContent = e.target.closest('.note-content');
         if (!noteContent) return;
 
@@ -205,24 +231,28 @@ class NotesApp {
             temp.querySelector('.highlight') ||
             temp;
 
-        codeContainer.querySelectorAll('*').forEach((el) => {
-            const color = el.style.color;
-            const bg = el.style.backgroundColor;
-
-            el.removeAttribute('class');
-            el.removeAttribute('style');
-
-            if (color) el.style.color = color;
-            if (bg) el.style.backgroundColor = bg;
-        });
-
         const inner = codeContainer.innerHTML;
-        const wrapper = `<div style="background-color:${window.getComputedStyle(codeContainer).backgroundColor || codeContainer.style.backgroundColor || 'inherit'};padding:8px;border-radius:4px;">${inner}</div>`;
+
+        const wrapper = `<pre style="margin:0;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;">${inner}</pre>`;
 
         e.target.focus();
-        document.execCommand('insertHTML', false, wrapper);
+
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            const frag = document.createRange().createContextualFragment(wrapper);
+            range.insertNode(frag);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else {
+            document.execCommand('insertHTML', false, wrapper);
+        }
+
         document.execCommand('insertHTML', false, '<div><br></div>');
     }
+
 
 
     removeEmptyBullets(specificElement = null) {
