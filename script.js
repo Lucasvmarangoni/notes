@@ -753,25 +753,22 @@ class NotesApp {
             }
         });
 
-        let storageTimeout;
         window.addEventListener('storage', (event) => {
-            F
             if (event.key === 'notesApp') {
-                clearTimeout(storageTimeout);
-                storageTimeout = setTimeout(() => {
-                    this.loadNotesFromLocalStorage(true);
-                }, 200);
+                this.loadNotesFromLocalStorage(true);
             }
         });
     }
 
     startAutoSave() {
-        this.stopAutoSave();
-        this.autoSaveInterval = setInterval(() => {
-            if (!this.isLoading) {
-                this.saveNotesToLocalStorage(true);
+        document.addEventListener("input", () => {
+            if (this.autoSaveEnabled) {
+                clearTimeout(this.saveTimeout);
+                this.saveTimeout = setTimeout(() => {
+                    this.saveNotesToLocalStorage(true);
+                }, 1000); 
             }
-        }, 100);
+        });
     }
 
     stopAutoSave() {
