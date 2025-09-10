@@ -194,29 +194,23 @@ class NotesApp {
         const temp = document.createElement('div');
         temp.innerHTML = html || text;
 
-        // pega o contêiner mais interno do código ou usa o temp mesmo
         const codeContainer =
             temp.querySelector('pre') ||
             temp.querySelector('code') ||
             temp.querySelector('.highlight') ||
             temp;
 
-        // percorre todos os elementos dentro e limpa estilos indesejados
         codeContainer.querySelectorAll('*').forEach((el) => {
-            // guarda cor de texto e cor de fundo, se houver
             const color = el.style.color;
             const bg = el.style.backgroundColor;
 
-            // limpa tudo
             el.removeAttribute('class');
             el.removeAttribute('style');
 
-            // aplica de volta só as cores que você quer manter
             if (color) el.style.color = color;
             if (bg) el.style.backgroundColor = bg;
         });
 
-        // agora monta um wrapper limpo, se quiser
         const inner = codeContainer.innerHTML;
         const wrapper = `<div style="background-color:${window.getComputedStyle(codeContainer).backgroundColor || codeContainer.style.backgroundColor || 'inherit'};padding:8px;border-radius:4px;">${inner}</div>`;
 
