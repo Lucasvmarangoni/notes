@@ -376,9 +376,11 @@ class NotesApp {
                         const textContent = noteElement.innerText;
                         noteElement.innerHTML = textContent.replace(/\n/g, '<br>');
 
-                        noteElement.style.overflow = 'hidden';
+                        noteElement.style.overflowX = 'hidden';
+                        noteElement.style.overflowY = 'auto';
                         noteElement.style.overflowWrap = 'break-word';
                         noteElement.style.whiteSpace = 'normal';
+
                     }
                 }
             }
