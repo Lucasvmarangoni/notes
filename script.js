@@ -229,6 +229,12 @@ class NotesApp {
         const temp = document.createElement('div');
         temp.innerHTML = html || text;
 
+        temp.querySelectorAll('*').forEach(el => {
+            if (el.style.background) el.style.background = '';
+            if (el.style.backgroundColor) el.style.backgroundColor = '';
+            if (el.hasAttribute('bgcolor')) el.removeAttribute('bgcolor');
+        });
+
         const codeContainer =
             temp.querySelector('pre') ||
             temp.querySelector('code') ||
@@ -237,7 +243,7 @@ class NotesApp {
 
         const inner = codeContainer.innerHTML;
 
-        const wrapper = `<pre style="margin:0;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;">${inner}</pre>`;
+        const wrapper = `${inner}`;
 
         e.target.focus();
 
@@ -1119,7 +1125,7 @@ class NotesApp {
 
     createOverviewButton() {
         const btn = document.createElement('button');
-        btn.id = 'notes-overview-btn';       
+        btn.id = 'notes-overview-btn';
 
         // Adicionar perto dos outros botões
         const toolbar = document.querySelector('.note-toolbar');
