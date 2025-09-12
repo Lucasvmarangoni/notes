@@ -215,11 +215,11 @@ class NotesApp {
         const noteContent = e.target.closest('.note-content');
         if (!noteContent) return;
 
-       e.preventDefault();
+        e.preventDefault();
 
         const html = (e.clipboardData || window.clipboardData).getData('text/html');
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-        
+
         const temp = document.createElement('div');
         temp.innerHTML = html || text;
 
@@ -233,7 +233,7 @@ class NotesApp {
 
         const wrapper = `<pre style="margin:0;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;">${inner}</pre>`;
 
-       e.target.focus();
+        e.target.focus();
 
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
@@ -248,8 +248,6 @@ class NotesApp {
             document.execCommand('insertHTML', false, wrapper);
         }
     }
-
-
 
     removeEmptyBullets(specificElement = null) {
         const noteContents = specificElement ?
@@ -369,9 +367,22 @@ class NotesApp {
 
             else if (e.ctrlKey && e.key === '\\') {
                 e.preventDefault();
-                document.execCommand('foreColor', false, this.default);
-                document.execCommand('fontName', false, 'inherit');
-                document.execCommand('removeFormat', false, null);
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const container = range.commonAncestorContainer;
+                    const noteElement = container.closest('.note-content');
+                    if (noteElement) {
+                        // Pega o texto puro mantendo quebras de linha
+                        const textContent = noteElement.innerText;
+                        // Reinsere como texto puro, preservando quebras de linha
+                        noteElement.innerHTML = textContent.replace(/\n/g, '<br>');
+
+                        noteElement.style.overflow = 'hidden';
+                        noteElement.style.overflowWrap = 'break-word';
+                        noteElement.style.whiteSpace = 'normal';
+                    }
+                }
             }
 
             else if (e.shiftKey && e.key === 'C') {
@@ -574,7 +585,7 @@ class NotesApp {
         if (!selectedText.trim()) return;
 
         const codeBlock = document.createElement('pre');
-        codeBlock.className = 'hljs'; 
+        codeBlock.className = 'hljs';
         codeBlock.textContent = selectedText;
 
         this.applySyntaxHighlighting(codeBlock);
