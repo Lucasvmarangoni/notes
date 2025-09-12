@@ -373,9 +373,7 @@ class NotesApp {
                     const container = range.commonAncestorContainer;
                     const noteElement = container.closest('.note-content');
                     if (noteElement) {
-                        // Pega o texto puro mantendo quebras de linha
                         const textContent = noteElement.innerText;
-                        // Reinsere como texto puro, preservando quebras de linha
                         noteElement.innerHTML = textContent.replace(/\n/g, '<br>');
 
                         noteElement.style.overflow = 'hidden';
