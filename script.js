@@ -27,7 +27,6 @@ class NotesApp {
     }
 
     setupEventListeners() {
-        document.removeEventListener('paste', this.handlePasteEvent);
 
         document.getElementById('add-section-btn').addEventListener('click', () => {
             this.addSection()
@@ -216,11 +215,11 @@ class NotesApp {
         const noteContent = e.target.closest('.note-content');
         if (!noteContent) return;
 
-        e.preventDefault();
+       e.preventDefault();
 
         const html = (e.clipboardData || window.clipboardData).getData('text/html');
         const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-
+        
         const temp = document.createElement('div');
         temp.innerHTML = html || text;
 
@@ -232,9 +231,9 @@ class NotesApp {
 
         const inner = codeContainer.innerHTML;
 
-        const wrapper = `<pre style="margin:0;padding:8px;border-radius:4px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;">${inner}</pre>`;
+        const wrapper = `<pre style="margin:0;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;">${inner}</pre>`;
 
-        e.target.focus();
+       e.target.focus();
 
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
@@ -248,8 +247,6 @@ class NotesApp {
         } else {
             document.execCommand('insertHTML', false, wrapper);
         }
-
-        document.execCommand('insertHTML', false, '<div><br></div>');
     }
 
 
