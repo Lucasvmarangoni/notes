@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Winky+Sans:ital,wght@0,300..900;1,300..900&display=swap"
         rel="stylesheet">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js@main/src/styles/obsidian.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js@main/src/styles/obsidian.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
 </head>
@@ -37,24 +37,66 @@
 
             <div class="global-actions">
                 <button id="add-section-btn" class="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
                     </svg>
                     Section
                 </button>
                 <button id="add-note-btn" class="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
                     </svg>
                     Note
                 </button>
-                <button id="save-notes-btn" class="button">Save</button>
-                <button id="load-notes-btn" class="button">Load</button>
+
+                <button id="notes-overview-btn" class="button" title="Notes list">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7h16M4 12h16M4 17h16" />
+                    </svg>
+                    List
+
+                </button>
+
+                <button id="save-notes-btn" class="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7L16 4H6a2 2 0 0 0-2 2z" />
+                        <path d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                    </svg>
+
+                    Save
+
+                </button>
+                <button id="load-notes-btn" class="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M7 10l5 5 5-5" />
+                        <path d="M12 15V3" />
+                    </svg>
+                    Load</button>
                 <input type="file" id="import-file" accept=".json" style="display: none;">
-                <button id="export-btn" class="button">Export</button>
-                <button id="import-btn" class="button">Import</button>
+                <button id="export-btn" class="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M16 8l-4-4-4 4" />
+                        <path d="M12 4v12" />
+                    </svg>
+                    Export</button>
+                <button id="import-btn" class="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- caixa/base -->
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <!-- seta descendo para dentro da caixa -->
+                        <path d="M8 10l4 4 4-4" />
+                        <path d="M12 4v10" />
+                    </svg>
+                    Import</button>
                 <div class="info-wrapper" onmouseenter="showPopup(this)" onmouseleave="hidePopup()">
                     <div class="info-wrapper">
                         <button class="info-btn">
