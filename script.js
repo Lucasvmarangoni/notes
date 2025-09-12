@@ -223,42 +223,28 @@ class NotesApp {
 
         e.preventDefault();
 
-        const html = (e.clipboardData || window.clipboardData).getData('text/html');
-        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        const clipboardData = e.clipboardData || window.clipboardData;
+        let content = clipboardData.getData('text/html') || clipboardData.getData('text/plain');
 
         const temp = document.createElement('div');
-        temp.innerHTML = html || text;
+        temp.innerHTML = content;
 
         temp.querySelectorAll('*').forEach(el => {
-            if (el.style.background) el.style.background = '';
-            if (el.style.backgroundColor) el.style.backgroundColor = '';
+            ['background', 'backgroundColor'].forEach(prop => {
+                if (el.style[prop]) el.style[prop] = '';
+            });
             if (el.hasAttribute('bgcolor')) el.removeAttribute('bgcolor');
         });
 
-        const codeContainer =
-            temp.querySelector('pre') ||
-            temp.querySelector('code') ||
-            temp.querySelector('.highlight') ||
-            temp;
+        const cleanContent = temp.innerHTML;
 
-        const inner = codeContainer.innerHTML;
+        document.execCommand('insertHTML', false, cleanContent);
 
-        const wrapper = `${inner}`;
-
-        e.target.focus();
-
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            range.deleteContents();
-            const frag = document.createRange().createContextualFragment(wrapper);
-            range.insertNode(frag);
-            range.collapse(false);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        } else {
-            document.execCommand('insertHTML', false, wrapper);
-        }
+        const inputEvent = new InputEvent('input', {
+            bubbles: true,
+            inputType: 'insertFromPaste'
+        });
+        e.target.dispatchEvent(inputEvent);
     }
 
     removeEmptyBullets(specificElement = null) {
