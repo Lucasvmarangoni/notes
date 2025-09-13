@@ -133,6 +133,7 @@ class NotesApp {
             <div style="line-height: 1.4;">
                 <p><strong>Add Notes</strong>: Create and manage notes easily and quickly.</p>
                 <p><strong>Add Section</strong>: Create and manage sections like browser tabs.</p>
+                <p><strong>List</strong>: All sections and notes listed in a hierarchical and organized view.</p>
                 <p><strong>Drag and Drop</strong>: Move and position notes freely.</p>
                 <p><strong>Bulleted Lists</strong>: Create simple and clean bulleted lists.</p>
                 <p><strong>Organize by Sections</strong>: Divide notes into different sections.</p>
@@ -224,7 +225,18 @@ class NotesApp {
         e.preventDefault();
 
         const clipboardData = e.clipboardData || window.clipboardData;
-        let content = clipboardData.getData('text/html') || clipboardData.getData('text/plain');
+        const htmlContent = clipboardData.getData('text/html');
+        const plainContent = clipboardData.getData('text/plain');
+
+        let content;
+        
+        if (htmlContent) {
+            content = htmlContent;
+        } else if (plainContent) {
+            content = plainContent.replace(/\n/g, '<br>');
+        } else {
+            return;
+        }
 
         const temp = document.createElement('div');
         temp.innerHTML = content;
@@ -234,6 +246,14 @@ class NotesApp {
                 if (el.style[prop]) el.style[prop] = '';
             });
             if (el.hasAttribute('bgcolor')) el.removeAttribute('bgcolor');
+            
+            el.style.width = '';
+            el.style.minWidth = '';
+            el.style.maxWidth = '';
+            el.style.whiteSpace = 'normal';
+            el.style.wordWrap = 'break-word';
+            el.style.wordBreak = 'break-word';
+            el.style.overflowWrap = 'break-word';
         });
 
         const cleanContent = temp.innerHTML;
