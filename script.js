@@ -147,7 +147,7 @@ class NotesApp {
                 <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
                 <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
                 <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>
-                <kbd>Shift</kbd> + <kbd>C</kbd>: Toggle to code formatting <br>
+                <kbd>Alt</kbd> + <kbd>C</kbd>: Toggle to code formatting <br>
             </div>
         `;
 
@@ -387,7 +387,7 @@ class NotesApp {
                 this.cleanFormatting(e)
             }
 
-            else if (e.shiftKey && e.key === 'C') {
+            else if (e.altKey && e.key === 'C') {
                 e.preventDefault();
                 this.formatAsCode();
             }
@@ -563,7 +563,7 @@ class NotesApp {
                     <button class="bold-btn" title="Bold (Ctrl+B)">B</button>
                     <button class="underline-btn" title="Underline (Ctrl+U)">U</button>
                     <button class="reset-format" title="Reset formatting (Ctrl+\\)">C</button>
-                    <button class="code-format-btn" title="Format as code (Shift+C)">&lt;/</button>
+                    <button class="code-format-btn" title="Format as code (Alt+C)">&lt;/</button>
                     <input type="color" class="color-picker" value="#ffffff" title="Text color">
                     <button class="color-preset" style="background-color: ${this.color1};" title="Color 1 (Ctrl+1)"></button>
                     <button class="color-preset" style="background-color: ${this.color2};" title="Color 2 (Ctrl+2)"></button>
