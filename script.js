@@ -384,23 +384,7 @@ class NotesApp {
             }
 
             else if (e.ctrlKey && e.key === '\\') {
-                e.preventDefault();
-                const selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    const range = selection.getRangeAt(0);
-                    const container = range.commonAncestorContainer;
-                    const noteElement = container.closest('.note-content');
-                    if (noteElement) {
-                        const textContent = noteElement.innerText;
-                        noteElement.innerHTML = textContent.replace(/\n/g, '<br>');
-
-                        noteElement.style.overflowX = 'hidden';
-                        noteElement.style.overflowY = 'auto';
-                        noteElement.style.overflowWrap = 'break-word';
-                        noteElement.style.whiteSpace = 'normal';
-
-                    }
-                }
+                this.cleanFormatting(e)
             }
 
             else if (e.shiftKey && e.key === 'C') {
@@ -429,6 +413,11 @@ class NotesApp {
                 document.execCommand('foreColor', false, this.default);
             }
         });
+    }
+
+    cleanFormatting(e) {
+        document.execCommand('removeFormat', false, null);
+            this.focusActiveNote();
     }
 
     createDefaultSection() {
@@ -680,26 +669,8 @@ class NotesApp {
             this.focusActiveNote();
         });
 
-        resetFormatBtn.addEventListener('click', () => {
-            // document.execCommand('removeFormat', false, null);
-            // this.focusActiveNote();
-            e.preventDefault();
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const container = range.commonAncestorContainer;
-                const noteElement = container.closest('.note-content');
-                if (noteElement) {
-                    const textContent = noteElement.innerText;
-                    noteElement.innerHTML = textContent.replace(/\n/g, '<br>');
-
-                    noteElement.style.overflowX = 'hidden';
-                    noteElement.style.overflowY = 'auto';
-                    noteElement.style.overflowWrap = 'break-word';
-                    noteElement.style.whiteSpace = 'normal';
-
-                }
-            }
+        resetFormatBtn.addEventListener('click', () => {            
+            this.cleanFormatting(e)
         });
 
         colorPresets.forEach((btn, index) => {
