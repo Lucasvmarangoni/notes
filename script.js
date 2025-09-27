@@ -366,6 +366,7 @@ class NotesApp {
 
 
     setupKeyboardShortcuts() {
+
         document.addEventListener('keydown', (e) => {
             const isNoteEditing =
                 e.target.closest('.note-content') ||
@@ -407,6 +408,13 @@ class NotesApp {
             else if (e.ctrlKey && e.key === '4') {
                 e.preventDefault();
                 document.execCommand('foreColor', false, this.color4);
+            }
+            else if (e.ctrlKey && e.key === '5') {
+                e.preventDefault();
+                const colorPicker = document.querySelector('.note-actions .note-toolbar .color-picker');
+                if (colorPicker) {
+                    document.execCommand('foreColor', false, colorPicker.value);
+                }
             }
             else if (e.ctrlKey && e.key === "'") {
                 e.preventDefault();
@@ -467,7 +475,7 @@ class NotesApp {
             const sid = Number(tabElement.dataset.sectionId);
             this.openRenameModal(sid);
         });
-        
+
         const section = {
             id: sectionId,
             title: title,
