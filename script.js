@@ -419,13 +419,12 @@ class NotesApp {
             else if (e.ctrlKey && e.key === "'") {
                 e.preventDefault();
                 document.execCommand('foreColor', false, this.default);
-            }
+            }           
         });
     }
 
     cleanFormatting(e) {
         document.execCommand('removeFormat', false, null);
-        this.focusActiveNote();
     }
 
     createDefaultSection() {
@@ -666,22 +665,19 @@ class NotesApp {
         const codeFormatBtn = toolbar.querySelector('.code-format-btn');
 
         codeFormatBtn.addEventListener('click', () => {
-            this.formatAsCode();
+            this.formatAsCode();            
         });
 
         boldBtn.addEventListener('click', () => {
             document.execCommand('bold', false, null);
-            this.focusActiveNote();
         });
 
         underlineBtn.addEventListener('click', () => {
             document.execCommand('underline', false, null);
-            this.focusActiveNote();
         });
 
         colorPicker.addEventListener('input', () => {
             document.execCommand('foreColor', false, colorPicker.value);
-            this.focusActiveNote();
         });
 
         resetFormatBtn.addEventListener('click', (e) => {
@@ -693,7 +689,7 @@ class NotesApp {
                 const colorProperty = `color${index + 1}`;
                 const color = this[colorProperty];
                 document.execCommand('foreColor', false, color);
-                this.focusActiveNote();
+
             });
         });
     }
@@ -784,7 +780,6 @@ class NotesApp {
 
         resizeHandle.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-
             const startWidth = parseInt(getComputedStyle(noteElement).width);
             const startHeight = parseInt(getComputedStyle(noteElement).height);
 
@@ -933,9 +928,8 @@ class NotesApp {
         }
     }
 
-    saveNotesToLocalStorage(silent = false) {
+    saveNotesToLocalStorage(silent = false) {        
         if (this.isLoading) return;
-
         this.sections.forEach(section => {
             const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
 
