@@ -676,7 +676,7 @@ class NotesApp {
             this.focusActiveNote();
         });
 
-        resetFormatBtn.addEventListener('click', () => {
+        resetFormatBtn.addEventListener('click', (e) => {
             this.cleanFormatting(e)
         });
 
