@@ -229,7 +229,7 @@ class NotesApp {
         const plainContent = clipboardData.getData('text/plain');
 
         let content;
-        
+
         if (htmlContent) {
             content = htmlContent;
         } else if (plainContent) {
@@ -246,7 +246,7 @@ class NotesApp {
                 if (el.style[prop]) el.style[prop] = '';
             });
             if (el.hasAttribute('bgcolor')) el.removeAttribute('bgcolor');
-            
+
             el.style.width = '';
             el.style.minWidth = '';
             el.style.maxWidth = '';
@@ -417,7 +417,7 @@ class NotesApp {
 
     cleanFormatting(e) {
         document.execCommand('removeFormat', false, null);
-            this.focusActiveNote();
+        this.focusActiveNote();
     }
 
     createDefaultSection() {
@@ -426,17 +426,21 @@ class NotesApp {
 
 
     addSection(title = 'New Section', id = null) {
-        console.log(this.sections)
-        const sectionId = id || Math.max(...this.sections.map(s => Number(s.id))) + 1
+        const numericIds = this.sections
+            .map(s => Number(s.id))
+            .filter(n => !Number.isNaN(n) && Number.isFinite(n));
+
+        const nextId = numericIds.length ? Math.max(...numericIds) + 1 : 1;
+        const sectionId = (id !== null && id !== undefined) ? id : nextId;
 
         const tabElement = document.createElement('div');
         tabElement.classList.add('section-tab');
         tabElement.dataset.sectionId = sectionId;
         tabElement.innerHTML = `
-            <span class="tab-title">${title}</span>
-            <span class="rename-tab">✎</span>
-            <span class="close-tab">✕</span>
-        `;
+        <span class="tab-title">${title}</span>
+        <span class="rename-tab">✎</span>
+        <span class="close-tab">✕</span>
+    `;
 
         const contentElement = document.createElement('div');
         contentElement.classList.add('section-content');
@@ -447,31 +451,34 @@ class NotesApp {
 
         tabElement.addEventListener('click', (e) => {
             if (!e.target.classList.contains('close-tab') && !e.target.classList.contains('rename-tab')) {
-                this.setActiveSection(sectionId);
+                const sid = Number(tabElement.dataset.sectionId);
+                this.setActiveSection(sid);
             }
         });
 
         tabElement.querySelector('.close-tab').addEventListener('click', (e) => {
             e.stopPropagation();
-            this.deleteSection(sectionId);
+            const sid = Number(tabElement.dataset.sectionId);
+            this.deleteSection(sid);
         });
 
         tabElement.querySelector('.rename-tab').addEventListener('click', (e) => {
             e.stopPropagation();
-            this.openRenameModal(sectionId);
+            const sid = Number(tabElement.dataset.sectionId);
+            this.openRenameModal(sid);
         });
-
+        
         const section = {
             id: sectionId,
             title: title,
             notes: []
         };
-
         this.sections.push(section);
-        console.log(section.title + ":" + section.id)
         this.setActiveSection(section.id);
 
+        return section;
     }
+
 
     setActiveSection(sectionId) {
         document.querySelectorAll('.section-tab').forEach(tab => {
@@ -669,7 +676,7 @@ class NotesApp {
             this.focusActiveNote();
         });
 
-        resetFormatBtn.addEventListener('click', () => {            
+        resetFormatBtn.addEventListener('click', () => {
             this.cleanFormatting(e)
         });
 
@@ -1071,7 +1078,8 @@ class NotesApp {
                 this.sections = [];
 
                 sections.forEach(section => {
-                    const newSection = this.addSection(section.title);
+                    const newSection = this.addSection(section.title, section.id);
+
                     if (Array.isArray(section.notes)) {
                         section.notes.forEach(note => {
                             this.addNote(
@@ -1081,7 +1089,8 @@ class NotesApp {
                                 note.y || 50,
                                 note.width || 250,
                                 note.height || 200,
-                                note.style || {}
+                                note.style || {},
+                                note.id
                             );
                         });
                     }
@@ -1098,8 +1107,8 @@ class NotesApp {
         reader.readAsText(file);
     }
 
+
     initNotesOverview() {
-        // Criar elementos do modal se não existirem
         if (!document.getElementById('notes-overview-btn')) {
             this.createOverviewButton();
         }
@@ -1108,12 +1117,10 @@ class NotesApp {
             this.createOverviewModal();
         }
 
-        // Inicializar referências
         this.notesOverviewModal = document.getElementById('notes-overview-modal');
         this.notesSearchInput = document.getElementById('notes-search');
         this.notesListContainer = document.getElementById('notes-list-container');
 
-        // Adicionar event listeners
         this.setupOverviewEvents();
     }
 
@@ -1121,7 +1128,6 @@ class NotesApp {
         const btn = document.createElement('button');
         btn.id = 'notes-overview-btn';
 
-        // Adicionar perto dos outros botões
         const toolbar = document.querySelector('.note-toolbar');
         if (toolbar) {
             toolbar.appendChild(btn);
