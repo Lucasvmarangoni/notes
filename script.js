@@ -5,6 +5,7 @@ class NotesApp {
         this.color3 = '#00FF88'
         this.color4 = '#00CFFF'
         this.default = '#FFFFFF'
+        this.colorPickerCurrentColor = '#FFFFFF'
 
         this.sections = [];
         this.activeSection = null;
@@ -419,7 +420,7 @@ class NotesApp {
             else if (e.ctrlKey && e.key === "'") {
                 e.preventDefault();
                 document.execCommand('foreColor', false, this.default);
-            }           
+            }
         });
     }
 
@@ -665,7 +666,7 @@ class NotesApp {
         const codeFormatBtn = toolbar.querySelector('.code-format-btn');
 
         codeFormatBtn.addEventListener('click', () => {
-            this.formatAsCode();            
+            this.formatAsCode();
         });
 
         boldBtn.addEventListener('click', () => {
@@ -677,7 +678,12 @@ class NotesApp {
         });
 
         colorPicker.addEventListener('input', () => {
+            this.colorPickerCurrentColor = colorPicker.value;
             document.execCommand('foreColor', false, colorPicker.value);
+
+            if (this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
         });
 
         resetFormatBtn.addEventListener('click', (e) => {
@@ -928,7 +934,7 @@ class NotesApp {
         }
     }
 
-    saveNotesToLocalStorage(silent = false) {        
+    saveNotesToLocalStorage(silent = false) {
         if (this.isLoading) return;
         this.sections.forEach(section => {
             const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
@@ -942,6 +948,11 @@ class NotesApp {
                     note.y = parseInt(noteElement.style.top);
                     note.width = parseInt(noteElement.style.width);
                     note.height = parseInt(noteElement.style.height);
+
+                    const colorPicker = document.querySelector('.color-picker');
+                    if (colorPicker) {
+                        note.currentColor = colorPicker.value;
+                    }
                 }
             });
         });
@@ -999,6 +1010,13 @@ class NotesApp {
                     note.style,
                     note.id
                 );
+
+                if (note.currentColor) {
+                    const colorPicker = document.querySelector('.color-picker');
+                    if (colorPicker) {
+                        colorPicker.value = note.currentColor;
+                    }
+                }
             });
         });
 
