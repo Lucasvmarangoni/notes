@@ -416,7 +416,7 @@ class NotesApp {
                 if (colorPicker) {
                     document.execCommand('foreColor', false, colorPicker.value);
                 }
-            }           
+            }
         });
     }
 
@@ -697,11 +697,27 @@ class NotesApp {
     }
 
 
-    addNote(title = 'New Note', content = '', x = 50, y = 120, width = 250, height = 200, style = {}, id = null) {
+    addNote(title = 'New Note', content = '', x = null, y = null, width = 250, height = 200, style = {}, id = null) {
         if (!this.activeSection) return;
 
         const sectionContent = document.querySelector(`.section-content[data-section-id="${this.activeSection.id}"]`);
         const noteId = id || Date.now() + Math.random();
+
+        if (x === null || y === null) {
+            const sectionRect = sectionContent.getBoundingClientRect();
+
+            const scrollX = sectionContent.scrollLeft;
+            const scrollY = sectionContent.scrollTop;
+
+            const viewportCenterX = window.innerWidth / 2;
+            const viewportCenterY = window.innerHeight / 2;
+
+            x = (viewportCenterX - sectionRect.left + scrollX) - (width / 2);
+            y = (viewportCenterY - sectionRect.top + scrollY) - 50; 
+
+            x = Math.max(0, Math.min(x, sectionContent.scrollWidth - width));
+            y = Math.max(0, Math.min(y, sectionContent.scrollHeight - height));
+        }
 
         const noteElement = document.createElement('div');
         noteElement.classList.add('note');
