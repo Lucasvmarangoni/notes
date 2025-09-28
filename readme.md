@@ -6,18 +6,26 @@ It was created to quickly and offiline record information and gather data during
 ## Key Features:
 
 - **Add Notes**: Create and manage notes easily and quickly.
-- **Add Section**: Create and manage sections like browser tabs easily and quickly.
-- **Drag and Drop**: Move and position notes freely, organizing them however you want.
-- **Organize by Sections**: Divide notes into different sections for better organization.
-- **Local Storage**: Save notes directly to your browser's local storage.
+- **Add Section**: Create and manage sections like browser tabs.
+- **List**: All sections and notes listed in a hierarchical and organized view.
+- **Drag and Drop**: Move and position notes freely.
+- **Bulleted Lists**: Create simple and clean bulleted lists.
+- **Organize by Section**s: Divide notes into different sections.
+- **Local Storage**: Save notes to your browser's local storage.
 - **Auto Save**: Automatically save and load your content.
-- **Export & Import**: Export notes as a JSON file and import them later when needed.
-- **Bulleted Lists**: Create simple and clean bulleted lists to better structure your information.
+- **Export & Import**: Export notes as JSON and import them later.
 - **Event Storage**: Enables real-time synchronization between multiple windows.
-- **Code Formatting**: Format your code snippets easily using the Highlight library.
+- **Keyboard Shortcuts**:
+    - **Ctrl + 1 to 4:** Apply one of the four predefined colors
+    - **Ctrl + ':** Apply color-picker defined color
+    - **Ctrl + B:** Toggle bold
+    - **Ctrl + U:** Toggle underline
+    - **Ctrl + \ :** Remove all formatting
+    - **Ctrl + F:** Toggle to code formatting
 <br>
 
 ![alt text](assets/image.png)
 ![alt text](assets/image.1.png)
 ![alt text](assets/image.2.png)
+
 
