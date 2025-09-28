@@ -713,7 +713,7 @@ class NotesApp {
             const viewportCenterY = window.innerHeight / 2;
 
             x = (viewportCenterX - sectionRect.left + scrollX) - (width / 2);
-            y = (viewportCenterY - sectionRect.top + scrollY) - 50; 
+            y = (viewportCenterY - sectionRect.top + scrollY) - 50;
 
             x = Math.max(0, Math.min(x, sectionContent.scrollWidth - width));
             y = Math.max(0, Math.min(y, sectionContent.scrollHeight - height));
@@ -1115,13 +1115,13 @@ class NotesApp {
                     if (Array.isArray(section.notes)) {
                         section.notes.forEach(note => {
                             this.addNote(
-                                note.title || 'New Note',
-                                note.content || '',
-                                note.x || 50,
-                                note.y || 50,
-                                note.width || 250,
-                                note.height || 200,
-                                note.style || {},
+                                note.title ?? 'New Note',
+                                note.content ?? '',
+                                note.x ?? 50,
+                                note.y ?? 50,
+                                note.width ?? 250,
+                                note.height ?? 200,
+                                note.style ?? {},
                                 note.id
                             );
                         });
