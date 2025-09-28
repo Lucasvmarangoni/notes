@@ -24,6 +24,8 @@ It was created to quickly and offiline record information and gather data during
     - **Ctrl + F:** Toggle to code formatting
 <br>
 
+**Importing a usage example**: <a href="https://github.com/Lucasvmarangoni/notes/blob/main/example.json">example.json</a>
+
 ![alt text](assets/image.png)
 ![alt text](assets/image.1.png)
 ![alt text](assets/image.2.png)
