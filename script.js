@@ -144,7 +144,7 @@ class NotesApp {
                 <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>
                 <p><strong>Keyboard Shortcuts</strong>:</p>
                 <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
-                <kbd>Ctrl</kbd> + <kbd>'</kbd>: Set text color to white <br>
+                <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>
                 <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
                 <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
                 <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>
@@ -410,17 +410,13 @@ class NotesApp {
                 e.preventDefault();
                 document.execCommand('foreColor', false, this.color4);
             }
-            else if (e.ctrlKey && e.key === '5') {
+            else if (e.ctrlKey && e.key === "'") {
                 e.preventDefault();
                 const colorPicker = document.querySelector('.note-actions .note-toolbar .color-picker');
                 if (colorPicker) {
                     document.execCommand('foreColor', false, colorPicker.value);
                 }
-            }
-            else if (e.ctrlKey && e.key === "'") {
-                e.preventDefault();
-                document.execCommand('foreColor', false, this.default);
-            }
+            }           
         });
     }
 
