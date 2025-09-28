@@ -1076,6 +1076,11 @@ class NotesApp {
                     note.y = parseInt(noteElement.style.top);
                     note.width = parseInt(noteElement.style.width);
                     note.height = parseInt(noteElement.style.height);
+
+                    const colorPicker = document.querySelector('.color-picker');
+                    if (colorPicker) {
+                        note.currentColor = colorPicker.value;
+                    }
                 }
             });
         });
@@ -1124,6 +1129,12 @@ class NotesApp {
                                 note.style ?? {},
                                 note.id
                             );
+                            if (note.currentColor) {
+                                const colorPicker = document.querySelector('.color-picker');
+                                if (colorPicker) {
+                                    colorPicker.value = note.currentColor;
+                                }
+                            }
                         });
                     }
                 });
