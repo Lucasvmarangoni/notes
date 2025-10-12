@@ -147,8 +147,7 @@ class NotesApp {
                 <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>
                 <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
                 <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
-                <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>
-                <kbd>Ctrl</kbd> + <kbd>F</kbd>: Toggle to code formatting <br>
+                <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>               
             </div>
         `;
 
@@ -387,12 +386,7 @@ class NotesApp {
 
             else if (e.ctrlKey && e.key === '\\') {
                 this.cleanFormatting(e)
-            }
-
-            else if (e.ctrlKey && e.key === 'F') {
-                e.preventDefault();
-                this.formatAsCode();
-            }
+            }          
 
             else if (e.ctrlKey && e.key === '1') {
                 e.preventDefault();
@@ -574,7 +568,6 @@ class NotesApp {
                     <button class="bold-btn" title="Bold (Ctrl+B)">B</button>
                     <button class="underline-btn" title="Underline (Ctrl+U)">U</button>
                     <button class="reset-format" title="Reset formatting (Ctrl+\\)">C</button>
-                    <button class="code-format-btn" title="Format as code (Ctrl+F)">&lt;/</button>
                     <input type="color" class="color-picker" value="#ffffff" title="Text color">
                     <button class="color-preset" style="background-color: ${this.color1};" title="Color 1 (Ctrl+1)"></button>
                     <button class="color-preset" style="background-color: ${this.color2};" title="Color 2 (Ctrl+2)"></button>
@@ -588,70 +581,7 @@ class NotesApp {
         parentElement.insertBefore(toolbarElement, sectionsContent);
 
         this.setupToolbarEvents(toolbarElement);
-    }
-
-    formatAsCode() {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-
-        const focusedElement = selection.anchorNode.parentElement;
-        if (!focusedElement.closest('.note-content')) return;
-
-        const range = selection.getRangeAt(0);
-        const selectedText = range.toString();
-
-        if (!selectedText.trim()) return;
-
-        const codeBlock = document.createElement('pre');
-        codeBlock.className = 'hljs';
-        codeBlock.textContent = selectedText;
-
-        this.applySyntaxHighlighting(codeBlock);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'code-remove-btn';
-        removeBtn.textContent = 'Revert';
-        removeBtn.onclick = (e) => {
-            e.stopPropagation();
-            this.revertFormatting(codeBlock);
-        };
-        codeBlock.appendChild(removeBtn);
-
-        range.deleteContents();
-        range.insertNode(codeBlock);
-
-        const newRange = document.createRange();
-        newRange.selectNodeContents(codeBlock);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-    }
-
-    applySyntaxHighlighting(codeElement) {
-        hljs.highlightElement(codeElement);
-
-        codeElement.classList.add('note-code-block');
-    }
-
-    revertFormatting(codeBlock) {
-        const removeBtn = codeBlock.querySelector('.code-remove-btn');
-        if (removeBtn) {
-            removeBtn.remove();
-        }
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = codeBlock.innerHTML;
-
-        const plainText = tempDiv.textContent;
-
-        const textNode = document.createTextNode(plainText);
-
-        codeBlock.parentNode.replaceChild(textNode, codeBlock);
-
-        const range = document.createRange();
-        range.selectNodeContents(textNode);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-    }
+    }   
 
     setupToolbarEvents(toolbar) {
         const boldBtn = toolbar.querySelector('.bold-btn');
@@ -659,12 +589,7 @@ class NotesApp {
         const colorPicker = toolbar.querySelector('.color-picker');
         const resetFormatBtn = toolbar.querySelector('.reset-format');
         const colorPresets = toolbar.querySelectorAll('.color-preset');
-        const codeFormatBtn = toolbar.querySelector('.code-format-btn');
-
-        codeFormatBtn.addEventListener('click', () => {
-            this.formatAsCode();
-        });
-
+     
         boldBtn.addEventListener('click', () => {
             document.execCommand('bold', false, null);
         });
