@@ -251,7 +251,7 @@ class NotesApp {
             el.style.width = '';
             el.style.minWidth = '';
             el.style.maxWidth = '';
-            el.style.whiteSpace = 'normal';
+            el.style.whiteSpace = 'pre-wrap';
             el.style.wordWrap = 'break-word';
             el.style.wordBreak = 'break-word';
             el.style.overflowWrap = 'break-word';
