@@ -27,7 +27,10 @@ It was created to quickly and offiline record information and gather data during
 **Importing a usage example**: <a href="https://github.com/Lucasvmarangoni/notes/blob/main/example.json">example.json</a>
 
 ![alt text](assets/image.png)
-![alt text](assets/image.1.png)
-![alt text](assets/image.2.png)
 
 
+## 🪪 License
+
+Copyright (c) 2025 Lucas Vazzoller Marangoni  
+Licensed under [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/)  
+See the [LICENSE](./LICENSE) file for more information.

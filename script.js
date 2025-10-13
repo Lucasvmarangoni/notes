@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Lucas Vazzoller Marangoni
+// Licensed under Creative Commons BY-NC 4.0
+// See the LICENSE file for more information.
+
 class NotesApp {
     constructor() {
         this.color1 = '#FFA65C'
