@@ -154,7 +154,9 @@ class NotesApp {
                 <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>
                 <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
                 <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
-                <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>               
+                <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>    
+                <kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting<br>
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously<br>                               
             </div>
         `;
 
@@ -225,7 +227,7 @@ class NotesApp {
 
         // drag multiple notes
         document.addEventListener('mousedown', (e) => {
-            if (e.shiftKey) return;
+            if (e.ctrlKey && e.shiftKey) return;
 
             const clickedNote = e.target.closest('.note');
 
@@ -408,6 +410,11 @@ class NotesApp {
                 this.cleanFormatting(e)
             }
 
+            else if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                this.formatAsCode();
+            }
+
             else if (e.ctrlKey && e.key === '1') {
                 e.preventDefault();
                 document.execCommand('foreColor', false, this.color1);
@@ -441,7 +448,6 @@ class NotesApp {
     createDefaultSection() {
         this.addSection('Section', 1);
     }
-
 
     addSection(title = 'New Section', id = null) {
         const numericIds = this.sections
@@ -588,6 +594,7 @@ class NotesApp {
                     <button class="bold-btn" title="Bold (Ctrl+B)">B</button>
                     <button class="underline-btn" title="Underline (Ctrl+U)">U</button>
                     <button class="reset-format" title="Reset formatting (Ctrl+\\)">C</button>
+                    <button class="code-format-btn" title="Format as code (Ctrl+F)">&lt;/</button>
                     <input type="color" class="color-picker" value="#ffffff" title="Text color">
                     <button class="color-preset" style="background-color: ${this.color1};" title="Color 1 (Ctrl+1)"></button>
                     <button class="color-preset" style="background-color: ${this.color2};" title="Color 2 (Ctrl+2)"></button>
@@ -609,7 +616,11 @@ class NotesApp {
         const colorPicker = toolbar.querySelector('.color-picker');
         const resetFormatBtn = toolbar.querySelector('.reset-format');
         const colorPresets = toolbar.querySelectorAll('.color-preset');
+        const codeFormatBtn = toolbar.querySelector('.code-format-btn');
 
+        codeFormatBtn.addEventListener('click', () => {
+            this.formatAsCode();
+        });
         boldBtn.addEventListener('click', () => {
             document.execCommand('bold', false, null);
         });
@@ -857,7 +868,7 @@ class NotesApp {
 
 
         noteElement.addEventListener('mousedown', (e) => {
-            if (e.shiftKey) {
+            if (e.ctrlKey && e.shiftKey) {
                 e.preventDefault();
                 if (this.selectedNotes.has(noteElement)) {
                     this.selectedNotes.delete(noteElement);
@@ -1043,6 +1054,66 @@ class NotesApp {
             this.autoSaveEnabled = wasAutoSaveEnabled;
         }, 200);
     }
+
+    formatAsCode() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        const selectedText = range.toString();
+        if (!selectedText.trim()) return;
+
+        const containerNodes = [];
+
+        const walker = document.createTreeWalker(
+            range.commonAncestorContainer,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: function (node) {
+                    if (range.intersectsNode(node)) return NodeFilter.FILTER_ACCEPT;
+                    return NodeFilter.FILTER_REJECT;
+                }
+            }
+        );
+
+        while (walker.nextNode()) {
+            containerNodes.push(walker.currentNode);
+        }
+
+        const hasCode = containerNodes.some(node => node.parentElement.classList?.contains('inline-code'));
+
+        if (hasCode) {
+            containerNodes.forEach(node => {
+                const parent = node.parentElement;
+                if (parent.classList?.contains('inline-code')) {
+                    const textNode = document.createTextNode(parent.textContent);
+                    parent.parentNode.replaceChild(textNode, parent);
+                }
+            });
+            return;
+        }
+
+        const codeSpan = document.createElement('span');
+        codeSpan.className = 'inline-code';
+        codeSpan.textContent = selectedText;
+
+        range.deleteContents();
+        range.insertNode(codeSpan);
+
+        const space = document.createTextNode('\u00a0');
+        codeSpan.after(space);
+
+        const newRange = document.createRange();
+        newRange.setStartAfter(space);
+        newRange.collapse(true);
+
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+
+        hljs.highlightElement(codeSpan);
+    }
+
+
 
 
     showNotification(message, className) {

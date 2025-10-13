@@ -208,7 +208,8 @@ body {
 }
 
 .note.selected {
-    outline: 1px solid var(--my-green-color);;
+    outline: 1px solid var(--my-green-color);
+    ;
     outline-offset: -1px;
 }
 
@@ -587,59 +588,38 @@ input:checked+.toggle-slider:before {
 }
 
 /* Adicione isto APÓS o tema do highlight.js */
-.note-code-block.hljs {
-    background: #18191aad !important;
-    color: #e1e7e3 !important;
+.inline-code {
+    background: rgba(60, 60, 60, 0.5);
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-family: "Fira Code", monospace;
+    color: #e1e7e3;
+    white-space: pre-wrap;
 }
 
-
-.note-code-block .hljs-keyword,
-.note-code-block .hljs-literal,
-.note-code-block .hljs-symbol,
-.note-code-block .hljs-name {
+/* Cores básicas de highlight (opcional, mas deixa bonito mesmo sem tema do HLJS) */
+.inline-code .hljs-keyword,
+.inline-code .hljs-literal,
+.inline-code .hljs-symbol,
+.inline-code .hljs-name {
     color: #be25be !important;
 }
 
-.note-code-block .hljs-string,
-.note-code-block .hljs-regexp,
-.note-code-block .hljs-subst,
-.note-code-block .hljs-title {
-    color: #ffffff !important;
-}
-
-.note-code-block .hljs-number {
+.inline-code .hljs-string,
+.inline-code .hljs-regexp,
+.inline-code .hljs-title {
     color: #6dc4da !important;
 }
 
-.note-code-block .hljs-boolean {
+.inline-code .hljs-number {
     color: #9d57ec !important;
 }
 
-.note-code-block .hljs-comment,
-.note-code-block .hljs-quote {
+.inline-code .hljs-comment {
     color: #badfa3 !important;
     font-style: italic !important;
 }
 
-.code-remove-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: #3c3c3c;
-    border: none;
-    color: #d4d4d4;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 10;
-}
-
-.note-code-block:hover .code-remove-btn {
-    opacity: 1;
-}
 
 #notes-overview-modal .modal-content {
     background-color: #252629;
