@@ -15,6 +15,9 @@ class NotesApp {
         this.currentRenamingSection = null;
         this.autoSaveEnabled = false;
         this.autoSaveInterval = null;
+        this.selectedNotes = new Set();
+        this.multiDragStartPositions = null;
+
 
 
         this.notesOverviewModal = null;
@@ -66,6 +69,10 @@ class NotesApp {
         document.addEventListener('mouseup', () => {
             this.draggingNote = null;
             this.resizingNote = null;
+            if (this.multiDragStartPositions && this.autoSaveEnabled) {
+                this.saveNotesToLocalStorage(true);
+            }
+            this.multiDragStartPositions = null;
         });
 
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
@@ -135,7 +142,7 @@ class NotesApp {
                 <p><strong>Add Notes</strong>: Create and manage notes easily and quickly.</p>
                 <p><strong>Add Section</strong>: Create and manage sections like browser tabs.</p>
                 <p><strong>List</strong>: All sections and notes listed in a hierarchical and organized view.</p>
-                <p><strong>Drag and Drop</strong>: Move and position notes freely.</p>
+                <p><strong>Drag and Drop</strong>: Move and position multiple notes freely.</p>
                 <p><strong>Bulleted Lists</strong>: Create simple and clean bulleted lists.</p>
                 <p><strong>Organize by Sections</strong>: Divide notes into different sections.</p>
                 <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
@@ -216,6 +223,19 @@ class NotesApp {
             this.handlePasteEvent(e)
         })
 
+        // drag multiple notes
+        document.addEventListener('mousedown', (e) => {
+            if (e.shiftKey) return;
+
+            const clickedNote = e.target.closest('.note');
+
+            const clickedBorderOfSelected = clickedNote && this.selectedNotes.has(clickedNote)
+                && (e.target.classList.contains('note-border') || e.target === clickedNote);
+
+            if (!clickedBorderOfSelected) {
+                this.clearSelectedNotes();
+            }
+        });
     }
 
     handlePasteEvent(e) {
@@ -386,7 +406,7 @@ class NotesApp {
 
             else if (e.ctrlKey && e.key === '\\') {
                 this.cleanFormatting(e)
-            }          
+            }
 
             else if (e.ctrlKey && e.key === '1') {
                 e.preventDefault();
@@ -581,7 +601,7 @@ class NotesApp {
         parentElement.insertBefore(toolbarElement, sectionsContent);
 
         this.setupToolbarEvents(toolbarElement);
-    }   
+    }
 
     setupToolbarEvents(toolbar) {
         const boldBtn = toolbar.querySelector('.bold-btn');
@@ -589,7 +609,7 @@ class NotesApp {
         const colorPicker = toolbar.querySelector('.color-picker');
         const resetFormatBtn = toolbar.querySelector('.reset-format');
         const colorPresets = toolbar.querySelectorAll('.color-preset');
-     
+
         boldBtn.addEventListener('click', () => {
             document.execCommand('bold', false, null);
         });
@@ -705,11 +725,27 @@ class NotesApp {
             const offsetX = e.clientX - rect.left;
             const offsetY = e.clientY - rect.top;
 
-            this.draggingNote = {
-                element: noteElement,
-                offsetX,
-                offsetY
-            };
+            const isMultiDrag = this.selectedNotes.size > 1 && this.selectedNotes.has(noteElement);
+
+            if (isMultiDrag) {
+                this.multiDragStartPositions = Array.from(this.selectedNotes).map(n => {
+                    const rect = n.getBoundingClientRect();
+                    return {
+                        element: n,
+                        startX: rect.left,
+                        startY: rect.top,
+                        offsetX: e.clientX - rect.left,
+                        offsetY: e.clientY - rect.top
+                    };
+                });
+            } else {
+                this.draggingNote = {
+                    element: noteElement,
+                    offsetX,
+                    offsetY
+                };
+            }
+
         });
 
         document.addEventListener('mouseup', () => {
@@ -737,6 +773,23 @@ class NotesApp {
     }
 
     handleMouseMove(e) {
+        if (this.multiDragStartPositions) {
+            const sectionContent = this.activeSection
+                ? document.querySelector(`.section-content[data-section-id="${this.activeSection.id}"]`)
+                : null;
+            if (!sectionContent) return;
+
+            const sectionRect = sectionContent.getBoundingClientRect();
+
+            this.multiDragStartPositions.forEach(pos => {
+                const x = e.clientX - pos.offsetX - sectionRect.left;
+                const y = e.clientY - pos.offsetY - sectionRect.top;
+                pos.element.style.left = `${Math.max(0, x)}px`;
+                pos.element.style.top = `${Math.max(0, y)}px`;
+            });
+            return;
+        }
+
         if (this.draggingNote) {
             const sectionContent = this.draggingNote.element.closest('.section-content');
             const sectionRect = sectionContent.getBoundingClientRect();
@@ -802,6 +855,24 @@ class NotesApp {
 
         });
 
+
+        noteElement.addEventListener('mousedown', (e) => {
+            if (e.shiftKey) {
+                e.preventDefault();
+                if (this.selectedNotes.has(noteElement)) {
+                    this.selectedNotes.delete(noteElement);
+                    noteElement.classList.remove('selected');
+                } else {
+                    this.selectedNotes.add(noteElement);
+                    noteElement.classList.add('selected');
+                }
+            } else if (!e.target.classList.contains('delete-btn') && !e.target.isContentEditable) {
+                if (!this.selectedNotes.has(noteElement)) {
+                    this.clearSelectedNotes();
+                }
+            }
+        });
+
         deleteBtn.addEventListener('click', () => {
             const noteId = Number(noteElement.dataset.noteId);
             const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
@@ -816,6 +887,11 @@ class NotesApp {
         });
 
 
+    }
+
+    clearSelectedNotes() {
+        this.selectedNotes.forEach(n => n.classList.remove('selected'));
+        this.selectedNotes.clear();
     }
 
     initAutoSave() {

@@ -207,6 +207,10 @@ body {
     outline: none;
 }
 
+.note.selected {
+    outline: 1px solid var(--my-green-color);;
+    outline-offset: -1px;
+}
 
 .note-actions {
     display: flex;
