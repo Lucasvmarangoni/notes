@@ -593,12 +593,12 @@ input:checked+.toggle-slider:before {
     line-height: 1.6;
 }
 
-/* Adicione isto APÓS o tema do highlight.js */
 .inline-code {
     background: rgba(60, 60, 60, 0.5);
     border-radius: 4px;
     padding: 2px 2px;
     font-family: "Fira Code", monospace;
+    font-size: small;
     color: #e1e7e3;
     white-space: pre-wrap;
 }
@@ -608,13 +608,13 @@ input:checked+.toggle-slider:before {
 .inline-code .hljs-literal,
 .inline-code .hljs-symbol,
 .inline-code .hljs-name {
-    color: #be25be !important;
+    color: #805892 !important;
 }
 
 .inline-code .hljs-string,
 .inline-code .hljs-regexp,
 .inline-code .hljs-title {
-    color: #6dc4da !important;
+    color: #6e99a3 !important;
 }
 
 .inline-code .hljs-number {
