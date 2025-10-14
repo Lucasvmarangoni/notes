@@ -554,7 +554,6 @@ input:checked+.toggle-slider:before {
     text-align: left;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--my-green-color);
-
 }
 
 /* .info-popup::before {
@@ -626,6 +625,10 @@ input:checked+.toggle-slider:before {
     font-style: italic !important;
 }
 
+
+#notes-overview-modal {
+    z-index: 9999;
+}
 
 #notes-overview-modal .modal-content {
     background-color: #252629;
