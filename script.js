@@ -1064,58 +1064,45 @@ class NotesApp {
         if (!selection.rangeCount) return;
 
         const range = selection.getRangeAt(0);
-        const selectedText = range.toString();
-        if (!selectedText.trim()) return;
-
-        const containerNodes = [];
+        if (selection.isCollapsed) return;
 
         const walker = document.createTreeWalker(
             range.commonAncestorContainer,
             NodeFilter.SHOW_TEXT,
             {
-                acceptNode: function (node) {
-                    if (range.intersectsNode(node)) return NodeFilter.FILTER_ACCEPT;
-                    return NodeFilter.FILTER_REJECT;
-                }
+                acceptNode: node => range.intersectsNode(node)
+                    ? NodeFilter.FILTER_ACCEPT
+                    : NodeFilter.FILTER_REJECT
             }
         );
 
-        while (walker.nextNode()) {
-            containerNodes.push(walker.currentNode);
-        }
+        const textNodes = [];
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
 
-        const hasCode = containerNodes.some(node => node.parentElement.classList?.contains('inline-code'));
-
+        const hasCode = textNodes.some(n => n.parentElement?.classList?.contains('inline-code'));
         if (hasCode) {
-            containerNodes.forEach(node => {
+            textNodes.forEach(node => {
                 const parent = node.parentElement;
-                if (parent.classList?.contains('inline-code')) {
+                if (parent?.classList?.contains('inline-code')) {
                     const textNode = document.createTextNode(parent.textContent);
-                    parent.parentNode.replaceChild(textNode, parent);
+                    parent.replaceWith(textNode);
                 }
             });
             return;
         }
 
-        const codeSpan = document.createElement('span');
-        codeSpan.className = 'inline-code';
-        codeSpan.textContent = selectedText;
-
-        range.deleteContents();
-        range.insertNode(codeSpan);
-
-        const space = document.createTextNode('\u00a0');
-        codeSpan.after(space);
-
-        const newRange = document.createRange();
-        newRange.setStartAfter(space);
-        newRange.collapse(true);
-
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-
-        hljs.highlightElement(codeSpan);
+        textNodes.forEach(node => {
+            const parent = node.parentElement;
+            if (!parent.classList.contains('inline-code')) {
+                const codeSpan = document.createElement('span');
+                codeSpan.className = 'inline-code';
+                node.parentNode.replaceChild(codeSpan, node);
+                codeSpan.appendChild(node);
+                hljs.highlightElement(codeSpan);
+            }
+        });
     }
+
 
 
 
