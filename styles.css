@@ -1075,13 +1075,13 @@ input:checked+.toggle-slider:before {
 }
 
 .jwt-info-box {
-    background-color: rgba(0, 123, 255, 0.1);
-    border: 1px solid rgba(0, 123, 255, 0.3);
+    background-color: rgba(90, 117, 82, 0.1); /* versão translúcida do verde */
+    border: 1px solid rgba(90, 117, 82, 0.3);
     border-radius: 4px;
     padding: 12px;
     margin-bottom: 20px;
     font-size: 12px;
-    color: #6ba3ff;
+    color: rgb(90, 117, 82); /* tom de texto com mais contraste */
 }
 
 .jwt-info-green {
@@ -1135,16 +1135,16 @@ input:checked+.toggle-slider:before {
 }
 
 .jwt-btn-primary:hover {
-    background-color: #6b8a5f;
+    background-color: var(--my-green-color);;
 }
 
 .jwt-btn-danger {
-    background-color: rgba(255, 0, 0, 0.6);
+    background-color: #5f6368;
     color: #fff;
 }
 
 .jwt-btn-danger:hover {
-    background-color: rgba(255, 0, 0, 0.8);
+    background-color: #696d72;
 }
 
 .jwt-btn-success {

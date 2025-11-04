@@ -174,22 +174,13 @@ See the LICENSE file for more information.
 
                 <!-- Tabs -->
                 <div class="jwt-tabs">
-                    <button class="jwt-tab active" data-tab="decode">Decode</button>
-                    <button class="jwt-tab" data-tab="edit">Edit</button>
+                    <button class="jwt-tab active" data-tab="edit">Edit</button>
                     <button class="jwt-tab" data-tab="sign">Sign</button>
                     <button class="jwt-tab" data-tab="verify">Verify</button>
                 </div>
 
-                <!-- Decode Tab -->
-                <div id="jwt-decode-tab" class="jwt-tab-content active">
-                    <div id="jwt-decode-content"></div>
-                </div>
-
                 <!-- Edit Tab -->
-                <div id="jwt-edit-tab" class="jwt-tab-content">
-                    <div class="jwt-info-box">
-                        <strong>Pentest Mode:</strong> Edit header and payload freely. The token will be rebuilt with the SAME signature (or empty).
-                    </div>
+                <div id="jwt-edit-tab" class="jwt-tab-content active">                    
                     <div class="jwt-section">
                         <h3>Edit Header</h3>
                         <textarea id="jwt-edit-header" class="jwt-textarea code-textarea"></textarea>
@@ -216,20 +207,7 @@ See the LICENSE file for more information.
                     </div>
                     <div class="jwt-section">
                         <h3>Secret Key</h3>
-                        <input type="text" id="jwt-secret" class="jwt-input" placeholder="Enter secret key (for HMAC algorithms)...">
-                        <div class="jwt-weak-secrets">
-                            <p>Common weak secrets to try:</p>
-                            <div class="jwt-secret-buttons">
-                                <button class="jwt-secret-btn" data-secret="secret">secret</button>
-                                <button class="jwt-secret-btn" data-secret="password">password</button>
-                                <button class="jwt-secret-btn" data-secret="123456">123456</button>
-                                <button class="jwt-secret-btn" data-secret="admin">admin</button>
-                                <button class="jwt-secret-btn" data-secret="key">key</button>
-                                <button class="jwt-secret-btn" data-secret="test">test</button>
-                                <button class="jwt-secret-btn" data-secret="jwt">jwt</button>
-                                <button class="jwt-secret-btn" data-secret="secret123">secret123</button>
-                            </div>
-                        </div>
+                        <input type="text" id="jwt-secret" class="jwt-input" placeholder="Enter secret key (for HMAC algorithms)...">                       
                     </div>
                     <button id="jwt-sign-btn" class="jwt-btn jwt-btn-success">Sign Token with Secret</button>
                     <div class="jwt-info-box">

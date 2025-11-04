@@ -1427,7 +1427,7 @@ class JWTAnalyzer {
         this.editedPayload = '';
         this.editedSignature = '';
         this.secret = '';
-        this.activeTab = 'decode';
+        this.activeTab = 'edit';
         this.copied = false;
         this.validationResult = null;
         this.vulnerabilities = [];
@@ -1506,6 +1506,8 @@ class JWTAnalyzer {
 
     openModal() {
         document.getElementById('jwt-modal').style.display = 'flex';
+        // Switch to edit tab by default
+        this.switchTab('edit');
     }
 
     closeModal() {
@@ -1679,36 +1681,6 @@ class JWTAnalyzer {
             `).join('');
         } else {
             vulnsContainer.style.display = 'none';
-        }
-
-        // Update decode tab
-        if (this.decoded) {
-            const decodeContent = document.getElementById('jwt-decode-content');
-            decodeContent.innerHTML = `
-                <div class="jwt-decode-grid">
-                    <div class="jwt-decode-box">
-                        <h3>Header</h3>
-                        <pre class="jwt-code-block">${JSON.stringify(this.decoded.header, null, 2)}</pre>
-                    </div>
-                    <div class="jwt-decode-box">
-                        <h3>Payload</h3>
-                        <pre class="jwt-code-block">${JSON.stringify(this.decoded.payload, null, 2)}</pre>
-                        ${this.decoded.payload.exp ? `
-                            <div class="jwt-exp-info">
-                                Expires: ${new Date(this.decoded.payload.exp * 1000).toLocaleString()}
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="jwt-decode-box jwt-decode-full">
-                        <h3>Signature</h3>
-                        <div class="jwt-signature-display">
-                            ${this.decoded.signature || '<span class="jwt-error">(empty - no signature!)</span>'}
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            document.getElementById('jwt-decode-content').innerHTML = '<p class="jwt-placeholder">Enter a JWT token to decode</p>';
         }
 
         // Update edit tab
