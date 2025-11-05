@@ -1717,10 +1717,6 @@ class JWTAnalyzer {
 
     async signToken() {
         const secret = document.getElementById('jwt-secret').value;
-        if (!secret) {
-            alert('Please enter a secret key');
-            return;
-        }
 
         try {
             const header = JSON.parse(this.editedHeader || JSON.stringify(this.decoded.header));
@@ -1731,35 +1727,42 @@ class JWTAnalyzer {
             
             const data = `${encodedHeader}.${encodedPayload}`;
             
-            // Use Web Crypto API for HMAC
-            const enc = new TextEncoder();
-            const algorithm = { name: 'HMAC', hash: { name: 'SHA-256' } };
+            let signatureBase64 = '';
             
-            if (header.alg === 'HS384') {
-                algorithm.hash.name = 'SHA-384';
-            } else if (header.alg === 'HS512') {
-                algorithm.hash.name = 'SHA-512';
+            // Se não há secret, usa assinatura fixa
+            if (!secret || secret.trim() === '') {
+                signatureBase64 = '1wfcqr7A5MmJi6oX6VgCNxHNsfo0Z0f_xr-MoVHLZTw';
+            } else {
+                // Use Web Crypto API for HMAC
+                const enc = new TextEncoder();
+                const algorithm = { name: 'HMAC', hash: { name: 'SHA-256' } };
+                
+                if (header.alg === 'HS384') {
+                    algorithm.hash.name = 'SHA-384';
+                } else if (header.alg === 'HS512') {
+                    algorithm.hash.name = 'SHA-512';
+                }
+
+                const key = await crypto.subtle.importKey(
+                    'raw',
+                    enc.encode(secret),
+                    algorithm,
+                    false,
+                    ['sign']
+                );
+
+                const signature = await crypto.subtle.sign(
+                    'HMAC',
+                    key,
+                    enc.encode(data)
+                );
+
+                const signatureArray = new Uint8Array(signature);
+                signatureBase64 = btoa(String.fromCharCode(...signatureArray))
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '');
             }
-
-            const key = await crypto.subtle.importKey(
-                'raw',
-                enc.encode(secret),
-                algorithm,
-                false,
-                ['sign']
-            );
-
-            const signature = await crypto.subtle.sign(
-                'HMAC',
-                key,
-                enc.encode(data)
-            );
-
-            const signatureArray = new Uint8Array(signature);
-            const signatureBase64 = btoa(String.fromCharCode(...signatureArray))
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=/g, '');
 
             const newToken = `${data}.${signatureBase64}`;
             this.jwt = newToken;

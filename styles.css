@@ -815,7 +815,7 @@ input:checked+.toggle-slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 6px 20px;
     border-bottom: 1px solid #3e3e42;
     background-color: #202124; 
 }
