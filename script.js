@@ -147,7 +147,10 @@ class NotesApp {
                 <p><strong>Add Section</strong>: Create and manage sections like browser tabs.</p>
                 <p><strong>List</strong>: All sections and notes listed in a hierarchical and organized view.</p>
                 <p><strong>Drag and Drop</strong>: Move and position multiple notes freely.</p>
-                <p><strong>Bulleted Lists</strong>: Create simple and clean bulleted lists.</p>
+                <p><strong>Bulleted Lists</strong>: Type <kbd>*</kbd> + space at the start of a line, or select text and click the bullet (•) button.</p>
+                <p><strong>Numbered Lists</strong>: Type <kbd>1.</kbd> + space at the start of a line, or select text and click the numbered (1.) button.</p>
+                <p><strong>Checkboxes</strong>: Type <kbd>&gt;</kbd> + space at the start of a line, or select text and click the checkbox (☐) button.</p>
+                <p><strong>List Conversion</strong>: Select text and click the bullet (•), numbered (1.), or checkbox (☐) buttons to convert each line to the selected list type.</p>
                 <p><strong>Organize by Sections</strong>: Divide notes into different sections.</p>
                 <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
                 <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
@@ -160,7 +163,8 @@ class NotesApp {
                 <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
                 <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>    
                 <kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting<br>
-                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously<br>                               
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously<br>
+                <kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Backspace</kbd> on empty items to exit the list.<br>                               
             </div>
         `;
 
@@ -189,15 +193,348 @@ class NotesApp {
         document.addEventListener('keydown', (event) => {
             if (!event.target.classList.contains('note-content')) return;
 
+            const noteContent = event.target;
             const selection = window.getSelection();
-            const currentLine = selection.anchorNode?.textContent || "";
+            if (!selection.rangeCount) return;
+            
+            const range = selection.getRangeAt(0);
+            const container = range.startContainer;
+            const lineText = this.getCurrentLineText(noteContent, range);
+            
             if (event.key === 'Enter') {
-                if (currentLine.trim().startsWith('*')) {
+                // Check if we're inside a processed list item or checkbox
+                const parentElement = container.nodeType === Node.TEXT_NODE 
+                    ? container.parentElement 
+                    : container;
+                const isInListItem = parentElement?.closest('li');
+                const isInCheckbox = parentElement?.closest('.checkbox-item');
+                
+                // If we're in a processed list item
+                if (isInListItem) {
+                    const li = isInListItem;
+                    const liText = li.textContent.trim();
+                    
+                    // If the list item is empty, remove it and replace with br + text node to maintain visual line
+                    if (!liText || liText.length === 0) {
+                        event.preventDefault();
+                        const list = li.parentElement;
+                        const parent = list.parentNode;
+                        
+                        // Create br and text node to maintain visual line
+                        const br = document.createElement('br');
+                        const textNode = document.createTextNode('');
+                        
+                        // Insert br and textNode before removing li
+                        li.parentNode.insertBefore(br, li);
+                        li.parentNode.insertBefore(textNode, br.nextSibling);
+                        li.remove();
+                        
+                        // If list is now empty, remove it too (br and textNode are already in parent)
+                        if (list.children.length === 0) {
+                            list.remove();
+                        }
+                        
+                        // Position cursor at the text node (after br, so it's on the same visual line)
+                        const range = document.createRange();
+                        range.setStart(textNode, 0);
+                        range.setEnd(textNode, 0);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        return;
+                    }
+                    
+                    // If item has content, create a new list item
                     event.preventDefault();
-                    document.execCommand('insertText', false, '\n* ');
-                    this.processMarkdown(noteContent);
+                    const list = li.parentElement;
+                    const newLi = document.createElement('li');
+                    // Create empty text node to allow cursor positioning
+                    const newTextNode = document.createTextNode('');
+                    newLi.appendChild(newTextNode);
+                    list.insertBefore(newLi, li.nextSibling);
+                    
+                    // Move cursor to new list item
+                    const range = document.createRange();
+                    range.setStart(newTextNode, 0);
+                    range.setEnd(newTextNode, 0);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    return;
                 }
-                this.removeEmptyBullets()
+                
+                // If we're in a checkbox, create a new checkbox or allow normal line break
+                if (isInCheckbox) {
+                    event.preventDefault();
+                    const checkboxItem = isInCheckbox;
+                    const label = checkboxItem.querySelector('span');
+                    const cursorPos = selection.getRangeAt(0).startOffset;
+                    const text = label.textContent;
+                    
+                    // If cursor is at the end, create new checkbox
+                    if (cursorPos >= text.length) {
+                        const newCheckboxItem = document.createElement('div');
+                        newCheckboxItem.className = 'checkbox-item';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.className = 'markdown-checkbox';
+                        newCheckboxItem.appendChild(checkbox);
+                        const newLabel = document.createElement('span');
+                        newCheckboxItem.appendChild(newLabel);
+                        
+                        checkboxItem.parentNode.insertBefore(newCheckboxItem, checkboxItem.nextSibling);
+                        
+                        // Move cursor to new checkbox
+                        const range = document.createRange();
+                        range.selectNodeContents(newLabel);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    } else {
+                        // If cursor is in the middle, split the text
+                        const beforeText = text.substring(0, cursorPos);
+                        const afterText = text.substring(cursorPos);
+                        label.textContent = beforeText;
+                        
+                        const newCheckboxItem = document.createElement('div');
+                        newCheckboxItem.className = 'checkbox-item';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.className = 'markdown-checkbox';
+                        newCheckboxItem.appendChild(checkbox);
+                        const newLabel = document.createElement('span');
+                        newLabel.textContent = afterText;
+                        newCheckboxItem.appendChild(newLabel);
+                        
+                        checkboxItem.parentNode.insertBefore(newCheckboxItem, checkboxItem.nextSibling);
+                        
+                        // Move cursor to new checkbox
+                        const range = document.createRange();
+                        range.selectNodeContents(newLabel);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                    return;
+                }
+                
+                const trimmed = lineText.trim();
+                
+                // Bullet points
+                if (trimmed.startsWith('* ')) {
+                    event.preventDefault();
+                    const textAfterBullet = trimmed.substring(2).trim();
+                    
+                    // Process markdown first to convert the line
+                    this.processMarkdown(noteContent);
+                    
+                    // Wait for DOM to update, then add new bullet
+                    setTimeout(() => {
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            // Find the first list item that was just created
+                            const lists = noteContent.querySelectorAll('ul');
+                            let targetLi = null;
+                            
+                            // Find the most recently created list item with our text
+                            for (let list of Array.from(lists).reverse()) {
+                                const items = list.querySelectorAll('li');
+                                for (let li of Array.from(items)) {
+                                    if (textAfterBullet && li.textContent.trim() === textAfterBullet) {
+                                        targetLi = li;
+                                        break;
+                                    } else if (!textAfterBullet && !li.textContent.trim()) {
+                                        targetLi = li;
+                                        break;
+                                    }
+                                }
+                                if (targetLi) break;
+                            }
+                            
+                            if (targetLi) {
+                                // Ensure text is in the current list item
+                                if (textAfterBullet && targetLi.textContent.trim() !== textAfterBullet) {
+                                    targetLi.textContent = textAfterBullet;
+                                }
+                                
+                                // Position cursor at the end of the text
+                                
+                                // Position cursor at the end of the text in the list item
+                                const range = document.createRange();
+                                const liTextNode = targetLi.firstChild;
+                                if (liTextNode && liTextNode.nodeType === Node.TEXT_NODE) {
+                                    range.setStart(liTextNode, liTextNode.textContent.length);
+                                    range.setEnd(liTextNode, liTextNode.textContent.length);
+                                } else {
+                                    // If no text node, create one or use the element
+                                    if (targetLi.childNodes.length === 0) {
+                                        const emptyTextNode = document.createTextNode('');
+                                        targetLi.appendChild(emptyTextNode);
+                                        range.setStart(emptyTextNode, 0);
+                                        range.setEnd(emptyTextNode, 0);
+                                    } else {
+                                        range.selectNodeContents(targetLi);
+                                        range.collapse(false); // false = end
+                                    }
+                                }
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                                
+                                // Now create new bullet on Enter
+                                const newLi = document.createElement('li');
+                                const newBulletTextNode = document.createTextNode('');
+                                newLi.appendChild(newBulletTextNode);
+                                targetLi.parentElement.insertBefore(newLi, targetLi.nextSibling);
+                                
+                                const newRange = document.createRange();
+                                newRange.setStart(newBulletTextNode, 0);
+                                newRange.setEnd(newBulletTextNode, 0);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+                            } else {
+                                // Fallback: insert text and process
+                                document.execCommand('insertText', false, '\n* ');
+                                this.processMarkdown(noteContent);
+                            }
+                        }
+                    }, 50);
+                    return;
+                }
+                
+                // Numbered lists
+                const numberedMatch = trimmed.match(/^(\d+)\.\s(.*)$/);
+                if (numberedMatch) {
+                    event.preventDefault();
+                    const textAfterNumber = numberedMatch[2].trim();
+                    
+                    // Process markdown first to convert the line
+                    this.processMarkdown(noteContent);
+                    
+                    // Wait for DOM to update, then add new numbered item
+                    setTimeout(() => {
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            // Find the first list item that was just created
+                            const lists = noteContent.querySelectorAll('ol');
+                            let targetLi = null;
+                            
+                            // Find the most recently created list item with our text
+                            for (let list of Array.from(lists).reverse()) {
+                                const items = list.querySelectorAll('li');
+                                for (let li of Array.from(items)) {
+                                    if (textAfterNumber && li.textContent.trim() === textAfterNumber) {
+                                        targetLi = li;
+                                        break;
+                                    } else if (!textAfterNumber && !li.textContent.trim()) {
+                                        targetLi = li;
+                                        break;
+                                    }
+                                }
+                                if (targetLi) break;
+                            }
+                            
+                            if (targetLi) {
+                                // Ensure text is in the current list item
+                                if (textAfterNumber && targetLi.textContent.trim() !== textAfterNumber) {
+                                    targetLi.textContent = textAfterNumber;
+                                }
+                                
+                                // Position cursor at the end of the text
+                                
+                                // Position cursor at the end of the text in the list item
+                                const range = document.createRange();
+                                const liTextNode = targetLi.firstChild;
+                                if (liTextNode && liTextNode.nodeType === Node.TEXT_NODE) {
+                                    range.setStart(liTextNode, liTextNode.textContent.length);
+                                    range.setEnd(liTextNode, liTextNode.textContent.length);
+                                } else {
+                                    // If no text node, create one or use the element
+                                    if (targetLi.childNodes.length === 0) {
+                                        const emptyTextNode = document.createTextNode('');
+                                        targetLi.appendChild(emptyTextNode);
+                                        range.setStart(emptyTextNode, 0);
+                                        range.setEnd(emptyTextNode, 0);
+                                    } else {
+                                        range.selectNodeContents(targetLi);
+                                        range.collapse(false); // false = end
+                                    }
+                                }
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                                
+                                // Now create new numbered item on Enter
+                                const newLi = document.createElement('li');
+                                const newNumberTextNode = document.createTextNode('');
+                                newLi.appendChild(newNumberTextNode);
+                                targetLi.parentElement.insertBefore(newLi, targetLi.nextSibling);
+                                
+                                const newRange = document.createRange();
+                                newRange.setStart(newNumberTextNode, 0);
+                                newRange.setEnd(newNumberTextNode, 0);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+                            } else {
+                                // Fallback: insert text and process
+                                const nextNum = parseInt(numberedMatch[1]) + 1;
+                                document.execCommand('insertText', false, `\n${nextNum}. `);
+                                this.processMarkdown(noteContent);
+                            }
+                        }
+                    }, 50);
+                    return;
+                }
+                
+                // Checkboxes
+                if (trimmed.startsWith('> ')) {
+                    event.preventDefault();
+                    const textAfterCheckbox = trimmed.substring(2).trim();
+                    
+                    // Process markdown first to convert the line
+                    this.processMarkdown(noteContent);
+                    
+                    // Wait for DOM to update, then add new checkbox
+                    setTimeout(() => {
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            const range = selection.getRangeAt(0);
+                            const container = range.startContainer;
+                            const parentElement = container.nodeType === Node.TEXT_NODE 
+                                ? container.parentElement 
+                                : container;
+                            const currentCheckbox = parentElement?.closest('.checkbox-item');
+                            
+                            if (currentCheckbox) {
+                                const label = currentCheckbox.querySelector('span');
+                                // Ensure text is in the current checkbox
+                                if (textAfterCheckbox && label && label.textContent.trim() !== textAfterCheckbox) {
+                                    label.textContent = textAfterCheckbox;
+                                }
+                                
+                                const newCheckboxItem = document.createElement('div');
+                                newCheckboxItem.className = 'checkbox-item';
+                                const checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.className = 'markdown-checkbox';
+                                newCheckboxItem.appendChild(checkbox);
+                                const newLabel = document.createElement('span');
+                                newCheckboxItem.appendChild(newLabel);
+                                
+                                currentCheckbox.parentNode.insertBefore(newCheckboxItem, currentCheckbox.nextSibling);
+                                
+                                const newRange = document.createRange();
+                                newRange.selectNodeContents(newLabel);
+                                newRange.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+                            } else {
+                                // Fallback: insert text and process
+                                document.execCommand('insertText', false, '\n> ');
+                                this.processMarkdown(noteContent);
+                            }
+                        }
+                    }, 50);
+                    return;
+                }
+                
+                this.removeEmptyBullets(noteContent);
             }
 
             if (event.key === 'Tab') {
@@ -293,23 +630,65 @@ class NotesApp {
         e.target.dispatchEvent(inputEvent);
     }
 
+    getCurrentLineText(element, range) {
+        // If we're inside a list item, get the text from the list item
+        const container = range.startContainer;
+        const parentElement = container.nodeType === Node.TEXT_NODE 
+            ? container.parentElement 
+            : container;
+        const li = parentElement?.closest('li');
+        
+        if (li) {
+            // We're inside a processed list item, return empty to allow normal behavior
+            return '';
+        }
+        
+        // Create a range from the start of the element to the cursor
+        const rangeClone = range.cloneRange();
+        rangeClone.selectNodeContents(element);
+        rangeClone.setEnd(range.startContainer, range.startOffset);
+        
+        // Get text from start to cursor
+        const beforeCursor = rangeClone.toString();
+        const lines = beforeCursor.split('\n');
+        const currentLine = lines[lines.length - 1] || '';
+        
+        return currentLine;
+    }
+
     removeEmptyBullets(specificElement = null) {
         const noteContents = specificElement ?
             [specificElement] :
             Array.from(document.querySelectorAll('.note-content'));
 
         noteContents.forEach(noteContent => {
+            // Remove empty list items
             const listItems = noteContent.querySelectorAll('li');
-
             listItems.forEach(li => {
                 const text = li.textContent.trim();
-
-                if (!text) {
-                    li.remove();
-                } else if (text === '*' || text === '* ') {
+                if (!text || text === '*' || text === '* ' || text === '> ' || /^\d+\.\s*$/.test(text)) {
                     li.remove();
                 }
             });
+            
+            // Remove empty lists
+            const lists = noteContent.querySelectorAll('ul, ol');
+            lists.forEach(list => {
+                if (list.children.length === 0) {
+                    list.remove();
+                }
+            });
+            
+            // Remove empty checkbox items
+            const checkboxes = noteContent.querySelectorAll('.checkbox-item');
+            checkboxes.forEach(checkbox => {
+                const text = checkbox.textContent.trim();
+                if (!text || text === '> ') {
+                    checkbox.remove();
+                }
+            });
+            
+            // Clean up orphaned text nodes with markers
             const walker = document.createTreeWalker(
                 noteContent,
                 NodeFilter.SHOW_TEXT,
@@ -320,74 +699,216 @@ class NotesApp {
             const textNodes = [];
             let node;
             while (node = walker.nextNode()) {
-                textNodes.push(node);
+                if (!node.parentElement.closest('li') && 
+                    !node.parentElement.closest('.checkbox-item') &&
+                    !node.parentElement.closest('ul') &&
+                    !node.parentElement.closest('ol')) {
+                    textNodes.push(node);
+                }
             }
 
             textNodes.forEach(textNode => {
                 const text = textNode.textContent.trim();
-                if (text === '*' && !textNode.parentElement.closest('li')) {
-                    textNode.remove();
+                if (text === '*' || text === '* ' || text === '> ' || /^\d+\.\s*$/.test(text)) {
+                    const parent = textNode.parentNode;
+                    if (parent && parent.childNodes.length === 1) {
+                        parent.remove();
+                    } else {
+                        textNode.remove();
+                    }
                 }
             });
         });
     }
 
     processMarkdown(element) {
+        // Don't process if element is already a list item or checkbox
+        if (element.closest('li') || element.closest('.checkbox-item')) {
+            return null;
+        }
 
         const walker = document.createTreeWalker(
             element,
             NodeFilter.SHOW_TEXT,
-            null,
+            {
+                acceptNode: (node) => {
+                    // Skip text nodes inside list items, checkboxes, or already processed elements
+                    if (node.parentElement.closest('li') || 
+                        node.parentElement.closest('.checkbox-item') ||
+                        node.parentElement.closest('ul') ||
+                        node.parentElement.closest('ol')) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            },
             false
         );
 
         const textNodes = [];
         let node;
         while (node = walker.nextNode()) {
-            if (!node.parentElement.closest('li')) {
-                textNodes.push(node);
-            }
+            textNodes.push(node);
         }
 
+        let lastCreatedElement = null;
+
+        // Process in reverse to avoid offset issues
         textNodes.reverse().forEach(textNode => {
             const text = textNode.textContent;
+            if (!text || text.trim().length === 0) return;
 
-            if (text.includes('* ')) {
-                const lines = text.split(/\r?\n/);
-                let hasNewBullets = false;
+            const lines = text.split(/\r?\n/);
+            let hasMarkdown = false;
+            let markdownType = null;
 
-                for (let line of lines) {
+            // Check what type of markdown we have
+            for (let line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('* ') && trimmed.length > 2) {
+                    hasMarkdown = true;
+                    markdownType = 'bullet';
+                    break;
+                } else if (trimmed.match(/^\d+\.\s/) && trimmed.length > 3) {
+                    hasMarkdown = true;
+                    markdownType = 'numbered';
+                    break;
+                } else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                    hasMarkdown = true;
+                    markdownType = 'checkbox';
+                    break;
+                }
+            }
+
+            if (hasMarkdown) {
+                const fragment = document.createDocumentFragment();
+                let currentList = null;
+                let listType = null;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
                     const trimmed = line.trim();
+                    const isLastLine = i === lines.length - 1;
+
+                    // Bullet points
                     if (trimmed.startsWith('* ') && trimmed.length > 2) {
-                        hasNewBullets = true;
-                        break;
+                        if (listType !== 'bullet') {
+                            if (currentList) fragment.appendChild(currentList);
+                            currentList = document.createElement('ul');
+                            listType = 'bullet';
+                        }
+                        const li = document.createElement('li');
+                        const textContent = trimmed.substring(2).trim();
+                        if (textContent) {
+                            li.textContent = textContent;
+                        }
+                        currentList.appendChild(li);
+                        lastCreatedElement = li;
+                    }
+                    // Numbered lists
+                    else if (trimmed.match(/^\d+\.\s/) && trimmed.length > 3) {
+                        if (listType !== 'numbered') {
+                            if (currentList) fragment.appendChild(currentList);
+                            currentList = document.createElement('ol');
+                            listType = 'numbered';
+                        }
+                        const li = document.createElement('li');
+                        const textContent = trimmed.replace(/^\d+\.\s/, '').trim();
+                        if (textContent) {
+                            li.textContent = textContent;
+                        }
+                        currentList.appendChild(li);
+                        lastCreatedElement = li;
+                    }
+                    // Checkboxes
+                    else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                        if (currentList) {
+                            fragment.appendChild(currentList);
+                            currentList = null;
+                            listType = null;
+                        }
+                        const checkboxItem = document.createElement('div');
+                        checkboxItem.className = 'checkbox-item';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.className = 'markdown-checkbox';
+                        checkboxItem.appendChild(checkbox);
+                        const label = document.createElement('span');
+                        const textContent = trimmed.substring(2).trim();
+                        if (textContent) {
+                            label.textContent = textContent;
+                        }
+                        checkboxItem.appendChild(label);
+                        fragment.appendChild(checkboxItem);
+                        lastCreatedElement = label;
+                        if (!isLastLine) {
+                            fragment.appendChild(document.createElement('br'));
+                        }
+                    }
+                    // Regular text
+                    else {
+                        if (currentList) {
+                            fragment.appendChild(currentList);
+                            currentList = null;
+                            listType = null;
+                        }
+                        if (line.length > 0 || i === 0) {
+                            fragment.appendChild(document.createTextNode(line));
+                        }
+                        if (!isLastLine) {
+                            fragment.appendChild(document.createElement('br'));
+                        }
                     }
                 }
 
-                if (hasNewBullets) {
-                    const fragment = document.createDocumentFragment();
+                // Append any remaining list
+                if (currentList) {
+                    fragment.appendChild(currentList);
+                }
 
-                    for (let i = 0; i < lines.length; i++) {
-                        const line = lines[i];
-                        const trimmed = line.trim();
-
-                        if (trimmed.startsWith('* ') && trimmed.length > 2) {
-                            const li = document.createElement('li');
-                            li.textContent = trimmed.substring(2).trim();
-                            fragment.appendChild(li);
-                        } else {
-                            if (line.length > 0 || i === 0) {
-                                fragment.appendChild(document.createTextNode(line));
-                            }
-                            if (i < lines.length - 1) {
-                                fragment.appendChild(document.createElement('br'));
-                            }
-                        }
-                    }
+                // Replace the text node with the fragment
+                if (textNode.parentNode) {
                     textNode.parentNode.replaceChild(fragment, textNode);
                 }
             }
         });
+
+        // Position cursor at the end of the last created element
+        if (lastCreatedElement) {
+            setTimeout(() => {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = document.createRange();
+                    
+                    if (lastCreatedElement.tagName === 'SPAN') {
+                        // For checkbox labels
+                        if (lastCreatedElement.firstChild && lastCreatedElement.firstChild.nodeType === Node.TEXT_NODE) {
+                            const textNode = lastCreatedElement.firstChild;
+                            range.setStart(textNode, textNode.textContent.length);
+                            range.setEnd(textNode, textNode.textContent.length);
+                        } else {
+                            range.selectNodeContents(lastCreatedElement);
+                            range.collapse(false);
+                        }
+                    } else {
+                        // For list items
+                        if (lastCreatedElement.firstChild && lastCreatedElement.firstChild.nodeType === Node.TEXT_NODE) {
+                            const textNode = lastCreatedElement.firstChild;
+                            range.setStart(textNode, textNode.textContent.length);
+                            range.setEnd(textNode, textNode.textContent.length);
+                        } else {
+                            range.selectNodeContents(lastCreatedElement);
+                            range.collapse(false);
+                        }
+                    }
+                    
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }, 0);
+        }
+
+        return lastCreatedElement;
     }
 
 
@@ -599,6 +1120,9 @@ class NotesApp {
                     <button class="underline-btn" title="Underline (Ctrl+U)">U</button>
                     <button class="reset-format" title="Reset formatting (Ctrl+\\)">C</button>
                     <button class="code-format-btn" title="Format as code (Ctrl+F)">&lt;/</button>
+                    <button class="bullet-list-btn" title="Convert to bullet list">•</button>
+                    <button class="numbered-list-btn" title="Convert to numbered list">1.</button>
+                    <button class="checkbox-list-btn" title="Convert to checkbox list">☐</button>
                     <input type="color" class="color-picker" value="#ffffff" title="Text color">
                     <button class="color-preset" style="background-color: ${this.color1};" title="Color 1 (Ctrl+1)"></button>
                     <button class="color-preset" style="background-color: ${this.color2};" title="Color 2 (Ctrl+2)"></button>
@@ -654,6 +1178,95 @@ class NotesApp {
 
             });
         });
+
+        // List conversion buttons
+        const bulletBtn = toolbar.querySelector('.bullet-list-btn');
+        const numberedBtn = toolbar.querySelector('.numbered-list-btn');
+        const checkboxBtn = toolbar.querySelector('.checkbox-list-btn');
+
+        bulletBtn.addEventListener('click', () => {
+            this.convertSelectionToList('bullet');
+        });
+
+        numberedBtn.addEventListener('click', () => {
+            this.convertSelectionToList('numbered');
+        });
+
+        checkboxBtn.addEventListener('click', () => {
+            this.convertSelectionToList('checkbox');
+        });
+    }
+
+    convertSelectionToList(type) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        let noteContent = null;
+        
+        // Find the note-content element
+        const container = range.commonAncestorContainer;
+        if (container.nodeType === Node.ELEMENT_NODE) {
+            noteContent = container.closest('.note-content');
+        } else {
+            noteContent = container.parentElement?.closest('.note-content');
+        }
+        
+        if (!noteContent) return;
+
+        // Get selected text
+        let text = selection.toString();
+        
+        // If nothing is selected, try to get the current line
+        if (!text.trim()) {
+            const lineText = this.getCurrentLineText(noteContent, range);
+            if (lineText.trim()) {
+                text = lineText.trim();
+            } else {
+                return; // Nothing to convert
+            }
+        }
+
+        // Split text into lines and filter empty lines
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length === 0) return;
+
+        // Create markdown text based on type
+        let markdownText = '';
+        lines.forEach((line, index) => {
+            const trimmed = line.trim();
+            if (trimmed) {
+                if (type === 'bullet') {
+                    markdownText += `* ${trimmed}`;
+                } else if (type === 'numbered') {
+                    markdownText += `${index + 1}. ${trimmed}`;
+                } else if (type === 'checkbox') {
+                    markdownText += `> ${trimmed}`;
+                }
+                if (index < lines.length - 1) {
+                    markdownText += '\n';
+                }
+            }
+        });
+
+        // Delete the selected content
+        range.deleteContents();
+        
+        // Insert the markdown text
+        const textNode = document.createTextNode(markdownText);
+        range.insertNode(textNode);
+        
+        // Move cursor to end of inserted text
+        const newRange = document.createRange();
+        newRange.setStartAfter(textNode);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+
+        // Process markdown to convert to list
+        setTimeout(() => {
+            this.processMarkdown(noteContent);
+        }, 0);
     }
 
 
@@ -834,6 +1447,33 @@ class NotesApp {
 
         noteContent.addEventListener('blur', () => {
             this.processMarkdown(noteContent);
+            this.removeEmptyBullets(noteContent);
+        });
+
+        // Process markdown on input for real-time conversion
+        noteContent.addEventListener('input', (e) => {
+            // Don't process if we're inside a processed list item or checkbox
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const container = range.startContainer;
+                const parentElement = container.nodeType === Node.TEXT_NODE 
+                    ? container.parentElement 
+                    : container;
+                const isInListItem = parentElement?.closest('li');
+                const isInCheckbox = parentElement?.closest('.checkbox-item');
+                
+                // If we're in a processed list or checkbox, don't process markdown
+                if (isInListItem || isInCheckbox) {
+                    return;
+                }
+            }
+            
+            // Debounce to avoid processing on every keystroke
+            clearTimeout(noteContent._markdownTimeout);
+            noteContent._markdownTimeout = setTimeout(() => {
+                this.processMarkdown(noteContent);
+            }, 300);
         });
 
         noteContent.addEventListener('keydown', (e) => {
@@ -844,27 +1484,81 @@ class NotesApp {
                 if (!selection.rangeCount) return;
 
                 const range = selection.getRangeAt(0);
-                const li = range.startContainer.closest?.('li');
+                const container = range.startContainer;
+                const parentElement = container.nodeType === Node.TEXT_NODE 
+                    ? container.parentElement 
+                    : container;
+                const li = parentElement?.closest('li');
 
-                if (li && range.startOffset === 0) {
-                    e.preventDefault();
-
-                    const html = li.innerHTML.trim();
-                    const fragment = document.createRange().createContextualFragment(`*<br>`);
-                    li.replaceWith(fragment);
-                }
-
-                const parent = noteContent;
-                const textNodes = Array.from(parent.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
-                const lastText = textNodes.find(n => n.textContent.includes('*'));
-
-                if (lastText) {
-                    const newRange = document.createRange();
-                    newRange.setStart(lastText, lastText.textContent.length);
-                    newRange.collapse(true);
-
-                    selection.removeAllRanges();
-                    selection.addRange(newRange);
+                if (li) {
+                    const liText = li.textContent.trim();
+                    const isAtStart = range.startOffset === 0 || 
+                        (container.nodeType === Node.TEXT_NODE && container === li.firstChild && range.startOffset === 0);
+                    
+                    // If the list item is empty, remove it and replace with br + text node (stay on same line)
+                    if (isAtStart && (!liText || liText.length === 0)) {
+                        e.preventDefault();
+                        
+                        const list = li.parentElement;
+                        const parent = list.parentNode;
+                        
+                        // Create br and text node to maintain visual line
+                        const br = document.createElement('br');
+                        const textNode = document.createTextNode('');
+                        
+                        // Replace the list item with br + text node
+                        li.parentNode.insertBefore(br, li);
+                        li.parentNode.insertBefore(textNode, br.nextSibling);
+                        li.remove();
+                        
+                        // If list is now empty, remove it too
+                        if (list.children.length === 0) {
+                            // The br and textNode are already inserted, just remove the list
+                            list.remove();
+                        }
+                        
+                        // Position cursor at the text node (stays on same line)
+                        const newRange = document.createRange();
+                        newRange.setStart(textNode, 0);
+                        newRange.setEnd(textNode, 0);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                        return;
+                    }
+                    
+                    // If at start but item has content, check if will become empty after backspace
+                    if (isAtStart && liText.length > 0) {
+                        // Allow the backspace to happen, then check if item is now empty
+                        setTimeout(() => {
+                            const liTextAfter = li.textContent.trim();
+                            if (!liTextAfter || liTextAfter.length === 0) {
+                                // Item is now empty, remove it and replace with br + text node (same line)
+                                const list = li.parentElement;
+                                
+                                // Create br and text node to maintain visual line
+                                const br = document.createElement('br');
+                                const textNode = document.createTextNode('');
+                                
+                                // Replace the list item with br + text node
+                                li.parentNode.insertBefore(br, li);
+                                li.parentNode.insertBefore(textNode, br.nextSibling);
+                                li.remove();
+                                
+                                // If list is now empty, remove it too
+                                if (list.children.length === 0) {
+                                    list.remove();
+                                }
+                                
+                                // Position cursor at the text node
+                                const newRange = document.createRange();
+                                newRange.setStart(textNode, 0);
+                                newRange.setEnd(textNode, 0);
+                                const sel = window.getSelection();
+                                sel.removeAllRanges();
+                                sel.addRange(newRange);
+                            }
+                        }, 0);
+                    }
                 }
             }
 

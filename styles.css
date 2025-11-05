@@ -204,6 +204,40 @@ body {
 
 }
 
+.note-content ul,
+.note-content ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.note-content li {
+    margin: 2px 0;
+    line-height: 1.4;
+    min-height: 1.2em;
+}
+
+.note-content li:empty::before {
+    content: '\200B'; /* Zero-width space to maintain cursor position */
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+.markdown-checkbox {
+    margin-right: 8px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-item span {
+    flex: 1;
+}
+
 .note-title:focus,
 .note-content:focus {
     outline: none;

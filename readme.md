@@ -9,8 +9,11 @@ It was created to quickly and offiline record information and gather data during
 - **Add Section**: Create and manage sections like browser tabs.
 - **List**: All sections and notes listed in a hierarchical and organized view.
 - **Drag and Drop**: Move and position notes freely.
-- **Bulleted Lists**: Create simple and clean bulleted lists.
-- **Organize by Section**s: Divide notes into different sections.
+- **Bulleted Lists**: Type `*` + space at the start of a line, or select text and click the bullet (•) button to convert each line to a bullet point.
+- **Numbered Lists**: Type `1.` + space at the start of a line, or select text and click the numbered (1.) button to convert each line to a numbered item.
+- **Checkboxes**: Type `>` + space at the start of a line, or select text and click the checkbox (☐) button to convert each line to a checkbox.
+- **List Conversion**: Select text and click the bullet (•), numbered (1.), or checkbox (☐) buttons in the toolbar to convert each line to the selected list type.
+- **Organize by Sections**: Divide notes into different sections.
 - **Local Storage**: Save notes to your browser's local storage.
 - **Auto Save**: Automatically save and load your content.
 - **Export & Import**: Export notes as JSON and import them later.
@@ -21,7 +24,9 @@ It was created to quickly and offiline record information and gather data during
     - **Ctrl + B:** Toggle bold
     - **Ctrl + U:** Toggle underline
     - **Ctrl + \ :** Remove all formatting
-    - **Ctrl + F:** Toggle to code formatting
+    - **Ctrl + E:** Toggle to code formatting or remove code formatting
+    - **Ctrl + Shift + Click:** Select and drag multiple notes simultaneously
+    - **Enter:** In lists, creates a new item. Press Backspace on empty items to exit the list.
 <br>
 
 **Importing a usage example**: <a href="https://github.com/Lucasvmarangoni/notes/blob/main/example.json">example.json</a>
