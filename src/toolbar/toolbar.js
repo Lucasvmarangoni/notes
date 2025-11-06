@@ -18,7 +18,7 @@ export class ToolbarManager {
                     <button class="bold-btn" title="Bold (Ctrl+B)">B</button>
                     <button class="underline-btn" title="Underline (Ctrl+U)">U</button>
                     <button class="reset-format" title="Reset formatting (Ctrl+\\)">C</button>
-                    <button class="code-format-btn" title="Format as code (Ctrl+F)">&lt;/</button>
+                    <button class="code-format-btn" title="Format as code (Ctrl+E)">&lt;/</button>
                     <button class="bullet-list-btn" title="Convert to bullet list">•</button>
                     <button class="numbered-list-btn" title="Convert to numbered list">1.</button>
                     <button class="checkbox-list-btn" title="Convert to checkbox list">☐</button>
