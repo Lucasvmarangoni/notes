@@ -1283,7 +1283,7 @@ class NotesApp {
     }
 
 
-    addNote(title = 'New Note', content = '', x = null, y = null, width = 250, height = 200, style = {}, id = null) {
+    addNote(title = 'New Note', content = '', x = null, y = null, width = 230, height = 200, style = {}, id = null) {
         if (!this.activeSection) return;
 
         const sectionContent = document.querySelector(`.section-content[data-section-id="${this.activeSection.id}"]`);
@@ -1446,8 +1446,8 @@ class NotesApp {
             const dx = e.clientX - this.resizingNote.startX;
             const dy = e.clientY - this.resizingNote.startY;
 
-            const newWidth = Math.max(250, this.resizingNote.startWidth + dx);
-            const newHeight = Math.max(150, this.resizingNote.startHeight + dy);
+            const newWidth = Math.max(150, this.resizingNote.startWidth + dx); /* Mínimo de 130px */
+            const newHeight = Math.max(85, this.resizingNote.startHeight + dy); /* Mínimo de 2 linhas */
 
             this.resizingNote.element.style.width = `${newWidth}px`;
             this.resizingNote.element.style.height = `${newHeight}px`;
