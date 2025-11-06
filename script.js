@@ -33,6 +33,8 @@ class NotesApp {
         this.setupKeyboardShortcuts();
         this.createToolbar();
         this.initAutoSave();
+        this.updateLayoutPositions();
+        window.addEventListener('resize', () => this.updateLayoutPositions());
 
         if (!this._listenersSetup) {
             this.setupEventListeners();
@@ -91,7 +93,13 @@ class NotesApp {
             const popup = wrapper.querySelector('.info-popup');
             const btn = wrapper.querySelector('.info-btn');
 
-            window.hidePopup();
+            // Fecha outros popups abertos
+            const allPopups = document.querySelectorAll('.info-popup');
+            allPopups.forEach(p => {
+                if (p !== popup) {
+                    p.style.display = "none";
+                }
+            });
 
             if (btn.dataset.info) {
                 popup.textContent = btn.dataset.info;
@@ -132,11 +140,26 @@ class NotesApp {
             allPopups.forEach(p => p.style.display = "none");
         };
 
+        window.togglePopup = function (wrapper, event) {
+            if (event) {
+                event.stopPropagation(); // Previne que o evento de click fora seja disparado
+            }
+            const popup = wrapper.querySelector('.info-popup');
+            const isVisible = popup.style.display === "block" || window.getComputedStyle(popup).display === "block";
+            
+            if (isVisible) {
+                window.hidePopup();
+            } else {
+                window.showPopup(wrapper);
+            }
+        };
+
         document.addEventListener('click', function (event) {
             const isInfoBtn = event.target.closest('.info-btn');
             const isInfoPopup = event.target.closest('.info-popup');
+            const isInfoWrapper = event.target.closest('.info-wrapper');
 
-            if (!isInfoBtn && !isInfoPopup) {
+            if (!isInfoBtn && !isInfoPopup && !isInfoWrapper) {
                 window.hidePopup();
             }
         });
@@ -169,21 +192,8 @@ class NotesApp {
         `;
 
         document.addEventListener('DOMContentLoaded', function () {
-            const infoBtns = document.querySelectorAll('.info-btn');
-
-            infoBtns.forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const wrapper = this.closest('.info-wrapper');
-                    window.showPopup(wrapper);
-                });
-
-                btn.addEventListener('touchstart', function (e) {
-                    e.stopPropagation();
-                    const wrapper = this.closest('.info-wrapper');
-                    window.showPopup(wrapper);
-                }, { passive: true });
-            });
+            // Event listeners movidos para o HTML via onclick
+            // O popup agora é controlado via togglePopup() e fecha ao clicar fora
         });
 
         document.addEventListener('focusout', (event) => {
@@ -1136,6 +1146,9 @@ class NotesApp {
         parentElement.insertBefore(toolbarElement, sectionsContent);
 
         this.setupToolbarEvents(toolbarElement);
+        
+        // Update layout positions after toolbar is created
+        setTimeout(() => this.updateLayoutPositions(), 0);
     }
 
     setupToolbarEvents(toolbar) {
@@ -1601,6 +1614,32 @@ class NotesApp {
     clearSelectedNotes() {
         this.selectedNotes.forEach(n => n.classList.remove('selected'));
         this.selectedNotes.clear();
+    }
+
+    updateLayoutPositions() {
+        const header = document.querySelector('.header');
+        const sectionsTabs = document.getElementById('sections-tabs');
+        const sectionsContent = document.getElementById('sections-content');
+        const noteActions = document.querySelector('.note-actions');
+        
+        if (header && sectionsTabs && sectionsContent) {
+            const headerHeight = header.offsetHeight;
+            const tabsHeight = sectionsTabs.offsetHeight || 40;
+            const noteActionsHeight = noteActions ? noteActions.offsetHeight : 18;
+            
+            // Position tabs below header
+            sectionsTabs.style.top = `${headerHeight}px`;
+            
+            // Position note-actions below tabs
+            const noteActionsTop = headerHeight + tabsHeight;
+            if (noteActions) {
+                noteActions.style.top = `${noteActionsTop}px`;
+            }
+            
+            // Calculate total height needed for sections-content
+            const totalHeight = headerHeight + tabsHeight + noteActionsHeight + 20; // 20px extra spacing
+            sectionsContent.style.paddingTop = `${totalHeight}px`;
+        }
     }
 
     initAutoSave() {
