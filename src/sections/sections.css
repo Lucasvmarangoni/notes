@@ -1,0 +1,82 @@
+/* 
+Copyright (c) 2025 Lucas Vazzoller Marangoni
+Licensed under Creative Commons BY-NC 4.0
+See the LICENSE file for more information. 
+*/
+
+#sections-container {
+    width: 100%;
+    margin-top: 0;    
+}
+
+#sections-tabs {
+    display: flex;
+    overflow-x: auto;
+    background-color: #252629;
+    border-radius: 5px 5px 0 0;
+    width: 100%;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0px; /* Default, will be updated by JS */
+    left: 0;
+    right: 0;
+    z-index: 9;
+    padding: 0px 2px;
+}
+
+.section-tab {
+    padding: 5px 20px;
+    background-color: #28292c;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+    cursor: pointer;
+    position: relative;
+}
+
+.section-tab.active {
+    background-color: #202124;
+    color: #ffffff;
+}
+
+.section-tab .close-tab {
+    margin-left: 8px;
+    font-size: 12px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.section-tab .close-tab:hover {
+    opacity: 1;
+}
+
+.section-tab .rename-tab {
+    margin-left: 8px;
+    font-size: 12px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.section-tab .rename-tab:hover {
+    opacity: 1;
+}
+
+#sections-content {
+    border-radius: 0 0 5px 5px;
+    padding: 2px;   
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.section-content {
+    display: none;
+    position: relative;
+    min-height: 100%;
+    min-width: 100%;
+}
+
+.section-content.active {
+    display: block;
+}
+

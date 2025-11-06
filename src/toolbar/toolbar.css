@@ -1,0 +1,104 @@
+/* 
+Copyright (c) 2025 Lucas Vazzoller Marangoni
+Licensed under Creative Commons BY-NC 4.0
+See the LICENSE file for more information. 
+*/
+
+.note-actions {
+    display: flex;
+    align-items: center;
+    background-color: #202124;
+    padding: 12px 3px;
+    max-height: 18px;
+    position: fixed;
+    top: auto;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 11;
+    box-sizing: border-box;    
+}
+
+.note-toolbar {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.note-toolbar button {
+    background-color: #5f6368;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 8px;
+    min-height: 17px;
+    min-width: 17px;
+    height: 17px;
+    width: 17px;
+    padding: 0;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.note-toolbar .color-picker {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    min-height: 17px;
+    min-width: 17px;
+    height: 17px;
+    width: 17px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.note-toolbar .color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 3px;
+}
+
+.note-toolbar .color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.note-toolbar .color-picker::-moz-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.note-toolbar:hover .color-picker:hover {
+    filter: brightness(100%);
+}
+
+.color-preset-btn {
+    filter: brightness(60%);
+    border: 20px solid #202124;
+    border-radius: 5px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.color-preset-btn:hover {
+    filter: brightness(100%);
+}
+
+/* Responsive */
+@media screen and (max-width: 480px) {
+    .note-actions {
+        padding: 3px;
+    }
+
+    .note-toolbar {
+        gap: 3px;
+    }
+}
+
