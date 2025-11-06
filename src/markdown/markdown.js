@@ -218,9 +218,7 @@ export class MarkdownProcessor {
                         checkboxItem.appendChild(label);
                         fragment.appendChild(checkboxItem);
                         lastCreatedElement = label;
-                        if (!isLastLine) {
-                            fragment.appendChild(document.createElement('br'));
-                        }
+                        // Não adicionar <br> entre checkboxes - o margin do CSS já fornece espaçamento
                     }
                     // Regular text
                     else {
