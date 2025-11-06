@@ -363,11 +363,20 @@ export class NotesManager {
 
     setupGlobalEventListeners() {
         document.addEventListener('mouseup', () => {
-            this.app.draggingNote = null;
-            this.app.resizingNote = null;
+            // Verificar se estava arrastando ou redimensionando uma nota individual
+            if (this.app.draggingNote && this.app.autoSaveEnabled) {
+                this.storageManager.saveNotesToLocalStorage(true);
+            }
+            if (this.app.resizingNote && this.app.autoSaveEnabled) {
+                this.storageManager.saveNotesToLocalStorage(true);
+            }
+            // Verificar se estava arrastando múltiplas notas
             if (this.multiDragStartPositions && this.app.autoSaveEnabled) {
                 this.storageManager.saveNotesToLocalStorage(true);
             }
+            
+            this.app.draggingNote = null;
+            this.app.resizingNote = null;
             this.multiDragStartPositions = null;
         });
 
