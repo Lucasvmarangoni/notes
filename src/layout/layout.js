@@ -30,7 +30,7 @@ export class LayoutManager {
             }
             
             // Calculate total height needed for sections-content
-            const totalHeight = headerHeight + tabsHeight + noteActionsHeight + 20; // 20px extra spacing
+            const totalHeight = headerHeight + tabsHeight + noteActionsHeight + 0; // 20px extra spacing
             sectionsContent.style.paddingTop = `${totalHeight}px`;
         }
     }
