@@ -59,6 +59,9 @@ export class StorageManager {
         const wasAutoSaveEnabled = this.app.autoSaveEnabled;
         this.app.autoSaveEnabled = false;
 
+        // Salvar a section ativa atual antes de recarregar
+        const currentActiveSectionId = this.app.activeSectionId;
+
         if (savedSections.length === 0) {
             if (!silent) {
                 this.app.showNotification('No notes found in local storage', 'error-message');
@@ -72,8 +75,9 @@ export class StorageManager {
         document.getElementById('sections-content').innerHTML = '';
         this.app.sections = [];
 
+        // Carregar sections sem definir nenhuma como ativa
         savedSections.forEach(section => {
-            const newSection = this.app.sectionsManager.addSection(section.title, section.id);
+            const newSection = this.app.sectionsManager.addSection(section.title, section.id, false);
             section.notes.forEach(note => {
                 this.app.notesManager.addNote(
                     note.title,
@@ -83,7 +87,8 @@ export class StorageManager {
                     note.width,
                     note.height,
                     note.style,
-                    note.id
+                    note.id,
+                    section.id  // Passar o sectionId para garantir que a nota seja adicionada à section correta
                 );
 
                 if (note.currentColor) {
@@ -94,6 +99,20 @@ export class StorageManager {
                 }
             });
         });
+
+        // Restaurar a section ativa anterior se ela ainda existir
+        if (currentActiveSectionId !== null && currentActiveSectionId !== undefined) {
+            const sectionStillExists = this.app.sections.some(s => s.id === currentActiveSectionId);
+            if (sectionStillExists) {
+                this.app.sectionsManager.setActiveSection(currentActiveSectionId);
+            } else if (this.app.sections.length > 0) {
+                // Se a section anterior não existe mais, ativar a primeira
+                this.app.sectionsManager.setActiveSection(this.app.sections[0].id);
+            }
+        } else if (this.app.sections.length > 0) {
+            // Se não havia section ativa, ativar a primeira
+            this.app.sectionsManager.setActiveSection(this.app.sections[0].id);
+        }
 
         if (!silent) {
             this.app.showNotification('Notes loaded successfully', 'success-message');
@@ -142,14 +161,17 @@ export class StorageManager {
                     return;
                 }
 
+                // Salvar a section ativa atual antes de importar
+                const currentActiveSectionId = this.app.activeSectionId;
+
                 // Clear current notes
                 document.getElementById('sections-tabs').innerHTML = '';
                 document.getElementById('sections-content').innerHTML = '';
                 this.app.sections = [];
 
-                // Import sections and notes
+                // Import sections and notes sem definir nenhuma como ativa
                 importedSections.forEach(section => {
-                    const newSection = this.app.sectionsManager.addSection(section.title, section.id);
+                    const newSection = this.app.sectionsManager.addSection(section.title, section.id, false);
                     section.notes.forEach(note => {
                         this.app.notesManager.addNote(
                             note.title,
@@ -159,10 +181,23 @@ export class StorageManager {
                             note.width,
                             note.height,
                             note.style,
-                            note.id
+                            note.id,
+                            section.id  // Passar o sectionId para garantir que a nota seja adicionada à section correta
                         );
                     });
                 });
+
+                // Restaurar a section ativa anterior se ela existir no import, senão ativar a primeira
+                if (currentActiveSectionId !== null && currentActiveSectionId !== undefined) {
+                    const sectionExists = this.app.sections.some(s => s.id === currentActiveSectionId);
+                    if (sectionExists) {
+                        this.app.sectionsManager.setActiveSection(currentActiveSectionId);
+                    } else if (this.app.sections.length > 0) {
+                        this.app.sectionsManager.setActiveSection(this.app.sections[0].id);
+                    }
+                } else if (this.app.sections.length > 0) {
+                    this.app.sectionsManager.setActiveSection(this.app.sections[0].id);
+                }
 
                 this.app.showNotification('Notes imported successfully', 'success-message');
 

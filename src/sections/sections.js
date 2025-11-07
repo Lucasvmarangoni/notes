@@ -12,7 +12,7 @@ export class SectionsManager {
         this.addSection('Section', 1);
     }
 
-    addSection(title = 'New Section', id = null) {
+    addSection(title = 'New Section', id = null, setAsActive = true) {
         const numericIds = this.app.sections
             .map(s => Number(s.id))
             .filter(n => !Number.isNaN(n) && Number.isFinite(n));
@@ -61,7 +61,10 @@ export class SectionsManager {
             notes: []
         };
         this.app.sections.push(section);
-        this.setActiveSection(section.id);
+        
+        if (setAsActive) {
+            this.setActiveSection(section.id);
+        }
 
         return section;
     }

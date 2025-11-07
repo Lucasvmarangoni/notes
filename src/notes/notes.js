@@ -13,10 +13,20 @@ export class NotesManager {
         this.multiDragStartPositions = null;
     }
 
-    addNote(title = 'New Note', content = '', x = null, y = null, width = 230, height = 200, style = {}, id = null) {
-        if (!this.app.activeSection) return;
+    addNote(title = 'New Note', content = '', x = null, y = null, width = 230, height = 200, style = {}, id = null, sectionId = null) {
+        // Se sectionId for fornecido, usar essa section; caso contrário, usar a section ativa
+        const targetSectionId = sectionId !== null ? sectionId : (this.app.activeSection ? this.app.activeSection.id : null);
+        
+        if (targetSectionId === null || targetSectionId === undefined) return;
 
-        const sectionContent = document.querySelector(`.section-content[data-section-id="${this.app.activeSection.id}"]`);
+        // Converter para Number para garantir comparação correta (os IDs podem ser números ou strings)
+        const targetSectionIdNum = Number(targetSectionId);
+        const targetSection = this.app.sections.find(s => Number(s.id) === targetSectionIdNum);
+        if (!targetSection) return;
+
+        const sectionContent = document.querySelector(`.section-content[data-section-id="${targetSectionId}"]`);
+        if (!sectionContent) return;
+
         const noteId = id || Date.now() + Math.random();
 
         if (x === null || y === null) {
@@ -73,7 +83,7 @@ export class NotesManager {
             style
         };
 
-        this.app.activeSection.notes.push(note);
+        targetSection.notes.push(note);
 
         if (this.app.autoSaveEnabled) {
             this.storageManager.saveNotesToLocalStorage(true);

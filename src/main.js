@@ -652,8 +652,8 @@ class NotesApp {
         return this.sectionsManager.addSection(title, id);
     }
 
-    addNote(title, content, x, y, width, height, style, id) {
-        return this.notesManager.addNote(title, content, x, y, width, height, style, id);
+    addNote(title, content, x, y, width, height, style, id, sectionId) {
+        return this.notesManager.addNote(title, content, x, y, width, height, style, id, sectionId);
     }
 }
 
