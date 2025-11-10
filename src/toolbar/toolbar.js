@@ -150,23 +150,56 @@ export class ToolbarManager {
             }
         });
 
-        // Delete the selected content
-        range.deleteContents();
+        // Convert markdown to HTML directly and insert in one operation
+        // This ensures it's recorded as a single undo operation
+        const html = this.markdownProcessor.markdownToHTML(markdownText);
         
-        // Insert the markdown text
-        const textNode = document.createTextNode(markdownText);
-        range.insertNode(textNode);
-        
-        // Move cursor to end of inserted text
-        const newRange = document.createRange();
-        newRange.setStartAfter(textNode);
-        newRange.collapse(true);
+        // Select the range and replace with HTML in one operation (records in history)
         selection.removeAllRanges();
-        selection.addRange(newRange);
-
-        // Process markdown to convert to list
+        selection.addRange(range);
+        document.execCommand('insertHTML', false, html);
+        
+        // Move cursor to end of inserted content
         setTimeout(() => {
-            this.markdownProcessor.processMarkdown(noteContent);
+            const newSelection = window.getSelection();
+            if (newSelection.rangeCount > 0) {
+                const newRange = newSelection.getRangeAt(0);
+                // Find last list item or checkbox
+                const container = newRange.commonAncestorContainer;
+                const parent = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
+                const lists = noteContent.querySelectorAll('ul, ol');
+                const checkboxes = noteContent.querySelectorAll('.checkbox-item');
+                
+                let targetElement = null;
+                if (lists.length > 0) {
+                    const lastList = lists[lists.length - 1];
+                    const items = lastList.querySelectorAll('li');
+                    if (items.length > 0) {
+                        targetElement = items[items.length - 1];
+                    }
+                } else if (checkboxes.length > 0) {
+                    targetElement = checkboxes[checkboxes.length - 1].querySelector('span');
+                }
+                
+                if (targetElement) {
+                    const finalRange = document.createRange();
+                    if (targetElement.tagName === 'SPAN') {
+                        finalRange.selectNodeContents(targetElement);
+                        finalRange.collapse(false);
+                    } else {
+                        if (targetElement.firstChild && targetElement.firstChild.nodeType === Node.TEXT_NODE) {
+                            const textNode = targetElement.firstChild;
+                            finalRange.setStart(textNode, textNode.textContent.length);
+                            finalRange.setEnd(textNode, textNode.textContent.length);
+                        } else {
+                            finalRange.selectNodeContents(targetElement);
+                            finalRange.collapse(false);
+                        }
+                    }
+                    newSelection.removeAllRanges();
+                    newSelection.addRange(finalRange);
+                }
+            }
         }, 0);
     }
 }

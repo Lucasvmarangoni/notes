@@ -98,7 +98,81 @@ export class MarkdownProcessor {
         });
     }
 
-    processMarkdown(element) {
+    // Convert markdown text to HTML string
+    markdownToHTML(text) {
+        const lines = text.split(/\r?\n/);
+        let html = '';
+        let currentList = null;
+        let listType = null;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmed = line.trim();
+            const isLastLine = i === lines.length - 1;
+
+            // Bullet points
+            if (trimmed.startsWith('* ') && trimmed.length > 2) {
+                if (listType !== 'bullet') {
+                    if (currentList) html += currentList;
+                    currentList = '<ul>';
+                    listType = 'bullet';
+                }
+                const textContent = trimmed.substring(2).trim();
+                // Escape HTML in text content
+                const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                currentList += `<li>${escapedText}</li>`;
+            }
+            // Numbered lists
+            else if (trimmed.match(/^\d+\.\s/) && trimmed.length > 3) {
+                if (listType !== 'numbered') {
+                    if (currentList) html += currentList;
+                    currentList = '<ol>';
+                    listType = 'numbered';
+                }
+                const textContent = trimmed.replace(/^\d+\.\s/, '').trim();
+                // Escape HTML in text content
+                const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                currentList += `<li>${escapedText}</li>`;
+            }
+            // Checkboxes
+            else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                if (currentList) {
+                    html += currentList + (listType === 'bullet' ? '</ul>' : '</ol>');
+                    currentList = null;
+                    listType = null;
+                }
+                const textContent = trimmed.substring(2).trim();
+                // Escape HTML in text content
+                const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                html += `<div class="checkbox-item"><input type="checkbox" class="markdown-checkbox"><span>${escapedText}</span></div>`;
+            }
+            // Regular text
+            else {
+                if (currentList) {
+                    html += currentList + (listType === 'bullet' ? '</ul>' : '</ol>');
+                    currentList = null;
+                    listType = null;
+                }
+                if (line.length > 0 || i === 0) {
+                    // Escape HTML in text content
+                    const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    html += escapedLine;
+                }
+                if (!isLastLine) {
+                    html += '<br>';
+                }
+            }
+        }
+
+        // Append any remaining list
+        if (currentList) {
+            html += currentList + (listType === 'bullet' ? '</ul>' : '</ol>');
+        }
+
+        return html;
+    }
+
+    processMarkdown(element, useHistory = false) {
         // Don't process if element is already a list item or checkbox
         if (element.closest('li') || element.closest('.checkbox-item')) {
             return null;
@@ -158,98 +232,163 @@ export class MarkdownProcessor {
             }
 
             if (hasMarkdown) {
-                const fragment = document.createDocumentFragment();
-                let currentList = null;
-                let listType = null;
+                if (useHistory) {
+                    // Use execCommand to record in history
+                    const selection = window.getSelection();
+                    const range = document.createRange();
+                    range.selectNode(textNode);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    
+                    const html = this.markdownToHTML(text);
+                    document.execCommand('insertHTML', false, html);
+                    
+                    // Find the last created element for cursor positioning
+                    setTimeout(() => {
+                        const newSelection = window.getSelection();
+                        if (newSelection.rangeCount > 0) {
+                            const newRange = newSelection.getRangeAt(0);
+                            const container = newRange.commonAncestorContainer;
+                            const parent = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
+                            
+                            // Find last list item or checkbox
+                            const lists = element.querySelectorAll('ul, ol');
+                            let lastLi = null;
+                            if (lists.length > 0) {
+                                const lastList = lists[lists.length - 1];
+                                const items = lastList.querySelectorAll('li');
+                                if (items.length > 0) {
+                                    lastLi = items[items.length - 1];
+                                }
+                            }
+                            
+                            const checkboxes = element.querySelectorAll('.checkbox-item');
+                            let lastCheckbox = null;
+                            if (checkboxes.length > 0) {
+                                lastCheckbox = checkboxes[checkboxes.length - 1];
+                            }
+                            
+                            const targetElement = lastLi || lastCheckbox?.querySelector('span');
+                            if (targetElement) {
+                                const finalRange = document.createRange();
+                                if (targetElement.tagName === 'SPAN') {
+                                    if (targetElement.firstChild && targetElement.firstChild.nodeType === Node.TEXT_NODE) {
+                                        const textNode = targetElement.firstChild;
+                                        finalRange.setStart(textNode, textNode.textContent.length);
+                                        finalRange.setEnd(textNode, textNode.textContent.length);
+                                    } else {
+                                        finalRange.selectNodeContents(targetElement);
+                                        finalRange.collapse(false);
+                                    }
+                                } else {
+                                    if (targetElement.firstChild && targetElement.firstChild.nodeType === Node.TEXT_NODE) {
+                                        const textNode = targetElement.firstChild;
+                                        finalRange.setStart(textNode, textNode.textContent.length);
+                                        finalRange.setEnd(textNode, textNode.textContent.length);
+                                    } else {
+                                        finalRange.selectNodeContents(targetElement);
+                                        finalRange.collapse(false);
+                                    }
+                                }
+                                newSelection.removeAllRanges();
+                                newSelection.addRange(finalRange);
+                            }
+                        }
+                    }, 0);
+                } else {
+                    // Original DOM manipulation (for backward compatibility)
+                    const fragment = document.createDocumentFragment();
+                    let currentList = null;
+                    let listType = null;
 
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-                    const trimmed = line.trim();
-                    const isLastLine = i === lines.length - 1;
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        const trimmed = line.trim();
+                        const isLastLine = i === lines.length - 1;
 
-                    // Bullet points
-                    if (trimmed.startsWith('* ') && trimmed.length > 2) {
-                        if (listType !== 'bullet') {
-                            if (currentList) fragment.appendChild(currentList);
-                            currentList = document.createElement('ul');
-                            listType = 'bullet';
+                        // Bullet points
+                        if (trimmed.startsWith('* ') && trimmed.length > 2) {
+                            if (listType !== 'bullet') {
+                                if (currentList) fragment.appendChild(currentList);
+                                currentList = document.createElement('ul');
+                                listType = 'bullet';
+                            }
+                            const li = document.createElement('li');
+                            const textContent = trimmed.substring(2).trim();
+                            if (textContent) {
+                                li.textContent = textContent;
+                            }
+                            currentList.appendChild(li);
+                            lastCreatedElement = li;
                         }
-                        const li = document.createElement('li');
-                        const textContent = trimmed.substring(2).trim();
-                        if (textContent) {
-                            li.textContent = textContent;
+                        // Numbered lists
+                        else if (trimmed.match(/^\d+\.\s/) && trimmed.length > 3) {
+                            if (listType !== 'numbered') {
+                                if (currentList) fragment.appendChild(currentList);
+                                currentList = document.createElement('ol');
+                                listType = 'numbered';
+                            }
+                            const li = document.createElement('li');
+                            const textContent = trimmed.replace(/^\d+\.\s/, '').trim();
+                            if (textContent) {
+                                li.textContent = textContent;
+                            }
+                            currentList.appendChild(li);
+                            lastCreatedElement = li;
                         }
-                        currentList.appendChild(li);
-                        lastCreatedElement = li;
+                        // Checkboxes
+                        else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                            if (currentList) {
+                                fragment.appendChild(currentList);
+                                currentList = null;
+                                listType = null;
+                            }
+                            const checkboxItem = document.createElement('div');
+                            checkboxItem.className = 'checkbox-item';
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.className = 'markdown-checkbox';
+                            checkboxItem.appendChild(checkbox);
+                            const label = document.createElement('span');
+                            const textContent = trimmed.substring(2).trim();
+                            if (textContent) {
+                                label.textContent = textContent;
+                            }
+                            checkboxItem.appendChild(label);
+                            fragment.appendChild(checkboxItem);
+                            lastCreatedElement = label;
+                        }
+                        // Regular text
+                        else {
+                            if (currentList) {
+                                fragment.appendChild(currentList);
+                                currentList = null;
+                                listType = null;
+                            }
+                            if (line.length > 0 || i === 0) {
+                                fragment.appendChild(document.createTextNode(line));
+                            }
+                            if (!isLastLine) {
+                                fragment.appendChild(document.createElement('br'));
+                            }
+                        }
                     }
-                    // Numbered lists
-                    else if (trimmed.match(/^\d+\.\s/) && trimmed.length > 3) {
-                        if (listType !== 'numbered') {
-                            if (currentList) fragment.appendChild(currentList);
-                            currentList = document.createElement('ol');
-                            listType = 'numbered';
-                        }
-                        const li = document.createElement('li');
-                        const textContent = trimmed.replace(/^\d+\.\s/, '').trim();
-                        if (textContent) {
-                            li.textContent = textContent;
-                        }
-                        currentList.appendChild(li);
-                        lastCreatedElement = li;
-                    }
-                    // Checkboxes
-                    else if (trimmed.startsWith('> ') && trimmed.length > 2) {
-                        if (currentList) {
-                            fragment.appendChild(currentList);
-                            currentList = null;
-                            listType = null;
-                        }
-                        const checkboxItem = document.createElement('div');
-                        checkboxItem.className = 'checkbox-item';
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.className = 'markdown-checkbox';
-                        checkboxItem.appendChild(checkbox);
-                        const label = document.createElement('span');
-                        const textContent = trimmed.substring(2).trim();
-                        if (textContent) {
-                            label.textContent = textContent;
-                        }
-                        checkboxItem.appendChild(label);
-                        fragment.appendChild(checkboxItem);
-                        lastCreatedElement = label;
-                        // Não adicionar <br> entre checkboxes - o margin do CSS já fornece espaçamento
-                    }
-                    // Regular text
-                    else {
-                        if (currentList) {
-                            fragment.appendChild(currentList);
-                            currentList = null;
-                            listType = null;
-                        }
-                        if (line.length > 0 || i === 0) {
-                            fragment.appendChild(document.createTextNode(line));
-                        }
-                        if (!isLastLine) {
-                            fragment.appendChild(document.createElement('br'));
-                        }
-                    }
-                }
 
-                // Append any remaining list
-                if (currentList) {
-                    fragment.appendChild(currentList);
-                }
+                    // Append any remaining list
+                    if (currentList) {
+                        fragment.appendChild(currentList);
+                    }
 
-                // Replace the text node with the fragment
-                if (textNode.parentNode) {
-                    textNode.parentNode.replaceChild(fragment, textNode);
+                    // Replace the text node with the fragment
+                    if (textNode.parentNode) {
+                        textNode.parentNode.replaceChild(fragment, textNode);
+                    }
                 }
             }
         });
 
-        // Position cursor at the end of the last created element
-        if (lastCreatedElement) {
+        // Position cursor at the end of the last created element (only for non-history mode)
+        if (lastCreatedElement && !useHistory) {
             setTimeout(() => {
                 const selection = window.getSelection();
                 if (selection.rangeCount > 0) {
