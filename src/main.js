@@ -128,6 +128,7 @@ class NotesApp {
                     <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
                     <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
                     <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>
+                    <p><strong>Sections Scroll</strong>: When sections exceed the screen space, you can click and drag anywhere in the area to scroll horizontally.</p>   
                     <p><strong>Keyboard Shortcuts</strong>:</p>
                     <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
                     <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>
@@ -136,7 +137,7 @@ class NotesApp {
                     <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>    
                     <kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting<br>
                     <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously<br>
-                    <kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Backspace</kbd> on empty items to exit the list.<br>                               
+                    <kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Enter</kbd> on empty items to exit the list.<br>                               
                 </div>
             `;
 

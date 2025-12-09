@@ -6,6 +6,21 @@ export class SectionsManager {
     constructor(app) {
         this.app = app;
         this.currentRenamingSection = null;
+        this.setupDragToScrollForExistingTabs();
+    }
+
+    setupDragToScrollForExistingTabs() {
+        // Setup drag-to-scroll for tabs that might be loaded from storage
+        // This will be called after DOM is ready
+        setTimeout(() => {
+            const tabsContainer = document.getElementById('sections-tabs');
+            if (tabsContainer) {
+                const tabs = tabsContainer.querySelectorAll('.section-tab');
+                tabs.forEach(tab => {
+                    this.setupDragToScroll(tab, tabsContainer);
+                });
+            }
+        }, 100);
     }
 
     createDefaultSection() {
@@ -33,14 +48,23 @@ export class SectionsManager {
         contentElement.classList.add('section-content');
         contentElement.dataset.sectionId = sectionId;
 
-        document.getElementById('sections-tabs').appendChild(tabElement);
+        const tabsContainer = document.getElementById('sections-tabs');
+        tabsContainer.appendChild(tabElement);
         document.getElementById('sections-content').appendChild(contentElement);
 
+        // Setup drag-to-scroll functionality
+        this.setupDragToScroll(tabElement, tabsContainer);
+
         tabElement.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('close-tab') && !e.target.classList.contains('rename-tab')) {
+            // Only activate section if this wasn't a drag operation
+            if (!tabElement.dataset.wasDragging && 
+                !e.target.classList.contains('close-tab') && 
+                !e.target.classList.contains('rename-tab')) {
                 const sid = Number(tabElement.dataset.sectionId);
                 this.setActiveSection(sid);
             }
+            // Reset flag
+            delete tabElement.dataset.wasDragging;
         });
 
         tabElement.querySelector('.close-tab').addEventListener('click', (e) => {
@@ -67,6 +91,96 @@ export class SectionsManager {
         }
 
         return section;
+    }
+
+    setupDragToScroll(tabElement, tabsContainer) {
+        // Check if drag-to-scroll is already set up for this tab
+        if (tabElement.dataset.dragScrollSetup === 'true') {
+            return;
+        }
+        tabElement.dataset.dragScrollSetup = 'true';
+
+        let isDragging = false;
+        let startX = 0;
+        let scrollLeft = 0;
+        let hasMoved = false;
+
+        const handleMouseDown = (e) => {
+            // Don't start drag if clicking on buttons
+            if (e.target.classList.contains('close-tab') || e.target.classList.contains('rename-tab')) {
+                return;
+            }
+
+            isDragging = true;
+            hasMoved = false;
+            startX = e.pageX - tabsContainer.offsetLeft;
+            scrollLeft = tabsContainer.scrollLeft;
+            tabElement.style.cursor = 'grabbing';
+            tabsContainer.style.cursor = 'grabbing';
+            tabsContainer.style.userSelect = 'none';
+        };
+
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+
+            const x = e.pageX - tabsContainer.offsetLeft;
+            const walk = Math.abs(x - startX);
+            
+            // Only start dragging if moved more than 5px
+            if (walk > 5) {
+                hasMoved = true;
+                const scrollAmount = (x - startX) * 2; // Scroll speed multiplier
+                tabsContainer.scrollLeft = scrollLeft - scrollAmount;
+            }
+        };
+
+        const handleMouseUp = (e) => {
+            if (isDragging) {
+                isDragging = false;
+                tabElement.style.cursor = 'pointer';
+                tabsContainer.style.cursor = 'default';
+                tabsContainer.style.userSelect = '';
+                
+                // Mark if we dragged so click handler knows to ignore it
+                if (hasMoved) {
+                    tabElement.dataset.wasDragging = 'true';
+                }
+            }
+        };
+
+        const handleTouchStart = (e) => {
+            if (e.target.classList.contains('close-tab') || e.target.classList.contains('rename-tab')) {
+                return;
+            }
+            isDragging = true;
+            hasMoved = false;
+            startX = e.touches[0].pageX - tabsContainer.offsetLeft;
+            scrollLeft = tabsContainer.scrollLeft;
+        };
+
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            const x = e.touches[0].pageX - tabsContainer.offsetLeft;
+            const walk = Math.abs(x - startX);
+            
+            if (walk > 5) {
+                hasMoved = true;
+                const scrollAmount = (x - startX) * 2;
+                tabsContainer.scrollLeft = scrollLeft - scrollAmount;
+            }
+        };
+
+        const handleTouchEnd = () => {
+            isDragging = false;
+            hasMoved = false;
+        };
+
+        tabElement.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        tabElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.addEventListener('touchmove', handleTouchMove, { passive: true });
+        document.addEventListener('touchend', handleTouchEnd);
     }
 
     setActiveSection(sectionId) {

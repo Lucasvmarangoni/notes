@@ -225,6 +225,53 @@ export class NotesManager {
                     ? container.parentElement 
                     : container;
                 const li = parentElement?.closest('li');
+                const list = parentElement?.closest('ul, ol');
+
+                // Handle backspace when inside a list but NOT inside an li
+                // This happens when content is directly inside ul/ol (like the example with <b>Ex</b>)
+                if (list && !li && selection.isCollapsed) {
+                    // Check if cursor is at the start of the content
+                    const isAtStart = this.isCursorAtElementStart(parentElement, range, list);
+                    
+                    if (isAtStart) {
+                        e.preventDefault();
+                        
+                        // Move the content element outside the list
+                        const elementToMove = this.getTopLevelElementInList(parentElement, list);
+                        if (elementToMove) {
+                            const listParent = list.parentNode;
+                            const listNextSibling = list.nextSibling;
+                            
+                            // Move element before the list
+                            listParent.insertBefore(elementToMove, list);
+                            
+                            // Place cursor at start of moved element
+                            const newRange = document.createRange();
+                            if (elementToMove.nodeType === Node.TEXT_NODE) {
+                                newRange.setStart(elementToMove, 0);
+                                newRange.setEnd(elementToMove, 0);
+                            } else {
+                                // Find first text node in element
+                                const walker = document.createTreeWalker(
+                                    elementToMove,
+                                    NodeFilter.SHOW_TEXT,
+                                    null
+                                );
+                                const firstTextNode = walker.nextNode();
+                                if (firstTextNode) {
+                                    newRange.setStart(firstTextNode, 0);
+                                    newRange.setEnd(firstTextNode, 0);
+                                } else {
+                                    newRange.selectNodeContents(elementToMove);
+                                    newRange.collapse(true);
+                                }
+                            }
+                            selection.removeAllRanges();
+                            selection.addRange(newRange);
+                        }
+                        return;
+                    }
+                }
 
                 if (li) {
                     const liText = li.textContent.trim();

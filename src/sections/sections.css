@@ -12,6 +12,7 @@ See the LICENSE file for more information.
 #sections-tabs {
     display: flex;
     overflow-x: auto;
+    overflow-y: hidden;
     background-color: #252629;
     border-radius: 5px 5px 0 0;
     width: 100%;
@@ -22,10 +23,19 @@ See the LICENSE file for more information.
     right: 0;
     z-index: 9;
     padding: 0px 2px;
+    scroll-behavior: smooth;
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+#sections-tabs::-webkit-scrollbar {
+    display: none;
 }
 
 .section-tab {
-    padding: 5px 20px;
+    padding: 5px 12px;
     background-color: #28292c;
     color: #e0e0e0;
     border: none;
@@ -33,6 +43,9 @@ See the LICENSE file for more information.
     margin-right: 5px;
     cursor: pointer;
     position: relative;
+    flex-shrink: 0;
+    white-space: nowrap;
+    user-select: none;
 }
 
 .section-tab.active {
@@ -41,10 +54,11 @@ See the LICENSE file for more information.
 }
 
 .section-tab .close-tab {
-    margin-left: 8px;
-    font-size: 12px;
+    margin-left: 5px;
+    font-size: 10px;
     opacity: 0.7;
     transition: opacity 0.2s;
+    display: inline-block;
 }
 
 .section-tab .close-tab:hover {
@@ -52,10 +66,11 @@ See the LICENSE file for more information.
 }
 
 .section-tab .rename-tab {
-    margin-left: 8px;
-    font-size: 12px;
+    margin-left: 5px;
+    font-size: 10px;
     opacity: 0.7;
     transition: opacity 0.2s;
+    display: inline-block;
 }
 
 .section-tab .rename-tab:hover {
