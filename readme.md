@@ -3,9 +3,9 @@ A minimalist and fast app for taking notes.
 
 It was created to quickly and offiline record information and gather data during pentests or bug bounty.
 
-## Me Contacts
-**Feel free to use and collaborate.**
+* **Feel free to use and collaborate.**
 
+## Contact
 **Email**: `lucasvm.ti@gmail.com`  
 **Discord**: `ldk6_`
 
