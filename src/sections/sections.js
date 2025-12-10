@@ -101,9 +101,12 @@ export class SectionsManager {
         tabElement.dataset.dragScrollSetup = 'true';
 
         let isDragging = false;
+        let isReordering = false;
         let startX = 0;
+        let startY = 0;
         let scrollLeft = 0;
         let hasMoved = false;
+        let dragType = null; // 'scroll' or 'reorder'
 
         const handleMouseDown = (e) => {
             // Don't start drag if clicking on buttons
@@ -112,8 +115,11 @@ export class SectionsManager {
             }
 
             isDragging = true;
+            isReordering = false;
             hasMoved = false;
-            startX = e.pageX - tabsContainer.offsetLeft;
+            dragType = null;
+            startX = e.pageX;
+            startY = e.pageY;
             scrollLeft = tabsContainer.scrollLeft;
             tabElement.style.cursor = 'grabbing';
             tabsContainer.style.cursor = 'grabbing';
@@ -123,14 +129,31 @@ export class SectionsManager {
         const handleMouseMove = (e) => {
             if (!isDragging) return;
 
-            const x = e.pageX - tabsContainer.offsetLeft;
-            const walk = Math.abs(x - startX);
-            
-            // Only start dragging if moved more than 5px
-            if (walk > 5) {
+            const deltaX = e.pageX - startX;
+            const deltaY = Math.abs(e.pageY - startY);
+            const deltaXAbs = Math.abs(deltaX);
+
+            // Determine drag type based on movement direction
+            if (dragType === null) {
+                if (deltaXAbs > 5 || deltaY > 5) {
+                    // If vertical movement is more significant, it's reordering
+                    if (deltaY > deltaXAbs) {
+                        dragType = 'reorder';
+                        isReordering = true;
+                        this.startReorderTab(tabElement, e);
+                    } else {
+                        dragType = 'scroll';
+                    }
+                }
+            }
+
+            if (dragType === 'scroll' && deltaXAbs > 5) {
                 hasMoved = true;
-                const scrollAmount = (x - startX) * 2; // Scroll speed multiplier
+                const scrollAmount = deltaX * 2; // Scroll speed multiplier
                 tabsContainer.scrollLeft = scrollLeft - scrollAmount;
+            } else if (dragType === 'reorder' && isReordering) {
+                hasMoved = true;
+                this.updateReorderTab(tabElement, e);
             }
         };
 
@@ -141,10 +164,17 @@ export class SectionsManager {
                 tabsContainer.style.cursor = 'default';
                 tabsContainer.style.userSelect = '';
                 
+                if (isReordering) {
+                    this.endReorderTab(tabElement, e);
+                    isReordering = false;
+                }
+                
                 // Mark if we dragged so click handler knows to ignore it
                 if (hasMoved) {
                     tabElement.dataset.wasDragging = 'true';
                 }
+                
+                dragType = null;
             }
         };
 
@@ -153,26 +183,52 @@ export class SectionsManager {
                 return;
             }
             isDragging = true;
+            isReordering = false;
             hasMoved = false;
-            startX = e.touches[0].pageX - tabsContainer.offsetLeft;
+            dragType = null;
+            startX = e.touches[0].pageX;
+            startY = e.touches[0].pageY;
             scrollLeft = tabsContainer.scrollLeft;
         };
 
         const handleTouchMove = (e) => {
             if (!isDragging) return;
-            const x = e.touches[0].pageX - tabsContainer.offsetLeft;
-            const walk = Math.abs(x - startX);
-            
-            if (walk > 5) {
+            const deltaX = e.touches[0].pageX - startX;
+            const deltaY = Math.abs(e.touches[0].pageY - startY);
+            const deltaXAbs = Math.abs(deltaX);
+
+            if (dragType === null) {
+                if (deltaXAbs > 5 || deltaY > 5) {
+                    if (deltaY > deltaXAbs) {
+                        dragType = 'reorder';
+                        isReordering = true;
+                        this.startReorderTab(tabElement, e.touches[0]);
+                    } else {
+                        dragType = 'scroll';
+                    }
+                }
+            }
+
+            if (dragType === 'scroll' && deltaXAbs > 5) {
                 hasMoved = true;
-                const scrollAmount = (x - startX) * 2;
+                const scrollAmount = deltaX * 2;
                 tabsContainer.scrollLeft = scrollLeft - scrollAmount;
+            } else if (dragType === 'reorder' && isReordering) {
+                hasMoved = true;
+                this.updateReorderTab(tabElement, e.touches[0]);
             }
         };
 
-        const handleTouchEnd = () => {
-            isDragging = false;
-            hasMoved = false;
+        const handleTouchEnd = (e) => {
+            if (isDragging) {
+                if (isReordering) {
+                    this.endReorderTab(tabElement, e.touches ? e.touches[0] : e.changedTouches[0]);
+                    isReordering = false;
+                }
+                isDragging = false;
+                hasMoved = false;
+                dragType = null;
+            }
         };
 
         tabElement.addEventListener('mousedown', handleMouseDown);
@@ -181,6 +237,134 @@ export class SectionsManager {
         tabElement.addEventListener('touchstart', handleTouchStart, { passive: true });
         document.addEventListener('touchmove', handleTouchMove, { passive: true });
         document.addEventListener('touchend', handleTouchEnd);
+    }
+
+    startReorderTab(tabElement, e) {
+        const tabsContainer = document.getElementById('sections-tabs');
+        tabElement.style.opacity = '0.5';
+        tabElement.style.zIndex = '1000';
+        tabElement.style.position = 'relative';
+        tabElement.classList.add('dragging');
+        
+        // Create placeholder
+        const placeholder = document.createElement('div');
+        placeholder.className = 'section-tab-placeholder';
+        placeholder.style.width = `${tabElement.offsetWidth}px`;
+        placeholder.style.height = `${tabElement.offsetHeight}px`;
+        placeholder.style.marginRight = '5px';
+        tabElement.dataset.placeholder = 'true';
+        tabElement.parentNode.insertBefore(placeholder, tabElement);
+    }
+
+    updateReorderTab(tabElement, e) {
+        const tabsContainer = document.getElementById('sections-tabs');
+        const placeholder = tabsContainer.querySelector('.section-tab-placeholder');
+        
+        if (!placeholder) return;
+
+        const mouseX = (e.pageX || e.clientX || 0);
+        const tabs = Array.from(tabsContainer.querySelectorAll('.section-tab:not(.section-tab-placeholder)'));
+        let targetTab = null;
+
+        for (let tab of tabs) {
+            if (tab === tabElement) continue;
+            const rect = tab.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            
+            if (mouseX < centerX) {
+                targetTab = tab;
+                break;
+            }
+        }
+
+        if (targetTab && placeholder.nextSibling !== targetTab) {
+            tabsContainer.insertBefore(placeholder, targetTab);
+        } else if (!targetTab && placeholder.nextSibling) {
+            tabsContainer.appendChild(placeholder);
+        }
+    }
+
+    endReorderTab(tabElement, e) {
+        const tabsContainer = document.getElementById('sections-tabs');
+        const placeholder = tabsContainer.querySelector('.section-tab-placeholder');
+        
+        if (placeholder) {
+            tabsContainer.insertBefore(tabElement, placeholder);
+            placeholder.remove();
+        }
+        
+        tabElement.style.opacity = '';
+        tabElement.style.zIndex = '';
+        tabElement.style.position = '';
+        tabElement.classList.remove('dragging');
+        delete tabElement.dataset.placeholder;
+
+        // Update sections array order to match DOM order
+        this.updateSectionsOrder();
+    }
+
+    updateSectionsOrder() {
+        const tabsContainer = document.getElementById('sections-tabs');
+        const tabs = Array.from(tabsContainer.querySelectorAll('.section-tab:not(.section-tab-placeholder)'));
+        const newOrder = tabs.map(tab => Number(tab.dataset.sectionId));
+        
+        // Reorder sections array
+        const reorderedSections = [];
+        newOrder.forEach(sectionId => {
+            const section = this.app.sections.find(s => s.id === sectionId);
+            if (section) {
+                reorderedSections.push(section);
+            }
+        });
+        
+        // Check if order actually changed
+        let orderChanged = false;
+        if (reorderedSections.length === this.app.sections.length) {
+            for (let i = 0; i < reorderedSections.length; i++) {
+                if (reorderedSections[i].id !== this.app.sections[i].id) {
+                    orderChanged = true;
+                    break;
+                }
+            }
+        }
+        
+        if (orderChanged) {
+            this.app.sections = reorderedSections;
+            
+            // Reorder content elements by moving them to correct positions
+            const contentContainer = document.getElementById('sections-content');
+            
+            // Build array of content elements in new order
+            const contentsInNewOrder = [];
+            newOrder.forEach(sectionId => {
+                const content = contentContainer.querySelector(`.section-content[data-section-id="${sectionId}"]`);
+                if (content) {
+                    contentsInNewOrder.push(content);
+                }
+            });
+            
+            // Move each content to its correct position (without removing from DOM first)
+            contentsInNewOrder.forEach((content, index) => {
+                const currentPosition = Array.from(contentContainer.children).indexOf(content);
+                if (currentPosition !== index) {
+                    // Get reference node (next sibling in new order, or null if should be last)
+                    const referenceNode = index < contentsInNewOrder.length - 1 
+                        ? contentsInNewOrder[index + 1] 
+                        : null;
+                    
+                    if (referenceNode) {
+                        contentContainer.insertBefore(content, referenceNode);
+                    } else {
+                        contentContainer.appendChild(content);
+                    }
+                }
+            });
+
+            // Save if auto-save is enabled
+            if (this.app.autoSaveEnabled) {
+                this.app.storageManager.saveNotesToLocalStorage(true);
+            }
+        }
     }
 
     setActiveSection(sectionId) {

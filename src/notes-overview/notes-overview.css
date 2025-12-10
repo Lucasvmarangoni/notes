@@ -128,6 +128,25 @@ See the LICENSE file for more information.
     display: none;
 }
 
+.section-group-placeholder {
+    background-color: #2a2d2e;
+    border: 2px dashed #5a7552;
+    border-radius: 4px;
+}
+
+.drop-indicator {
+    background-color: #5a7552;
+    transition: all 0.2s;
+}
+
+.section-header {
+    cursor: move;
+}
+
+.note-item[draggable="true"] {
+    cursor: move;
+}
+
 #notes-overview-btn {
     background-color: #5f6368;
     color: #ffffff;

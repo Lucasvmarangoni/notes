@@ -117,7 +117,8 @@ class NotesApp {
                 <div style="line-height: 1.4;">
                     <p><strong>Add Notes</strong>: Create and manage notes easily and quickly.</p>
                     <p><strong>Add Section</strong>: Create and manage sections like browser tabs.</p>
-                    <p><strong>List</strong>: All sections and notes listed in a hierarchical and organized view.</p>
+                    <p><strong>Sections Scroll</strong>: When sections exceed the screen space, you can click and drag anywhere in the area to scroll horizontally.</p>   
+                    <p><strong>Reorder Sections</strong>: Click and hold a section, drag it vertically first (up/down), then horizontally (left/right) to your desired location, and release.</p>                    <p><strong>List</strong>: All sections and notes listed in a hierarchical and organized view. It's also possible to transfer notes to other sections from here.</p>
                     <p><strong>Drag and Drop</strong>: Move and position multiple notes freely.</p>
                     <p><strong>Bulleted Lists</strong>: Type <kbd>*</kbd> + space at the start of a line, or select text and click the bullet (•) button.</p>
                     <p><strong>Numbered Lists</strong>: Type <kbd>1.</kbd> + space at the start of a line, or select text and click the numbered (1.) button.</p>
@@ -127,8 +128,7 @@ class NotesApp {
                     <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
                     <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
                     <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
-                    <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>
-                    <p><strong>Sections Scroll</strong>: When sections exceed the screen space, you can click and drag anywhere in the area to scroll horizontally.</p>   
+                    <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>                    
                     <p><strong>Keyboard Shortcuts</strong>:</p>
                     <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
                     <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>

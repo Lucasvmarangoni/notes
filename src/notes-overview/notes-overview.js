@@ -98,6 +98,7 @@ export class NotesOverviewManager {
         this.app.sections.forEach(section => {
             const sectionGroup = document.createElement('div');
             sectionGroup.className = 'section-group';
+            sectionGroup.dataset.sectionId = section.id;
 
             const sectionHeader = document.createElement('div');
             sectionHeader.className = 'section-header';
@@ -120,9 +121,15 @@ export class NotesOverviewManager {
                         <div class="note-title list-note-title">${note.title}</div>                        
                     </div>
                 `;
-                noteItem.addEventListener('click', () => {
-                    this.navigateToNote(section.id, note.id);
+                noteItem.addEventListener('click', (e) => {
+                    if (!noteItem.dataset.wasDragging) {
+                        this.navigateToNote(section.id, note.id);
+                    }
+                    delete noteItem.dataset.wasDragging;
                 });
+
+                // Setup drag for notes
+                this.setupNoteDrag(noteItem, section.id, note.id);
 
                 sectionNotes.appendChild(noteItem);
             });
@@ -130,7 +137,567 @@ export class NotesOverviewManager {
             sectionGroup.appendChild(sectionHeader);
             sectionGroup.appendChild(sectionNotes);
             this.notesListContainer.appendChild(sectionGroup);
+
+            // Setup drag for sections
+            this.setupSectionDrag(sectionGroup, section.id);
         });
+    }
+
+    setupSectionDrag(sectionGroup, sectionId) {
+        sectionGroup.draggable = true;
+        const sectionHeader = sectionGroup.querySelector('.section-header');
+        const sectionNotes = sectionGroup.querySelector('.section-notes');
+
+        // Store drag data globally for this drag operation
+        if (!window._currentDragData) {
+            window._currentDragData = null;
+        }
+
+        sectionHeader.addEventListener('dragstart', (e) => {
+            // Only allow dragging from the title area, not the counter
+            if (e.target.classList.contains('notes-counter')) {
+                e.preventDefault();
+                return;
+            }
+            
+            sectionGroup.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', `section-${sectionId}`);
+            e.dataTransfer.setData('application/x-section-id', sectionId.toString());
+            
+            // Store in global variable as backup
+            window._currentDragData = `section-${sectionId}`;
+            
+            const placeholder = document.createElement('div');
+            placeholder.className = 'section-group-placeholder';
+            placeholder.style.height = `${sectionGroup.offsetHeight}px`;
+            placeholder.style.marginBottom = '10px';
+            sectionGroup.parentNode.insertBefore(placeholder, sectionGroup);
+        });
+
+        sectionHeader.addEventListener('dragend', (e) => {
+            sectionGroup.style.opacity = '';
+            document.querySelectorAll('.section-group-placeholder').forEach(p => p.remove());
+            document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+            window._currentDragData = null;
+        });
+
+        sectionGroup.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('text/plain') || e.dataTransfer.types.includes('application/x-section-id')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                let dragSectionId = null;
+                try {
+                    // Try to get from dataTransfer first
+                    const textData = e.dataTransfer.getData('text/plain');
+                    const appData = e.dataTransfer.getData('application/x-section-id');
+                    
+                    if (textData && textData.startsWith('section-')) {
+                        dragSectionId = Number(textData.replace('section-', ''));
+                    } else if (appData) {
+                        dragSectionId = Number(appData);
+                    } else if (window._currentDragData && window._currentDragData.startsWith('section-')) {
+                        dragSectionId = Number(window._currentDragData.replace('section-', ''));
+                    }
+                } catch (err) {
+                    // Fallback to global variable
+                    if (window._currentDragData && window._currentDragData.startsWith('section-')) {
+                        dragSectionId = Number(window._currentDragData.replace('section-', ''));
+                    }
+                }
+                
+                if (dragSectionId !== null && dragSectionId !== sectionId) {
+                    e.dataTransfer.dropEffect = 'move';
+                    
+                    const rect = sectionGroup.getBoundingClientRect();
+                    const midpoint = rect.top + rect.height / 2;
+                    
+                    document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+                    
+                    const indicator = document.createElement('div');
+                    indicator.className = 'drop-indicator';
+                    indicator.style.height = '2px';
+                    indicator.style.background = '#5a7552';
+                    indicator.style.margin = '2px 0';
+                    if (e.clientY < midpoint) {
+                        sectionGroup.parentNode.insertBefore(indicator, sectionGroup);
+                    } else {
+                        sectionGroup.parentNode.insertBefore(indicator, sectionGroup.nextSibling);
+                    }
+                }
+            }
+        });
+
+        sectionGroup.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            let dragSectionId = null;
+            try {
+                const textData = e.dataTransfer.getData('text/plain');
+                const appData = e.dataTransfer.getData('application/x-section-id');
+                
+                if (textData && textData.startsWith('section-')) {
+                    dragSectionId = Number(textData.replace('section-', ''));
+                } else if (appData) {
+                    dragSectionId = Number(appData);
+                } else if (window._currentDragData && window._currentDragData.startsWith('section-')) {
+                    dragSectionId = Number(window._currentDragData.replace('section-', ''));
+                }
+            } catch (err) {
+                if (window._currentDragData && window._currentDragData.startsWith('section-')) {
+                    dragSectionId = Number(window._currentDragData.replace('section-', ''));
+                }
+            }
+            
+            if (dragSectionId !== null && dragSectionId !== sectionId) {
+                this.reorderSection(dragSectionId, sectionId, e.clientY);
+            }
+            
+            document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+            window._currentDragData = null;
+        });
+
+        sectionGroup.addEventListener('dragleave', (e) => {
+            if (!sectionGroup.contains(e.relatedTarget)) {
+                document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+            }
+        });
+
+        // Also allow dropping notes on section header when section is empty
+        sectionHeader.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('text/plain')) {
+                try {
+                    let data = e.dataTransfer.getData('text/plain');
+                    if (!data && window._currentDragData) {
+                        data = window._currentDragData;
+                    }
+                    
+                    if (data && data.startsWith('note-')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.dataTransfer.dropEffect = 'move';
+                        
+                        const parts = data.split('-');
+                        const sourceSectionId = Number(parts[parts.length - 1]);
+                        
+                        if (sourceSectionId !== sectionId) {
+                            document.querySelectorAll('.drop-indicator').forEach(ind => {
+                                if (ind.parentNode === sectionNotes) ind.remove();
+                            });
+                            
+                            if (!sectionNotes.querySelector('.drop-indicator')) {
+                                const indicator = document.createElement('div');
+                                indicator.className = 'drop-indicator';
+                                indicator.style.height = '2px';
+                                indicator.style.background = '#5a7552';
+                                sectionNotes.appendChild(indicator);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    // Ignore
+                }
+            }
+        });
+
+        sectionHeader.addEventListener('drop', (e) => {
+            if (e.dataTransfer.types.includes('text/plain')) {
+                try {
+                    let data = e.dataTransfer.getData('text/plain');
+                    if (!data && window._currentDragData) {
+                        data = window._currentDragData;
+                    }
+                    
+                    if (data && data.startsWith('note-')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const parts = data.split('-');
+                        const noteId = Number(parts[1]);
+                        const sourceSectionId = Number(parts[parts.length - 1]);
+                        const targetSectionId = sectionId;
+                        
+                        if (sourceSectionId !== targetSectionId) {
+                            this.moveNoteToSection(noteId, sourceSectionId, targetSectionId);
+                        }
+                        
+                        document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+                        window._currentDragData = null;
+                    }
+                } catch (err) {
+                    // Ignore
+                }
+            }
+        });
+    }
+
+    setupNoteDrag(noteItem, sectionId, noteId) {
+        noteItem.draggable = true;
+
+        noteItem.addEventListener('dragstart', (e) => {
+            noteItem.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', `note-${noteId}-${sectionId}`);
+            e.dataTransfer.setData('application/x-note-id', noteId.toString());
+            e.dataTransfer.setData('application/x-section-id', sectionId.toString());
+            
+            // Store in global variable as backup
+            window._currentDragData = `note-${noteId}-${sectionId}`;
+        });
+
+        noteItem.addEventListener('dragend', (e) => {
+            noteItem.style.opacity = '';
+            document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+            window._currentDragData = null;
+        });
+
+        // Handle drops on section groups
+        const sectionGroup = noteItem.closest('.section-group');
+        if (sectionGroup) {
+            const sectionNotes = sectionGroup.querySelector('.section-notes');
+            
+            // Use a flag to prevent duplicate event listeners
+            if (!sectionNotes.dataset.dragSetup) {
+                sectionNotes.dataset.dragSetup = 'true';
+                
+                sectionNotes.addEventListener('dragover', (e) => {
+                    if (e.dataTransfer.types.includes('text/plain') || e.dataTransfer.types.includes('application/x-note-id')) {
+                        try {
+                            let data = e.dataTransfer.getData('text/plain');
+                            if (!data) {
+                                // Try alternative methods
+                                try {
+                                    const noteId = e.dataTransfer.getData('application/x-note-id');
+                                    const sourceSectionId = e.dataTransfer.getData('application/x-section-id');
+                                    if (noteId && sourceSectionId) {
+                                        data = `note-${noteId}-${sourceSectionId}`;
+                                    }
+                                } catch (e2) {}
+                            }
+                            
+                            if (!data && window._currentDragData) {
+                                data = window._currentDragData;
+                            }
+                            
+                            if (data && data.startsWith('note-')) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.dataTransfer.dropEffect = 'move';
+                                
+                                const parts = data.split('-');
+                                const sourceSectionId = Number(parts[parts.length - 1]);
+                                const targetSectionId = Number(sectionGroup.dataset.sectionId);
+                                
+                                if (sourceSectionId !== targetSectionId) {
+                                    document.querySelectorAll('.drop-indicator').forEach(ind => {
+                                        if (ind.parentNode === sectionNotes) ind.remove();
+                                    });
+                                    
+                                    if (!sectionNotes.querySelector('.drop-indicator')) {
+                                        const indicator = document.createElement('div');
+                                        indicator.className = 'drop-indicator';
+                                        indicator.style.height = '2px';
+                                        indicator.style.background = '#5a7552';
+                                        sectionNotes.appendChild(indicator);
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            // Ignore
+                        }
+                    }
+                });
+
+                sectionNotes.addEventListener('drop', (e) => {
+                    if (e.dataTransfer.types.includes('text/plain') || e.dataTransfer.types.includes('application/x-note-id')) {
+                        try {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            let data = e.dataTransfer.getData('text/plain');
+                            if (!data) {
+                                try {
+                                    const noteId = e.dataTransfer.getData('application/x-note-id');
+                                    const sourceSectionId = e.dataTransfer.getData('application/x-section-id');
+                                    if (noteId && sourceSectionId) {
+                                        data = `note-${noteId}-${sourceSectionId}`;
+                                    }
+                                } catch (e2) {}
+                            }
+                            
+                            if (!data && window._currentDragData) {
+                                data = window._currentDragData;
+                            }
+                            
+                            if (data && data.startsWith('note-')) {
+                                const parts = data.split('-');
+                                const noteId = Number(parts[1]);
+                                const sourceSectionId = Number(parts[parts.length - 1]);
+                                const targetSectionId = Number(sectionGroup.dataset.sectionId);
+                                
+                                if (sourceSectionId !== targetSectionId) {
+                                    this.moveNoteToSection(noteId, sourceSectionId, targetSectionId);
+                                }
+                            }
+                        } catch (err) {
+                            // Ignore
+                        }
+                    }
+                    
+                    document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+                    window._currentDragData = null;
+                });
+            }
+        }
+
+        // Handle note-to-note drops for reordering
+        noteItem.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('text/plain') || e.dataTransfer.types.includes('application/x-note-id')) {
+                try {
+                    let data = e.dataTransfer.getData('text/plain');
+                    if (!data) {
+                        try {
+                            const noteId = e.dataTransfer.getData('application/x-note-id');
+                            const sourceSectionId = e.dataTransfer.getData('application/x-section-id');
+                            if (noteId && sourceSectionId) {
+                                data = `note-${noteId}-${sourceSectionId}`;
+                            }
+                        } catch (e2) {}
+                    }
+                    
+                    if (!data && window._currentDragData) {
+                        data = window._currentDragData;
+                    }
+                    
+                    if (data && data.startsWith('note-')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.dataTransfer.dropEffect = 'move';
+                        
+                        const rect = noteItem.getBoundingClientRect();
+                        const midpoint = rect.top + rect.height / 2;
+                        
+                        document.querySelectorAll('.drop-indicator').forEach(ind => {
+                            if (ind.parentNode === noteItem.parentNode) ind.remove();
+                        });
+                        
+                        const indicator = document.createElement('div');
+                        indicator.className = 'drop-indicator';
+                        indicator.style.height = '2px';
+                        indicator.style.background = '#5a7552';
+                        
+                        if (e.clientY < midpoint) {
+                            noteItem.parentNode.insertBefore(indicator, noteItem);
+                        } else {
+                            noteItem.parentNode.insertBefore(indicator, noteItem.nextSibling);
+                        }
+                    }
+                } catch (err) {
+                    // Ignore
+                }
+            }
+        });
+
+        noteItem.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            try {
+                let data = e.dataTransfer.getData('text/plain');
+                if (!data) {
+                    try {
+                        const noteId = e.dataTransfer.getData('application/x-note-id');
+                        const sourceSectionId = e.dataTransfer.getData('application/x-section-id');
+                        if (noteId && sourceSectionId) {
+                            data = `note-${noteId}-${sourceSectionId}`;
+                        }
+                    } catch (e2) {}
+                }
+                
+                if (!data && window._currentDragData) {
+                    data = window._currentDragData;
+                }
+                
+                if (data && data.startsWith('note-')) {
+                    const parts = data.split('-');
+                    const dragNoteId = Number(parts[1]);
+                    const dragSectionId = Number(parts[parts.length - 1]);
+                    const currentSectionId = Number(noteItem.dataset.sectionId);
+                    const currentNoteId = Number(noteItem.dataset.noteId);
+                    
+                    if (dragNoteId === currentNoteId) return;
+                    
+                    if (dragSectionId === currentSectionId) {
+                        this.reorderNoteInSection(dragNoteId, currentNoteId, currentSectionId);
+                    } else {
+                        this.moveNoteToSection(dragNoteId, dragSectionId, currentSectionId);
+                    }
+                }
+            } catch (err) {
+                // Ignore
+            }
+            
+            document.querySelectorAll('.drop-indicator').forEach(ind => ind.remove());
+            noteItem.dataset.wasDragging = 'true';
+            window._currentDragData = null;
+        });
+    }
+
+    reorderSection(dragSectionId, targetSectionId, dropY) {
+        const dragSection = this.app.sections.find(s => s.id === dragSectionId);
+        const targetSection = this.app.sections.find(s => s.id === targetSectionId);
+        
+        if (!dragSection || !targetSection) return;
+        
+        const dragIndex = this.app.sections.indexOf(dragSection);
+        const targetIndex = this.app.sections.indexOf(targetSection);
+        
+        this.app.sections.splice(dragIndex, 1);
+        
+        const targetGroup = document.querySelector(`.section-group[data-section-id="${targetSectionId}"]`);
+        const targetRect = targetGroup.getBoundingClientRect();
+        const midpoint = targetRect.top + targetRect.height / 2;
+        
+        let newIndex;
+        if (dropY < midpoint) {
+            newIndex = targetIndex > dragIndex ? targetIndex - 1 : targetIndex;
+        } else {
+            newIndex = targetIndex > dragIndex ? targetIndex : targetIndex + 1;
+        }
+        
+        this.app.sections.splice(newIndex, 0, dragSection);
+        
+        this.renderNotesList();
+        this.app.sectionsManager.updateSectionsOrder();
+    }
+
+    reorderNoteInSection(dragNoteId, targetNoteId, sectionId) {
+        const section = this.app.sections.find(s => s.id === sectionId);
+        if (!section) return;
+        
+        const dragNote = section.notes.find(n => n.id === dragNoteId);
+        const targetNote = section.notes.find(n => n.id === targetNoteId);
+        
+        if (!dragNote || !targetNote) return;
+        
+        const dragIndex = section.notes.indexOf(dragNote);
+        const targetIndex = section.notes.indexOf(targetNote);
+        
+        section.notes.splice(dragIndex, 1);
+        section.notes.splice(targetIndex, 0, dragNote);
+        
+        this.renderNotesList();
+        
+        if (this.app.autoSaveEnabled) {
+            this.app.storageManager.saveNotesToLocalStorage(true);
+        }
+    }
+
+    moveNoteToSection(noteId, sourceSectionId, targetSectionId) {
+        const sourceSection = this.app.sections.find(s => s.id === sourceSectionId);
+        const targetSection = this.app.sections.find(s => s.id === targetSectionId);
+        
+        if (!sourceSection || !targetSection) return;
+        
+        const noteIndex = sourceSection.notes.findIndex(n => n.id === noteId);
+        if (noteIndex === -1) return;
+        
+        // Get note element from DOM first to capture current title/content
+        const noteElement = document.querySelector(`.note[data-note-id="${noteId}"]`);
+        
+        // Get note data from array
+        const note = sourceSection.notes[noteIndex];
+        
+        // Update note data from DOM if element exists (to get latest changes)
+        if (noteElement) {
+            const titleEl = noteElement.querySelector('.note-title');
+            const contentEl = noteElement.querySelector('.note-content');
+            if (titleEl) note.title = titleEl.innerHTML || titleEl.textContent || '';
+            if (contentEl) note.content = contentEl.innerHTML || '';
+            note.x = parseInt(noteElement.style.left) || note.x || 0;
+            note.y = parseInt(noteElement.style.top) || note.y || 0;
+            note.width = parseInt(noteElement.style.width) || note.width || 230;
+            note.height = parseInt(noteElement.style.height) || note.height || 200;
+        }
+        
+        // Remove note from source section array
+        sourceSection.notes.splice(noteIndex, 1);
+        
+        // Remove note element from DOM
+        if (noteElement) {
+            noteElement.remove();
+        }
+        
+        // Calculate position for new note (same as addNote default)
+        const sectionContent = document.querySelector(`.section-content[data-section-id="${targetSectionId}"]`);
+        if (sectionContent) {
+            const sectionRect = sectionContent.getBoundingClientRect();
+            const scrollX = sectionContent.scrollLeft;
+            const scrollY = sectionContent.scrollTop;
+            const viewportCenterX = window.innerWidth / 2;
+            const viewportCenterY = window.innerHeight / 2;
+            
+            const width = note.width || 230;
+            const height = note.height || 200;
+            
+            let x = (viewportCenterX - sectionRect.left + scrollX) - (width / 2);
+            let y = (viewportCenterY - sectionRect.top + scrollY) - 50;
+            
+            x = Math.max(0, Math.min(x, sectionContent.scrollWidth - width));
+            y = Math.max(0, Math.min(y, sectionContent.scrollHeight - height));
+            
+            note.x = x;
+            note.y = y;
+        }
+        
+        // Add note to target section array
+        targetSection.notes.push(note);
+        
+        // Re-create note element in new section (manually to avoid duplicate in array)
+        if (sectionContent) {
+            const newNoteElement = document.createElement('div');
+            newNoteElement.classList.add('note');
+            newNoteElement.dataset.noteId = note.id;
+            newNoteElement.style.left = `${note.x}px`;
+            newNoteElement.style.top = `${note.y}px`;
+            newNoteElement.style.width = `${note.width || 230}px`;
+            newNoteElement.style.height = `${note.height || 200}px`;
+
+            // Get title and content from note object
+            const noteTitle = note.title || 'New Note';
+            const noteContent = note.content || '';
+
+            newNoteElement.innerHTML = `
+                <div class="drag">
+                    <div class="note-header">
+                        <div class="note-title" contenteditable="true">${noteTitle}</div>
+                        <button class="delete-btn" title="Excluir nota">✖</button>
+                    </div>
+                    <div class="note-content" contenteditable="true">${noteContent}</div>      
+                    <div class="resize-handle"></div>
+                </div>
+            `;
+
+            if (note.style) {
+                const noteContentEl = newNoteElement.querySelector('.note-content');
+                Object.assign(noteContentEl.style, note.style);
+            }
+
+            this.app.notesManager.setupNoteDragAndResize(newNoteElement);
+            this.app.notesManager.setupNoteActions(newNoteElement);
+
+            sectionContent.appendChild(newNoteElement);
+        }
+        
+        // Re-render overview to reflect changes
+        this.renderNotesList();
+        
+        // Save if auto-save is enabled
+        if (this.app.autoSaveEnabled) {
+            this.app.storageManager.saveNotesToLocalStorage(true);
+        }
     }
 
     filterNotes(searchTerm) {

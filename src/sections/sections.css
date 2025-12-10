@@ -77,6 +77,13 @@ See the LICENSE file for more information.
     opacity: 1;
 }
 
+.section-tab-placeholder {
+    background-color: #3a3a3d;
+    border: 2px dashed #5a7552;
+    border-radius: 5px 5px 0 0;
+    flex-shrink: 0;
+}
+
 #sections-content {
     border-radius: 0 0 5px 5px;
     padding: 2px;   
