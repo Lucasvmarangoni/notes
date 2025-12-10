@@ -12,6 +12,7 @@ See the LICENSE file for more information.
     <title>Notes App</title>
     <!-- Modular CSS - All styles migrated to src/ -->
     <link rel="stylesheet" href="src/main.css">
+    <link rel="stylesheet" href="src/encoder/encoder.css">
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='15' y='15' width='70' height='75' rx='5' ry='5' fill='%23f5f5f5' stroke='%23333' stroke-width='2'/%3E%3Cline x1='25' y1='35' x2='75' y2='35' stroke='%23aaa' stroke-width='1.5'/%3E%3Cline x1='25' y1='50' x2='75' y2='50' stroke='%23aaa' stroke-width='1.5'/%3E%3Cline x1='25' y1='65' x2='75' y2='65' stroke='%23aaa' stroke-width='1.5'/%3E%3Cline x1='25' y1='80' x2='60' y2='80' stroke='%23aaa' stroke-width='1.5'/%3E%3Cpath d='M75 15 L85 25 L85 15 Z' fill='%23e0e0e0' stroke='%23333' stroke-width='2'/%3E%3C/svg%3E">
 
@@ -69,10 +70,19 @@ See the LICENSE file for more information.
                 <button id="jwt-btn" class="button" title="JWT Analyzer">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="M9 12l2 2 4-4" />
                     </svg>
                     JWT
+                </button>
+
+                <button id="encoder-btn" class="button" title="Encoder/Decoder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    Encoder
                 </button>
 
                 <button id="save-notes-btn" class="button">
@@ -111,7 +121,7 @@ See the LICENSE file for more information.
                         <path d="M8 10l4 4 4-4" />
                         <path d="M12 4v10" />
                     </svg>
-                    Import</button>                
+                    Import</button>
                 <div class="info-wrapper" onclick="togglePopup(this, event)">
                     <div class="info-wrapper">
                         <button class="info-btn">
@@ -162,12 +172,13 @@ See the LICENSE file for more information.
                             <span id="jwt-copy-text">Copy</span>
                         </button>
                     </div>
-                    <textarea id="jwt-token-input" placeholder="Paste your JWT token here..." class="jwt-textarea"></textarea>
+                    <textarea id="jwt-token-input" placeholder="Paste your JWT token here..."
+                        class="jwt-textarea"></textarea>
                 </div>
 
                 <!-- Vulnerabilities Alert -->
                 <div id="jwt-vulnerabilities" class="jwt-vulns-container" style="display: none;">
-                    <div class="jwt-vulns-header">                       
+                    <div class="jwt-vulns-header">
                         <h3>Vulnerabilities Detected (<span id="jwt-vuln-count">0</span>)</h3>
                     </div>
                     <div id="jwt-vulns-list"></div>
@@ -181,7 +192,7 @@ See the LICENSE file for more information.
                 </div>
 
                 <!-- Edit Tab -->
-                <div id="jwt-edit-tab" class="jwt-tab-content active">                    
+                <div id="jwt-edit-tab" class="jwt-tab-content active">
                     <div class="jwt-section">
                         <h3>Edit Header</h3>
                         <textarea id="jwt-edit-header" class="jwt-textarea code-textarea"></textarea>
@@ -192,12 +203,15 @@ See the LICENSE file for more information.
                     </div>
                     <div class="jwt-section">
                         <h3>Signature</h3>
-                        <input type="text" id="jwt-edit-signature" class="jwt-input" placeholder="Leave empty or keep original...">
+                        <input type="text" id="jwt-edit-signature" class="jwt-input"
+                            placeholder="Leave empty or keep original...">
                         <p class="jwt-hint">Tip: Leave empty to test if server checks signature at all</p>
                     </div>
                     <div class="jwt-action-buttons">
-                        <button id="jwt-rebuild-keep" class="jwt-btn jwt-btn-primary">Rebuild Token (Keep Signature)</button>
-                        <button id="jwt-rebuild-remove" class="jwt-btn jwt-btn-danger">Rebuild Token (Remove Signature)</button>
+                        <button id="jwt-rebuild-keep" class="jwt-btn jwt-btn-primary">Rebuild Token (Keep
+                            Signature)</button>
+                        <button id="jwt-rebuild-remove" class="jwt-btn jwt-btn-danger">Rebuild Token (Remove
+                            Signature)</button>
                     </div>
                 </div>
 
@@ -208,7 +222,8 @@ See the LICENSE file for more information.
                     </div>
                     <div class="jwt-section">
                         <h3>Secret Key</h3>
-                        <input type="text" id="jwt-secret" class="jwt-input" placeholder="Enter secret key (for HMAC algorithms)...">                       
+                        <input type="text" id="jwt-secret" class="jwt-input"
+                            placeholder="Enter secret key (for HMAC algorithms)...">
                     </div>
                     <button id="jwt-sign-btn" class="jwt-btn jwt-btn-success">Sign Token with Secret</button>
                     <div class="jwt-info-box">
@@ -226,7 +241,8 @@ See the LICENSE file for more information.
                     <div class="jwt-section">
                         <h3>Signature Verification</h3>
                         <label>Secret Key</label>
-                        <input type="text" id="jwt-verify-secret" class="jwt-input" placeholder="Enter secret key to verify...">
+                        <input type="text" id="jwt-verify-secret" class="jwt-input"
+                            placeholder="Enter secret key to verify...">
                         <button id="jwt-verify-btn" class="jwt-btn jwt-btn-primary">Verify Signature</button>
                         <div id="jwt-verify-result" class="jwt-verify-result" style="display: none;"></div>
                         <div class="jwt-info-box">
@@ -239,6 +255,69 @@ See the LICENSE file for more information.
                             </ul>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Encoder Modal -->
+    <div id="encoder-modal" class="modal">
+        <div class="modal-content encoder-modal-content">
+            <div class="jwt-modal-header">
+                <h2>Encoder / Decoder</h2>
+                <span class="close-encoder-modal">&times;</span>
+            </div>
+            <div class="encoder-container">
+
+                <!-- Tabs for Mode -->
+                <div class="jwt-tabs" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="encoder-swap-btn" class="encoder-swap-btn" title="Swap Input/Output"
+                        style="margin-right: 5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 10v12"></path>
+                            <path d="M15 10.5a2.5 2.5 0 0 1 5 0v10.5"></path>
+                            <path d="M2 13l5 5 5-5"></path>
+                            <path d="M17 21l3-3 3 3"></path>
+                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                        </svg>
+                    </button>
+                    <button class="encoder-tab active" data-mode="encode">Encode</button>
+                    <button class="encoder-tab" data-mode="decode">Decode</button>
+                </div>
+
+                <!-- Type Selection Buttons -->
+                <div class="encoder-type-buttons">
+                    <button class="encoder-type-btn" data-type="ascii">ASCII</button>
+                    <button class="encoder-type-btn" data-type="unicode">Unicode</button>
+                    <button class="encoder-type-btn" data-type="html">HTML</button>
+                    <button class="encoder-type-btn" data-type="hex">Hex Escape</button>
+                    <button class="encoder-type-btn active" data-type="base64">Base64</button>
+                    <button class="encoder-type-btn" data-type="url">URL</button>
+                </div>
+
+                <div class="encoder-section">
+                    <div class="jwt-section-header">
+                        <label>Input</label>
+                        <button id="encoder-copy-input" class="jwt-small-btn" style="display: none;">
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <textarea id="encoder-input" class="jwt-textarea" placeholder="Type here..."></textarea>
+                </div>
+
+
+
+                <div class="encoder-section">
+                    <div class="jwt-section-header">
+                        <label>Output</label>
+                        <button id="encoder-copy-output" class="jwt-small-btn" style="display: none;">
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <textarea id="encoder-output" class="jwt-textarea" readonly
+                        placeholder="Result will appear here..."></textarea>
                 </div>
             </div>
         </div>
