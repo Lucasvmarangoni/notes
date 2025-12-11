@@ -523,6 +523,16 @@ export class NotesManager {
         this.selectedNotes.clear();
     }
 
+    escapeHtml(text) {
+        if (!text) return text;
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     handlePasteEvent(e) {
         const noteContent = e.target.closest('.note-content');
         if (!noteContent) return;
@@ -538,7 +548,7 @@ export class NotesManager {
         if (htmlContent) {
             content = htmlContent;
         } else if (plainContent) {
-            content = plainContent.replace(/\n/g, '<br>');
+            content = this.escapeHtml(plainContent).replace(/\n/g, '<br>');
         } else {
             return;
         }
