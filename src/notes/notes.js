@@ -46,23 +46,29 @@ export class NotesManager {
         });
     }
 
-    getSnapLines(noteRect, otherNotes, sectionRect) {
+    getSnapLines(noteRect, otherNotes, sectionRect, isResize = false) {
         const snaps = { x: null, y: null };
         const guides = [];
 
         // Horizontal candidates (y-axis)
-        const hCandidates = [
-            { y: noteRect.top, type: 'top' },
-            { y: noteRect.top + noteRect.height / 2, type: 'center' },
-            { y: noteRect.bottom, type: 'bottom' }
-        ];
+        // If resizing, only consider the bottom edge
+        const hCandidates = isResize
+            ? [{ y: noteRect.bottom, type: 'bottom' }]
+            : [
+                { y: noteRect.top, type: 'top' },
+                { y: noteRect.top + noteRect.height / 2, type: 'center' },
+                { y: noteRect.bottom, type: 'bottom' }
+            ];
 
         // Vertical candidates (x-axis)
-        const vCandidates = [
-            { x: noteRect.left, type: 'left' },
-            { x: noteRect.left + noteRect.width / 2, type: 'center' },
-            { x: noteRect.right, type: 'right' }
-        ];
+        // If resizing, only consider the right edge
+        const vCandidates = isResize
+            ? [{ x: noteRect.right, type: 'right' }]
+            : [
+                { x: noteRect.left, type: 'left' },
+                { x: noteRect.left + noteRect.width / 2, type: 'center' },
+                { x: noteRect.right, type: 'right' }
+            ];
 
         let closestH = { diff: Infinity, snapY: null, guideY: null, otherRect: null };
         let closestV = { diff: Infinity, snapX: null, guideX: null, otherRect: null };
@@ -83,9 +89,16 @@ export class NotesManager {
 
                     // Check for guide (visual cue)
                     if (diff < this.GUIDE_THRESHOLD && diff < closestH.diff) {
+                        let snapValue = null;
+                        if (diff < this.SNAP_THRESHOLD) {
+                            // If resizing, snap to the absolute target Y
+                            // If dragging, calculate the delta for the top position
+                            snapValue = isResize ? targetY : targetY - (candidate.y - noteRect.top);
+                        }
+
                         closestH = {
                             diff,
-                            snapY: diff < this.SNAP_THRESHOLD ? targetY - (candidate.y - noteRect.top) : null,
+                            snapY: snapValue,
                             guideY: targetY,
                             otherRect
                         };
@@ -106,9 +119,16 @@ export class NotesManager {
 
                     // Check for guide (visual cue)
                     if (diff < this.GUIDE_THRESHOLD && diff < closestV.diff) {
+                        let snapValue = null;
+                        if (diff < this.SNAP_THRESHOLD) {
+                            // If resizing, snap to the absolute target X
+                            // If dragging, calculate the delta for the left position
+                            snapValue = isResize ? targetX : targetX - (candidate.x - noteRect.left);
+                        }
+
                         closestV = {
                             diff,
-                            snapX: diff < this.SNAP_THRESHOLD ? targetX - (candidate.x - noteRect.left) : null,
+                            snapX: snapValue,
                             guideX: targetX,
                             otherRect
                         };
@@ -326,14 +346,42 @@ export class NotesManager {
         }
 
         if (this.app.resizingNote) {
+            const sectionContent = this.app.resizingNote.element.closest('.section-content');
+            const sectionRect = sectionContent.getBoundingClientRect();
+
             const dx = e.clientX - this.app.resizingNote.startX;
             const dy = e.clientY - this.app.resizingNote.startY;
 
-            const newWidth = Math.max(130, this.app.resizingNote.startWidth + dx);
-            const newHeight = Math.max(85, this.app.resizingNote.startHeight + dy);
+            let newWidth = Math.max(130, this.app.resizingNote.startWidth + dx);
+            let newHeight = Math.max(85, this.app.resizingNote.startHeight + dy);
+
+            // Get other notes for snapping
+            const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.resizingNote.element);
+
+            // Calculate potential new position rect
+            const currentRect = this.app.resizingNote.element.getBoundingClientRect();
+            const newRect = {
+                left: currentRect.left,
+                top: currentRect.top,
+                width: newWidth,
+                height: newHeight,
+                right: currentRect.left + newWidth,
+                bottom: currentRect.top + newHeight
+            };
+
+            const { snaps, guides } = this.getSnapLines(newRect, otherNotes, sectionRect, true);
+
+            if (snaps.x !== null) {
+                newWidth = snaps.x - currentRect.left;
+            }
+            if (snaps.y !== null) {
+                newHeight = snaps.y - currentRect.top;
+            }
 
             this.app.resizingNote.element.style.width = `${newWidth}px`;
             this.app.resizingNote.element.style.height = `${newHeight}px`;
+
+            this.drawGuides(guides, sectionContent);
         }
     }
 
