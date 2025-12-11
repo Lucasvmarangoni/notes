@@ -11,12 +11,145 @@ export class NotesManager {
         this.resizingNote = null;
         this.selectedNotes = new Set();
         this.multiDragStartPositions = null;
+        this.SNAP_THRESHOLD = 5;
+        this.GUIDE_THRESHOLD = 20;
+        this.guides = [];
+    }
+
+    clearGuides() {
+        this.guides.forEach(guide => guide.remove());
+        this.guides = [];
+    }
+
+    drawGuides(guides, sectionContent) {
+        this.clearGuides();
+        if (!sectionContent) return;
+
+        guides.forEach(guide => {
+            const line = document.createElement('div');
+            line.classList.add('alignment-guide');
+
+            if (guide.type === 'vertical') {
+                line.classList.add('vertical');
+                line.style.left = `${guide.x}px`;
+                line.style.top = `${Math.min(guide.y1, guide.y2)}px`;
+                line.style.height = `${Math.abs(guide.y2 - guide.y1)}px`;
+            } else {
+                line.classList.add('horizontal');
+                line.style.top = `${guide.y}px`;
+                line.style.left = `${Math.min(guide.x1, guide.x2)}px`;
+                line.style.width = `${Math.abs(guide.x2 - guide.x1)}px`;
+            }
+
+            sectionContent.appendChild(line);
+            this.guides.push(line);
+        });
+    }
+
+    getSnapLines(noteRect, otherNotes, sectionRect) {
+        const snaps = { x: null, y: null };
+        const guides = [];
+
+        // Horizontal candidates (y-axis)
+        const hCandidates = [
+            { y: noteRect.top, type: 'top' },
+            { y: noteRect.top + noteRect.height / 2, type: 'center' },
+            { y: noteRect.bottom, type: 'bottom' }
+        ];
+
+        // Vertical candidates (x-axis)
+        const vCandidates = [
+            { x: noteRect.left, type: 'left' },
+            { x: noteRect.left + noteRect.width / 2, type: 'center' },
+            { x: noteRect.right, type: 'right' }
+        ];
+
+        let closestH = { diff: Infinity, snapY: null, guideY: null, otherRect: null };
+        let closestV = { diff: Infinity, snapX: null, guideX: null, otherRect: null };
+
+        otherNotes.forEach(other => {
+            const otherRect = other.getBoundingClientRect();
+
+            // Check horizontal alignment
+            const otherH = [
+                otherRect.top,
+                otherRect.top + otherRect.height / 2,
+                otherRect.bottom
+            ];
+
+            hCandidates.forEach(candidate => {
+                otherH.forEach(targetY => {
+                    const diff = Math.abs(candidate.y - targetY);
+
+                    // Check for guide (visual cue)
+                    if (diff < this.GUIDE_THRESHOLD && diff < closestH.diff) {
+                        closestH = {
+                            diff,
+                            snapY: diff < this.SNAP_THRESHOLD ? targetY - (candidate.y - noteRect.top) : null,
+                            guideY: targetY,
+                            otherRect
+                        };
+                    }
+                });
+            });
+
+            // Check vertical alignment
+            const otherV = [
+                otherRect.left,
+                otherRect.left + otherRect.width / 2,
+                otherRect.right
+            ];
+
+            vCandidates.forEach(candidate => {
+                otherV.forEach(targetX => {
+                    const diff = Math.abs(candidate.x - targetX);
+
+                    // Check for guide (visual cue)
+                    if (diff < this.GUIDE_THRESHOLD && diff < closestV.diff) {
+                        closestV = {
+                            diff,
+                            snapX: diff < this.SNAP_THRESHOLD ? targetX - (candidate.x - noteRect.left) : null,
+                            guideX: targetX,
+                            otherRect
+                        };
+                    }
+                });
+            });
+        });
+
+        if (closestH.diff < Infinity) {
+            snaps.y = closestH.snapY;
+            // Calculate guide line segment
+            // We want the line to span between the two notes
+            const x1 = Math.min(noteRect.left, closestH.otherRect.left);
+            const x2 = Math.max(noteRect.right, closestH.otherRect.right);
+            guides.push({
+                type: 'horizontal',
+                y: closestH.guideY - sectionRect.top,
+                x1: x1 - sectionRect.left,
+                x2: x2 - sectionRect.left
+            });
+        }
+
+        if (closestV.diff < Infinity) {
+            snaps.x = closestV.snapX;
+            const y1 = Math.min(noteRect.top, closestV.otherRect.top);
+            const y2 = Math.max(noteRect.bottom, closestV.otherRect.bottom);
+            guides.push({
+                type: 'vertical',
+                x: closestV.guideX - sectionRect.left,
+                y1: y1 - sectionRect.top,
+                y2: y2 - sectionRect.top
+            });
+        }
+
+        return { snaps, guides };
     }
 
     addNote(title = 'New Note', content = '', x = null, y = null, width = 230, height = 200, style = {}, id = null, sectionId = null) {
         // Se sectionId for fornecido, usar essa section; caso contrário, usar a section ativa
         const targetSectionId = sectionId !== null ? sectionId : (this.app.activeSection ? this.app.activeSection.id : null);
-        
+
         if (targetSectionId === null || targetSectionId === undefined) return;
 
         // Converter para Number para garantir comparação correta (os IDs podem ser números ou strings)
@@ -167,8 +300,29 @@ export class NotesManager {
             const x = e.clientX - sectionRect.left - this.app.draggingNote.offsetX;
             const y = e.clientY - sectionRect.top - this.app.draggingNote.offsetY;
 
-            this.app.draggingNote.element.style.left = `${Math.max(0, x)}px`;
-            this.app.draggingNote.element.style.top = `${Math.max(0, y)}px`;
+            // Get other notes for snapping
+            const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.draggingNote.element);
+
+            // Calculate potential new position rect
+            const currentRect = this.app.draggingNote.element.getBoundingClientRect();
+            const newRect = {
+                left: e.clientX - this.app.draggingNote.offsetX,
+                top: e.clientY - this.app.draggingNote.offsetY,
+                width: currentRect.width,
+                height: currentRect.height,
+                right: e.clientX - this.app.draggingNote.offsetX + currentRect.width,
+                bottom: e.clientY - this.app.draggingNote.offsetY + currentRect.height
+            };
+
+            const { snaps, guides } = this.getSnapLines(newRect, otherNotes, sectionRect);
+
+            const finalX = snaps.x !== null ? snaps.x - sectionRect.left : x;
+            const finalY = snaps.y !== null ? snaps.y - sectionRect.top : y;
+
+            this.app.draggingNote.element.style.left = `${Math.max(0, finalX)}px`;
+            this.app.draggingNote.element.style.top = `${Math.max(0, finalY)}px`;
+
+            this.drawGuides(guides, sectionContent);
         }
 
         if (this.app.resizingNote) {
@@ -197,17 +351,17 @@ export class NotesManager {
             if (selection.rangeCount > 0) {
                 const range = selection.getRangeAt(0);
                 const container = range.startContainer;
-                const parentElement = container.nodeType === Node.TEXT_NODE 
-                    ? container.parentElement 
+                const parentElement = container.nodeType === Node.TEXT_NODE
+                    ? container.parentElement
                     : container;
                 const isInListItem = parentElement?.closest('li');
                 const isInCheckbox = parentElement?.closest('.checkbox-item');
-                
+
                 if (isInListItem || isInCheckbox) {
                     return;
                 }
             }
-            
+
             clearTimeout(noteContent._markdownTimeout);
             noteContent._markdownTimeout = setTimeout(() => {
                 this.markdownProcessor.processMarkdown(noteContent);
@@ -221,8 +375,8 @@ export class NotesManager {
 
                 const range = selection.getRangeAt(0);
                 const container = range.startContainer;
-                const parentElement = container.nodeType === Node.TEXT_NODE 
-                    ? container.parentElement 
+                const parentElement = container.nodeType === Node.TEXT_NODE
+                    ? container.parentElement
                     : container;
                 const li = parentElement?.closest('li');
                 const list = parentElement?.closest('ul, ol');
@@ -232,19 +386,19 @@ export class NotesManager {
                 if (list && !li && selection.isCollapsed) {
                     // Check if cursor is at the start of the content
                     const isAtStart = this.isCursorAtElementStart(parentElement, range, list);
-                    
+
                     if (isAtStart) {
                         e.preventDefault();
-                        
+
                         // Move the content element outside the list
                         const elementToMove = this.getTopLevelElementInList(parentElement, list);
                         if (elementToMove) {
                             const listParent = list.parentNode;
                             const listNextSibling = list.nextSibling;
-                            
+
                             // Move element before the list
                             listParent.insertBefore(elementToMove, list);
-                            
+
                             // Place cursor at start of moved element
                             const newRange = document.createRange();
                             if (elementToMove.nodeType === Node.TEXT_NODE) {
@@ -275,26 +429,26 @@ export class NotesManager {
 
                 if (li) {
                     const liText = li.textContent.trim();
-                    const isAtStart = range.startOffset === 0 || 
+                    const isAtStart = range.startOffset === 0 ||
                         (container.nodeType === Node.TEXT_NODE && container === li.firstChild && range.startOffset === 0);
-                    
+
                     if (isAtStart && (!liText || liText.length === 0)) {
                         e.preventDefault();
-                        
+
                         const list = li.parentElement;
                         const parent = list.parentNode;
-                        
+
                         const br = document.createElement('br');
                         const textNode = document.createTextNode('');
-                        
+
                         li.parentNode.insertBefore(br, li);
                         li.parentNode.insertBefore(textNode, br.nextSibling);
                         li.remove();
-                        
+
                         if (list.children.length === 0) {
                             list.remove();
                         }
-                        
+
                         const newRange = document.createRange();
                         newRange.setStart(textNode, 0);
                         newRange.setEnd(textNode, 0);
@@ -302,24 +456,24 @@ export class NotesManager {
                         selection.addRange(newRange);
                         return;
                     }
-                    
+
                     if (isAtStart && liText.length > 0) {
                         setTimeout(() => {
                             const liTextAfter = li.textContent.trim();
                             if (!liTextAfter || liTextAfter.length === 0) {
                                 const list = li.parentElement;
-                                
+
                                 const br = document.createElement('br');
                                 const textNode = document.createTextNode('');
-                                
+
                                 li.parentNode.insertBefore(br, li);
                                 li.parentNode.insertBefore(textNode, br.nextSibling);
                                 li.remove();
-                                
+
                                 if (list.children.length === 0) {
                                     list.remove();
                                 }
-                                
+
                                 const newRange = document.createRange();
                                 newRange.setStart(textNode, 0);
                                 newRange.setEnd(textNode, 0);
@@ -431,10 +585,11 @@ export class NotesManager {
             if (this.multiDragStartPositions && this.app.autoSaveEnabled) {
                 this.storageManager.saveNotesToLocalStorage(true);
             }
-            
+
             this.app.draggingNote = null;
             this.app.resizingNote = null;
             this.multiDragStartPositions = null;
+            this.clearGuides();
         });
 
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));

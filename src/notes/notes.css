@@ -7,14 +7,15 @@ See the LICENSE file for more information.
 .note {
     position: absolute;
     min-width: 130px;
-    min-height: 85px; /* Equivalente a 2 linhas de texto */
+    min-height: 85px;
+    /* Equivalente a 2 linhas de texto */
     background-color: #202124;
     border: 1px solid #202124;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    z-index: 1;    
+    z-index: 1;
 }
 
 .note:focus-within {
@@ -133,3 +134,19 @@ See the LICENSE file for more information.
     background-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Alignment Guides */
+.alignment-guide {
+    position: absolute;
+    background-color: var(--my-green-color);
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.alignment-guide.vertical {
+    width: 1.2px;
+}
+
+.alignment-guide.horizontal {
+    height: 1.2px;
+}
