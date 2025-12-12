@@ -130,7 +130,10 @@ export class SettingsManager {
                             </div>
                         </div>
                         <div class="settings-actions">
+                            <button id="import-theme-btn" class="button">Import Theme</button>
+                            <button id="export-theme-btn" class="button">Export Theme</button>
                             <button id="reset-theme-btn" class="button">Reset to Default</button>
+                            <input type="file" id="import-theme-file" accept=".json" style="display: none;">
                         </div>
                     </div>
                 </div>
@@ -170,6 +173,18 @@ export class SettingsManager {
 
         document.getElementById('reset-theme-btn').addEventListener('click', () => {
             this.resetTheme();
+        });
+
+        document.getElementById('export-theme-btn').addEventListener('click', () => {
+            this.exportThemeSettings();
+        });
+
+        document.getElementById('import-theme-btn').addEventListener('click', () => {
+            document.getElementById('import-theme-file').click();
+        });
+
+        document.getElementById('import-theme-file').addEventListener('change', (e) => {
+            this.importThemeSettings(e);
         });
     }
 
@@ -296,7 +311,7 @@ export class SettingsManager {
         for (const [cssVar, value] of Object.entries(this.currentTheme)) {
             this.updateThemeVariable(cssVar, value);
         }
-        this.openSettings(); 
+        this.openSettings();
     }
 
     getThemeSettings() {
@@ -314,5 +329,68 @@ export class SettingsManager {
 
         this.currentTheme = { ...this.defaultTheme, ...themeSettings };
         this.loadThemeFromStorage();
+    }
+
+    exportThemeSettings() {
+        const data = {
+            theme: this.currentTheme,
+            customColors: this.app.customColors
+        };
+
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `theme-settings-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    importThemeSettings(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+
+                if (importedData.theme) {
+                    this.applyTheme(importedData.theme);
+                }
+
+                if (importedData.customColors) {
+                    this.app.customColors = importedData.customColors;
+                    this.app.color1 = this.app.customColors[0];
+                    this.app.color2 = this.app.customColors[1];
+                    this.app.color3 = this.app.customColors[2];
+                    this.app.color4 = this.app.customColors[3];
+
+                    // Update toolbar buttons
+                    for (let i = 0; i < 4; i++) {
+                        const toolbarBtn = document.querySelectorAll('.note-toolbar .color-preset')[i];
+                        if (toolbarBtn) {
+                            toolbarBtn.style.backgroundColor = this.app.customColors[i];
+                        }
+                    }
+                }
+
+                this.openSettings(); // Refresh inputs
+
+                if (this.app.autoSaveEnabled) {
+                    this.app.storageManager.saveNotesToLocalStorage(true);
+                }
+
+                alert('Theme settings imported successfully!');
+            } catch (error) {
+                console.error('Error importing theme:', error);
+                alert('Error importing theme settings');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
     }
 }
