@@ -129,12 +129,12 @@ export class SettingsManager {
                                 <input type="text" class="color-text-input" value="${this.defaultTheme['--text-primary']}">
                             </div>
                         </div>
-                        <div class="settings-actions">
-                            <button id="import-theme-btn" class="button">Import Theme</button>
-                            <button id="export-theme-btn" class="button">Export Theme</button>
-                            <button id="reset-theme-btn" class="button">Reset to Default</button>
-                            <input type="file" id="import-theme-file" accept=".json" style="display: none;">
-                        </div>
+                    </div>
+                    <div class="settings-actions">
+                        <button id="import-theme-btn" class="button">Import Theme</button>
+                        <button id="export-theme-btn" class="button">Export Theme</button>
+                        <button id="reset-theme-btn" class="button">Reset to Default</button>
+                        <input type="file" id="import-theme-file" accept=".json" style="display: none;">
                     </div>
                 </div>
             </div>
