@@ -2,7 +2,6 @@
 // Licensed under Creative Commons BY-NC 4.0
 // See the LICENSE file for more information.
 
-// Import all modules
 import { Colors } from './core/colors.js';
 import { JWTAnalyzer } from './jwt/jwt.js';
 import { EncoderDecoder } from './encoder/encoder.js';
@@ -15,12 +14,9 @@ import { NotesOverviewManager } from './notes-overview/notes-overview.js';
 import { LayoutManager } from './layout/layout.js';
 import { NotesManager } from './notes/notes.js';
 
-// CSS modules are imported via <link> tags in index.html
 
-// Main application class that coordinates all modules
 class NotesApp {
     constructor() {
-        // Initialize colors from core module
         this.color1 = Colors.color1;
         this.color2 = Colors.color2;
         this.color3 = Colors.color3;
@@ -28,7 +24,6 @@ class NotesApp {
         this.default = Colors.default;
         this.colorPickerCurrentColor = Colors.default;
 
-        // Application state
         this.sections = [];
         this.activeSection = null;
         this.activeSectionId = null;
@@ -41,7 +36,6 @@ class NotesApp {
         this.multiDragStartPositions = null;
         this.isLoading = false;
 
-        // Initialize modules
         this.markdownProcessor = new MarkdownProcessor();
         this.encoderDecoder = new EncoderDecoder();
         this.storageManager = new StorageManager(this);
@@ -52,10 +46,8 @@ class NotesApp {
         this.toolbarManager = new ToolbarManager(this, this.markdownProcessor, this.layoutManager);
         this.notesOverviewManager = new NotesOverviewManager(this);
 
-        // Make managers accessible
-        this.app = this; // For backward compatibility
+        this.app = this; 
 
-        // Initialize application
         this.notesOverviewManager.init();
         this.sectionsManager.createDefaultSection();
         this.setupKeyboardShortcuts();
@@ -103,7 +95,6 @@ class NotesApp {
             this.sectionsManager.confirmRenameSection();
         });
 
-        // Window popup functions
         window.showPopup = function (wrapper) {
             const popup = wrapper.querySelector('.info-popup');
             const btn = wrapper.querySelector('.info-btn');
@@ -202,7 +193,6 @@ class NotesApp {
             }
         });
 
-        // Global keydown handler for markdown processing
         document.addEventListener('keydown', (event) => {
             if (!event.target.classList.contains('note-content')) return;
 
@@ -320,7 +310,6 @@ class NotesApp {
                     event.preventDefault();
                     const textAfterBullet = trimmed.substring(2).trim();
 
-                    // Get the full current line text (including the "* ok" part)
                     const lineRange = document.createRange();
                     lineRange.selectNodeContents(noteContent);
                     lineRange.setEnd(range.startContainer, range.startOffset);
@@ -328,8 +317,6 @@ class NotesApp {
                     const lines = textBeforeCursor.split('\n');
                     const currentLineText = lines[lines.length - 1] || '';
 
-                    // Select the current line text and replace with HTML
-                    // This ensures the conversion is recorded as a single history operation
                     const walker = document.createTreeWalker(noteContent, NodeFilter.SHOW_TEXT, null);
                     let charCount = 0;
                     const lineStartPos = textBeforeCursor.length - currentLineText.length;
@@ -344,12 +331,9 @@ class NotesApp {
                             const offsetInNode = lineStartPos - nodeStart;
                             const textFromOffset = node.textContent.substring(offsetInNode);
 
-                            // Check if this node contains the markdown line
                             if (textFromOffset.startsWith('* ')) {
-                                // Find where the line ends (before cursor position)
                                 const lineEndInNode = Math.min(offsetInNode + currentLineText.length, node.textContent.length);
 
-                                // Select and replace
                                 const replaceRange = document.createRange();
                                 replaceRange.setStart(node, offsetInNode);
                                 replaceRange.setEnd(node, lineEndInNode);
@@ -357,7 +341,6 @@ class NotesApp {
                                 selection.removeAllRanges();
                                 selection.addRange(replaceRange);
 
-                                // Replace with HTML
                                 const html = this.markdownProcessor.markdownToHTML(currentLineText);
                                 document.execCommand('insertHTML', false, html);
                                 found = true;
@@ -366,7 +349,6 @@ class NotesApp {
                         charCount = nodeEnd;
                     }
 
-                    // Fallback if not found
                     if (!found) {
                         this.markdownProcessor.processMarkdown(noteContent, true);
                     }
@@ -439,7 +421,6 @@ class NotesApp {
                     event.preventDefault();
                     const textAfterNumber = numberedMatch[2].trim();
 
-                    // Use history mode to record in undo stack
                     this.markdownProcessor.processMarkdown(noteContent, true);
 
                     setTimeout(() => {
@@ -510,7 +491,6 @@ class NotesApp {
                     event.preventDefault();
                     const textAfterCheckbox = trimmed.substring(2).trim();
 
-                    // Use history mode to record in undo stack
                     this.markdownProcessor.processMarkdown(noteContent, true);
 
                     setTimeout(() => {
@@ -564,7 +544,6 @@ class NotesApp {
                 if (!sel.rangeCount) return;
                 const range = sel.getRangeAt(0);
 
-                // Handle Shift+Tab for removing indentation
                 if (event.shiftKey) {
                     this.removeIndentation(noteContent, range, sel);
                     return;
@@ -587,7 +566,6 @@ class NotesApp {
                 sel.addRange(newRange);
             }
 
-            // Handle Backspace to remove indentation at line start
             if (event.key === 'Backspace' && !event.target.closest('li') && !event.target.closest('.checkbox-item')) {
                 const sel = window.getSelection();
                 if (!sel.rangeCount || !sel.isCollapsed) return;
@@ -596,14 +574,12 @@ class NotesApp {
                 const container = range.startContainer;
                 const offset = range.startOffset;
 
-                // Check if we're in a wrapper div created by Tab (for selected text indentation)
                 const parentElement = container.nodeType === Node.TEXT_NODE
                     ? container.parentElement
                     : container;
                 const wrapperDiv = parentElement?.closest('div[style*="padding-left"]');
 
                 if (wrapperDiv && wrapperDiv.style.paddingLeft) {
-                    // Check if cursor is at the start of wrapper content
                     const testRange = document.createRange();
                     testRange.selectNodeContents(wrapperDiv);
                     testRange.collapse(true);
@@ -611,14 +587,12 @@ class NotesApp {
                     if (container === testRange.startContainer && offset === testRange.startOffset) {
                         event.preventDefault();
 
-                        // Unwrap: move all children out of wrapper
                         const parent = wrapperDiv.parentNode;
                         while (wrapperDiv.firstChild) {
                             parent.insertBefore(wrapperDiv.firstChild, wrapperDiv);
                         }
                         wrapperDiv.remove();
 
-                        // Place cursor at the unwrapped content position
                         const newRange = document.createRange();
                         if (parent.firstChild && parent.firstChild.nodeType === Node.TEXT_NODE) {
                             newRange.setStart(parent.firstChild, 0);
@@ -633,14 +607,11 @@ class NotesApp {
                     }
                 }
 
-                // Handle spaces-based indentation
-                // Simple approach: if line starts with spaces and we're pressing backspace at the start, remove all spaces
                 const lineText = this.markdownProcessor.getCurrentLineText(noteContent, range);
 
                 if (/^\s+/.test(lineText)) {
                     const leadingSpaces = lineText.match(/^\s+/)[0];
 
-                    // Create a range from element start to cursor to find line start position
                     const fullRange = document.createRange();
                     fullRange.selectNodeContents(noteContent);
                     fullRange.setEnd(range.startContainer, range.startOffset);
@@ -649,16 +620,11 @@ class NotesApp {
                     const lines = textUpToCursor.split('\n');
                     const currentLineUpToCursor = lines[lines.length - 1] || '';
 
-                    // Check if cursor is at or near the end of leading spaces
-                    // This means we're at the start of the line content (after indentation)
                     const spacesLength = leadingSpaces.length;
                     const cursorPosInLine = currentLineUpToCursor.length;
 
-                    // If cursor is right after spaces (within 2 chars tolerance), remove all spaces
                     if (cursorPosInLine >= spacesLength - 2 && cursorPosInLine <= spacesLength + 2) {
                         event.preventDefault();
-
-                        // Use a helper to remove leading spaces from the current line
                         this.removeLeadingSpacesFromLine(noteContent, range, sel, leadingSpaces);
                         return;
                     }
@@ -668,7 +634,6 @@ class NotesApp {
     }
 
     removeLeadingSpacesFromLine(noteContent, range, sel, spacesToRemove) {
-        // Find the line start in the DOM and remove the leading spaces
         const fullRange = document.createRange();
         fullRange.selectNodeContents(noteContent);
         fullRange.setEnd(range.startContainer, range.startOffset);
@@ -678,7 +643,6 @@ class NotesApp {
         const currentLineUpToCursor = lines[lines.length - 1] || '';
         const lineStartCharPos = textUpToCursor.length - currentLineUpToCursor.length;
 
-        // Walk through text nodes to find and remove the spaces
         const walker = document.createTreeWalker(
             noteContent,
             NodeFilter.SHOW_TEXT,
@@ -694,24 +658,20 @@ class NotesApp {
             const nodeStart = charCount;
             const nodeEnd = charCount + nodeText.length;
 
-            // Check if line start falls within this node
             if (nodeStart <= lineStartCharPos && nodeEnd > lineStartCharPos) {
                 const offsetInNode = lineStartCharPos - nodeStart;
                 const textFromLineStart = nodeText.substring(offsetInNode);
 
-                // Check if it starts with spaces
                 if (/^\s+/.test(textFromLineStart)) {
                     const spacesMatch = textFromLineStart.match(/^(\s+)/);
                     if (spacesMatch) {
                         const spaces = spacesMatch[1];
                         const spacesEnd = offsetInNode + spaces.length;
 
-                        // Remove the spaces
                         const newText = nodeText.substring(0, offsetInNode) +
                             nodeText.substring(spacesEnd);
                         node.textContent = newText;
 
-                        // Set cursor to where spaces were removed
                         const newRange = document.createRange();
                         newRange.setStart(node, offsetInNode);
                         newRange.setEnd(node, offsetInNode);
@@ -725,12 +685,10 @@ class NotesApp {
             charCount = nodeEnd;
         }
 
-        // Fallback: if we didn't find it with walker, try direct manipulation
         if (!found && range.startContainer.nodeType === Node.TEXT_NODE) {
             const container = range.startContainer;
             const text = container.textContent;
 
-            // Check if this node contains the spaces at the beginning
             if (text.startsWith(spacesToRemove)) {
                 container.textContent = text.substring(spacesToRemove.length);
 
@@ -744,7 +702,6 @@ class NotesApp {
     }
 
     removeIndentation(noteContent, range, sel) {
-        // Check if we're in a wrapper div created by Tab
         const container = range.startContainer;
         const parentElement = container.nodeType === Node.TEXT_NODE
             ? container.parentElement
@@ -752,21 +709,17 @@ class NotesApp {
         const wrapperDiv = parentElement?.closest('div[style*="padding-left"]');
 
         if (wrapperDiv && wrapperDiv.style.paddingLeft) {
-            // Remove the wrapper div and extract its content
             const content = wrapperDiv.innerHTML;
 
-            // Create a temporary container to parse the HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = content;
 
-            // Replace wrapper with its content
             const fragment = document.createDocumentFragment();
             while (wrapperDiv.firstChild) {
                 fragment.appendChild(wrapperDiv.firstChild);
             }
             wrapperDiv.parentNode.replaceChild(fragment, wrapperDiv);
 
-            // Set cursor to the start of the extracted content
             const newRange = document.createRange();
             if (fragment.firstChild) {
                 if (fragment.firstChild.nodeType === Node.TEXT_NODE) {
@@ -784,17 +737,14 @@ class NotesApp {
             return;
         }
 
-        // Handle text-based indentation (spaces)
         if (sel.isCollapsed) {
             const lineText = this.markdownProcessor.getCurrentLineText(noteContent, range);
             const leadingSpacesMatch = lineText.match(/^(\s+)/);
 
             if (leadingSpacesMatch) {
                 const spaces = leadingSpacesMatch[1];
-                // Remove up to 4 spaces (one tab worth)
                 const spacesToRemove = spaces.length >= 4 ? spaces.substring(0, 4) : spaces;
 
-                // Find where these spaces are in the DOM
                 const lineStartRange = document.createRange();
                 lineStartRange.selectNodeContents(noteContent);
                 lineStartRange.setEnd(range.startContainer, range.startOffset);
@@ -804,7 +754,6 @@ class NotesApp {
                 const currentLine = lines[lines.length - 1] || '';
                 const currentLineStart = beforeText.length - currentLine.length;
 
-                // Walk through text nodes to find and remove the spaces
                 const walker = document.createTreeWalker(
                     noteContent,
                     NodeFilter.SHOW_TEXT,
@@ -820,22 +769,18 @@ class NotesApp {
                     const nodeStart = charCount;
                     const nodeEnd = charCount + nodeText.length;
 
-                    // Check if the line start is in this node
                     if (nodeStart <= currentLineStart && nodeEnd > currentLineStart) {
                         const offsetInNode = currentLineStart - nodeStart;
                         const textFromLineStart = nodeText.substring(offsetInNode);
 
-                        // Check if it starts with spaces
                         if (/^\s/.test(textFromLineStart)) {
                             const spacesInNode = textFromLineStart.match(/^(\s+)/)[1];
                             const removeCount = Math.min(spacesToRemove.length, spacesInNode.length);
 
-                            // Remove the spaces
                             const newText = nodeText.substring(0, offsetInNode) +
                                 nodeText.substring(offsetInNode + removeCount);
                             node.textContent = newText;
 
-                            // Set cursor to the start of the line (after removed spaces)
                             const newRange = document.createRange();
                             newRange.setStart(node, offsetInNode);
                             newRange.setEnd(node, offsetInNode);
@@ -849,12 +794,10 @@ class NotesApp {
                 }
             }
         } else {
-            // Handle selected text - remove indentation from each line
             const selectedText = range.toString();
             const lines = selectedText.split('\n');
             const modifiedLines = lines.map(line => {
                 if (/^\s{1,4}/.test(line)) {
-                    // Remove up to 4 leading spaces
                     return line.replace(/^\s{1,4}/, '');
                 }
                 return line;
@@ -865,7 +808,6 @@ class NotesApp {
             const textNode = document.createTextNode(newText);
             range.insertNode(textNode);
 
-            // Select the inserted text
             const newRange = document.createRange();
             newRange.selectNodeContents(textNode);
             sel.removeAllRanges();
@@ -991,7 +933,6 @@ class NotesApp {
         }, 1000);
     }
 
-    // Delegate methods to managers
     addSection(title, id) {
         return this.sectionsManager.addSection(title, id);
     }
@@ -1001,12 +942,10 @@ class NotesApp {
     }
 }
 
-// Initialize application
 document.addEventListener('DOMContentLoaded', () => {
     const notesApp = new NotesApp();
-    window.notesApp = notesApp; // Make available globally for debugging
+    window.notesApp = notesApp; 
 
-    // Initialize JWT Analyzer
     const jwtAnalyzer = new JWTAnalyzer();
-    window.jwtAnalyzer = jwtAnalyzer; // Make available globally for debugging
+    window.jwtAnalyzer = jwtAnalyzer; 
 });

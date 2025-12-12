@@ -6,8 +6,8 @@ export class EncoderDecoder {
     constructor() {
         this.input = '';
         this.output = '';
-        this.mode = 'encode'; // 'encode' or 'decode'
-        this.type = 'base64'; // 'ascii', 'unicode', 'html', 'hex', 'base64', 'url'
+        this.mode = 'encode'; 
+        this.type = 'base64'; 
         this.init();
     }
 
@@ -30,7 +30,6 @@ export class EncoderDecoder {
             });
         }
 
-        // Inputs
         const inputArea = document.getElementById('encoder-input');
         if (inputArea) {
             inputArea.addEventListener('input', (e) => {
@@ -40,35 +39,28 @@ export class EncoderDecoder {
             });
         }
 
-        // Mode Tabs (Encode/Decode)
         const modeTabs = document.querySelectorAll('.encoder-tab[data-mode]');
         modeTabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Update UI
                 modeTabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
 
-                // Update State
                 this.mode = tab.dataset.mode;
                 this.process();
             });
         });
 
-        // Type Buttons
         const typeBtns = document.querySelectorAll('.encoder-type-btn');
         typeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Update UI
                 typeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
-                // Update State
                 this.type = btn.dataset.type;
                 this.process();
             });
         });
 
-        // Swap button
         const swapBtn = document.getElementById('encoder-swap-btn');
         if (swapBtn) {
             swapBtn.addEventListener('click', () => {
@@ -76,10 +68,8 @@ export class EncoderDecoder {
                 document.getElementById('encoder-input').value = currentOutput;
                 this.input = currentOutput;
 
-                // Toggle mode
                 this.mode = this.mode === 'encode' ? 'decode' : 'encode';
 
-                // Update UI for mode
                 const modeTabs = document.querySelectorAll('.encoder-tab[data-mode]');
                 modeTabs.forEach(t => {
                     if (t.dataset.mode === this.mode) {
@@ -93,7 +83,6 @@ export class EncoderDecoder {
             });
         }
 
-        // Copy buttons
         const copyInputBtn = document.getElementById('encoder-copy-input');
         if (copyInputBtn) {
             copyInputBtn.addEventListener('click', () => {
@@ -108,7 +97,6 @@ export class EncoderDecoder {
             });
         }
 
-        // ESC to close
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && encoderModal && encoderModal.style.display === 'flex') {
                 this.closeModal();
@@ -197,9 +185,7 @@ export class EncoderDecoder {
         }, 2000);
     }
 
-    // --- Algorithms ---
 
-    // ASCII
     encodeASCII(str) {
         return str.split('').map(char => char.charCodeAt(0)).join(' ');
     }
@@ -208,7 +194,6 @@ export class EncoderDecoder {
         return str.trim().split(/\s+/).map(code => String.fromCharCode(parseInt(code))).join('');
     }
 
-    // Unicode
     encodeUnicode(str) {
         return str.split('').map(char => {
             const hex = char.charCodeAt(0).toString(16).toUpperCase();
@@ -220,7 +205,6 @@ export class EncoderDecoder {
         try {
             return JSON.parse(`"${str}"`);
         } catch (e) {
-            // Fallback for simple unescaping if JSON.parse fails
             return str.replace(/\\u[\dA-F]{4}/gi,
                 function (match) {
                     return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
@@ -228,7 +212,6 @@ export class EncoderDecoder {
         }
     }
 
-    // HTML
     encodeHTML(str) {
         const div = document.createElement('div');
         div.innerText = str;
@@ -241,7 +224,6 @@ export class EncoderDecoder {
         return txt.value;
     }
 
-    // Hexadecimal Escape Sequence
     encodeHex(str) {
         return str.split('').map(char => {
             const hex = char.charCodeAt(0).toString(16).toUpperCase();
@@ -255,7 +237,6 @@ export class EncoderDecoder {
         });
     }
 
-    // Base64
     encodeBase64(str) {
         return btoa(unescape(encodeURIComponent(str)));
     }
@@ -264,7 +245,6 @@ export class EncoderDecoder {
         return decodeURIComponent(escape(atob(str)));
     }
 
-    // URL
     encodeURL(str) {
         return encodeURIComponent(str);
     }

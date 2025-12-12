@@ -9,7 +9,7 @@ export class AutoSaveManager {
         this.autoSaveEnabled = false;
         this.autoSaveInterval = null;
         this.saveTimeout = null;
-        this.inputHandler = null; // Armazenar referência ao handler para poder removê-lo
+        this.inputHandler = null;
     }
 
     init() {
@@ -50,12 +50,10 @@ export class AutoSaveManager {
     }
 
     startAutoSave() {
-        // Remover listener anterior se existir para evitar múltiplos listeners
         if (this.inputHandler) {
             document.removeEventListener("input", this.inputHandler);
         }
 
-        // Criar novo handler e armazenar referência
         this.inputHandler = () => {
             if (this.autoSaveEnabled) {
                 clearTimeout(this.saveTimeout);
@@ -69,7 +67,6 @@ export class AutoSaveManager {
     }
 
     stopAutoSave() {
-        // Remover o event listener
         if (this.inputHandler) {
             document.removeEventListener("input", this.inputHandler);
             this.inputHandler = null;

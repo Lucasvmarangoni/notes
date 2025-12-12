@@ -4,13 +4,13 @@
 
 export class StorageManager {
     constructor(app) {
-        this.app = app; // Reference to main app for accessing sections, notes, etc.
+        this.app = app; 
         this.isLoading = false;
     }
 
     saveNotesToLocalStorage(silent = false) {
         if (this.isLoading) return;
-        
+
         this.app.sections.forEach(section => {
             const sectionContent = document.querySelector(`.section-content[data-section-id="${section.id}"]`);
 
@@ -59,7 +59,6 @@ export class StorageManager {
         const wasAutoSaveEnabled = this.app.autoSaveEnabled;
         this.app.autoSaveEnabled = false;
 
-        // Salvar a section ativa atual antes de recarregar
         const currentActiveSectionId = this.app.activeSectionId;
 
         if (savedSections.length === 0) {
@@ -75,7 +74,6 @@ export class StorageManager {
         document.getElementById('sections-content').innerHTML = '';
         this.app.sections = [];
 
-        // Carregar sections sem definir nenhuma como ativa
         savedSections.forEach(section => {
             const newSection = this.app.sectionsManager.addSection(section.title, section.id, false);
             section.notes.forEach(note => {
@@ -88,7 +86,7 @@ export class StorageManager {
                     note.height,
                     note.style,
                     note.id,
-                    section.id  // Passar o sectionId para garantir que a nota seja adicionada à section correta
+                    section.id  
                 );
 
                 if (note.currentColor) {
@@ -100,17 +98,14 @@ export class StorageManager {
             });
         });
 
-        // Restaurar a section ativa anterior se ela ainda existir
         if (currentActiveSectionId !== null && currentActiveSectionId !== undefined) {
             const sectionStillExists = this.app.sections.some(s => s.id === currentActiveSectionId);
             if (sectionStillExists) {
                 this.app.sectionsManager.setActiveSection(currentActiveSectionId);
             } else if (this.app.sections.length > 0) {
-                // Se a section anterior não existe mais, ativar a primeira
                 this.app.sectionsManager.setActiveSection(this.app.sections[0].id);
             }
         } else if (this.app.sections.length > 0) {
-            // Se não havia section ativa, ativar a primeira
             this.app.sectionsManager.setActiveSection(this.app.sections[0].id);
         }
 
@@ -161,15 +156,12 @@ export class StorageManager {
                     return;
                 }
 
-                // Salvar a section ativa atual antes de importar
                 const currentActiveSectionId = this.app.activeSectionId;
 
-                // Clear current notes
                 document.getElementById('sections-tabs').innerHTML = '';
                 document.getElementById('sections-content').innerHTML = '';
                 this.app.sections = [];
 
-                // Import sections and notes sem definir nenhuma como ativa
                 importedSections.forEach(section => {
                     const newSection = this.app.sectionsManager.addSection(section.title, section.id, false);
                     section.notes.forEach(note => {
@@ -182,12 +174,11 @@ export class StorageManager {
                             note.height,
                             note.style,
                             note.id,
-                            section.id  // Passar o sectionId para garantir que a nota seja adicionada à section correta
+                            section.id  
                         );
                     });
                 });
 
-                // Restaurar a section ativa anterior se ela existir no import, senão ativar a primeira
                 if (currentActiveSectionId !== null && currentActiveSectionId !== undefined) {
                     const sectionExists = this.app.sections.some(s => s.id === currentActiveSectionId);
                     if (sectionExists) {
@@ -209,8 +200,7 @@ export class StorageManager {
             }
         };
         reader.readAsText(file);
-        
-        // Reset file input
+
         event.target.value = '';
     }
 }

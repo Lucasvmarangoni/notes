@@ -49,9 +49,7 @@ export class NotesManager {
     getSnapLines(noteRect, otherNotes, sectionRect, isResize = false) {
         const snaps = { x: null, y: null };
         const guides = [];
-
-        // Horizontal candidates (y-axis)
-        // If resizing, only consider the bottom edge
+        
         const hCandidates = isResize
             ? [{ y: noteRect.bottom, type: 'bottom' }]
             : [
@@ -59,9 +57,7 @@ export class NotesManager {
                 { y: noteRect.top + noteRect.height / 2, type: 'center' },
                 { y: noteRect.bottom, type: 'bottom' }
             ];
-
-        // Vertical candidates (x-axis)
-        // If resizing, only consider the right edge
+        
         const vCandidates = isResize
             ? [{ x: noteRect.right, type: 'right' }]
             : [
@@ -75,8 +71,7 @@ export class NotesManager {
 
         otherNotes.forEach(other => {
             const otherRect = other.getBoundingClientRect();
-
-            // Check horizontal alignment
+            
             const otherH = [
                 otherRect.top,
                 otherRect.top + otherRect.height / 2,
@@ -86,13 +81,10 @@ export class NotesManager {
             hCandidates.forEach(candidate => {
                 otherH.forEach(targetY => {
                     const diff = Math.abs(candidate.y - targetY);
-
-                    // Check for guide (visual cue)
+                    
                     if (diff < this.GUIDE_THRESHOLD && diff < closestH.diff) {
                         let snapValue = null;
-                        if (diff < this.SNAP_THRESHOLD) {
-                            // If resizing, snap to the absolute target Y
-                            // If dragging, calculate the delta for the top position
+                        if (diff < this.SNAP_THRESHOLD) {                            
                             snapValue = isResize ? targetY : targetY - (candidate.y - noteRect.top);
                         }
 
@@ -106,7 +98,6 @@ export class NotesManager {
                 });
             });
 
-            // Check vertical alignment
             const otherV = [
                 otherRect.left,
                 otherRect.left + otherRect.width / 2,
@@ -117,12 +108,9 @@ export class NotesManager {
                 otherV.forEach(targetX => {
                     const diff = Math.abs(candidate.x - targetX);
 
-                    // Check for guide (visual cue)
                     if (diff < this.GUIDE_THRESHOLD && diff < closestV.diff) {
                         let snapValue = null;
-                        if (diff < this.SNAP_THRESHOLD) {
-                            // If resizing, snap to the absolute target X
-                            // If dragging, calculate the delta for the left position
+                        if (diff < this.SNAP_THRESHOLD) {                            
                             snapValue = isResize ? targetX : targetX - (candidate.x - noteRect.left);
                         }
 
@@ -138,9 +126,7 @@ export class NotesManager {
         });
 
         if (closestH.diff < Infinity) {
-            snaps.y = closestH.snapY;
-            // Calculate guide line segment
-            // We want the line to span between the two notes
+            snaps.y = closestH.snapY;          
             const x1 = Math.min(noteRect.left, closestH.otherRect.left);
             const x2 = Math.max(noteRect.right, closestH.otherRect.right);
             guides.push({
@@ -167,12 +153,10 @@ export class NotesManager {
     }
 
     addNote(title = 'New Note', content = '', x = null, y = null, width = 230, height = 200, style = {}, id = null, sectionId = null) {
-        // Se sectionId for fornecido, usar essa section; caso contrário, usar a section ativa
         const targetSectionId = sectionId !== null ? sectionId : (this.app.activeSection ? this.app.activeSection.id : null);
 
         if (targetSectionId === null || targetSectionId === undefined) return;
 
-        // Converter para Number para garantir comparação correta (os IDs podem ser números ou strings)
         const targetSectionIdNum = Number(targetSectionId);
         const targetSection = this.app.sections.find(s => Number(s.id) === targetSectionIdNum);
         if (!targetSection) return;
@@ -320,10 +304,8 @@ export class NotesManager {
             const x = e.clientX - sectionRect.left - this.app.draggingNote.offsetX;
             const y = e.clientY - sectionRect.top - this.app.draggingNote.offsetY;
 
-            // Get other notes for snapping
             const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.draggingNote.element);
 
-            // Calculate potential new position rect
             const currentRect = this.app.draggingNote.element.getBoundingClientRect();
             const newRect = {
                 left: e.clientX - this.app.draggingNote.offsetX,
@@ -355,10 +337,8 @@ export class NotesManager {
             let newWidth = Math.max(130, this.app.resizingNote.startWidth + dx);
             let newHeight = Math.max(85, this.app.resizingNote.startHeight + dy);
 
-            // Get other notes for snapping
             const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.resizingNote.element);
 
-            // Calculate potential new position rect
             const currentRect = this.app.resizingNote.element.getBoundingClientRect();
             const newRect = {
                 left: currentRect.left,
@@ -429,31 +409,24 @@ export class NotesManager {
                 const li = parentElement?.closest('li');
                 const list = parentElement?.closest('ul, ol');
 
-                // Handle backspace when inside a list but NOT inside an li
-                // This happens when content is directly inside ul/ol (like the example with <b>Ex</b>)
                 if (list && !li && selection.isCollapsed) {
-                    // Check if cursor is at the start of the content
                     const isAtStart = this.isCursorAtElementStart(parentElement, range, list);
 
                     if (isAtStart) {
                         e.preventDefault();
 
-                        // Move the content element outside the list
                         const elementToMove = this.getTopLevelElementInList(parentElement, list);
                         if (elementToMove) {
                             const listParent = list.parentNode;
                             const listNextSibling = list.nextSibling;
 
-                            // Move element before the list
                             listParent.insertBefore(elementToMove, list);
 
-                            // Place cursor at start of moved element
                             const newRange = document.createRange();
                             if (elementToMove.nodeType === Node.TEXT_NODE) {
                                 newRange.setStart(elementToMove, 0);
                                 newRange.setEnd(elementToMove, 0);
                             } else {
-                                // Find first text node in element
                                 const walker = document.createTreeWalker(
                                     elementToMove,
                                     NodeFilter.SHOW_TEXT,
@@ -632,14 +605,12 @@ export class NotesManager {
 
     setupGlobalEventListeners() {
         document.addEventListener('mouseup', () => {
-            // Verificar se estava arrastando ou redimensionando uma nota individual
             if (this.app.draggingNote && this.app.autoSaveEnabled) {
                 this.storageManager.saveNotesToLocalStorage(true);
             }
             if (this.app.resizingNote && this.app.autoSaveEnabled) {
                 this.storageManager.saveNotesToLocalStorage(true);
             }
-            // Verificar se estava arrastando múltiplas notas
             if (this.multiDragStartPositions && this.app.autoSaveEnabled) {
                 this.storageManager.saveNotesToLocalStorage(true);
             }

@@ -10,8 +10,6 @@ export class SectionsManager {
     }
 
     setupDragToScrollForExistingTabs() {
-        // Setup drag-to-scroll for tabs that might be loaded from storage
-        // This will be called after DOM is ready
         setTimeout(() => {
             const tabsContainer = document.getElementById('sections-tabs');
             if (tabsContainer) {
@@ -52,18 +50,15 @@ export class SectionsManager {
         tabsContainer.appendChild(tabElement);
         document.getElementById('sections-content').appendChild(contentElement);
 
-        // Setup drag-to-scroll functionality
         this.setupDragToScroll(tabElement, tabsContainer);
 
         tabElement.addEventListener('click', (e) => {
-            // Only activate section if this wasn't a drag operation
-            if (!tabElement.dataset.wasDragging && 
-                !e.target.classList.contains('close-tab') && 
+            if (!tabElement.dataset.wasDragging &&
+                !e.target.classList.contains('close-tab') &&
                 !e.target.classList.contains('rename-tab')) {
                 const sid = Number(tabElement.dataset.sectionId);
                 this.setActiveSection(sid);
             }
-            // Reset flag
             delete tabElement.dataset.wasDragging;
         });
 
@@ -85,7 +80,7 @@ export class SectionsManager {
             notes: []
         };
         this.app.sections.push(section);
-        
+
         if (setAsActive) {
             this.setActiveSection(section.id);
         }
@@ -94,7 +89,6 @@ export class SectionsManager {
     }
 
     setupDragToScroll(tabElement, tabsContainer) {
-        // Check if drag-to-scroll is already set up for this tab
         if (tabElement.dataset.dragScrollSetup === 'true') {
             return;
         }
@@ -106,10 +100,9 @@ export class SectionsManager {
         let startY = 0;
         let scrollLeft = 0;
         let hasMoved = false;
-        let dragType = null; // 'scroll' or 'reorder'
+        let dragType = null; 
 
         const handleMouseDown = (e) => {
-            // Don't start drag if clicking on buttons
             if (e.target.classList.contains('close-tab') || e.target.classList.contains('rename-tab')) {
                 return;
             }
@@ -133,10 +126,8 @@ export class SectionsManager {
             const deltaY = Math.abs(e.pageY - startY);
             const deltaXAbs = Math.abs(deltaX);
 
-            // Determine drag type based on movement direction
             if (dragType === null) {
                 if (deltaXAbs > 5 || deltaY > 5) {
-                    // If vertical movement is more significant, it's reordering
                     if (deltaY > deltaXAbs) {
                         dragType = 'reorder';
                         isReordering = true;
@@ -149,7 +140,7 @@ export class SectionsManager {
 
             if (dragType === 'scroll' && deltaXAbs > 5) {
                 hasMoved = true;
-                const scrollAmount = deltaX * 2; // Scroll speed multiplier
+                const scrollAmount = deltaX * 2; 
                 tabsContainer.scrollLeft = scrollLeft - scrollAmount;
             } else if (dragType === 'reorder' && isReordering) {
                 hasMoved = true;
@@ -163,17 +154,16 @@ export class SectionsManager {
                 tabElement.style.cursor = 'pointer';
                 tabsContainer.style.cursor = 'default';
                 tabsContainer.style.userSelect = '';
-                
+
                 if (isReordering) {
                     this.endReorderTab(tabElement, e);
                     isReordering = false;
                 }
-                
-                // Mark if we dragged so click handler knows to ignore it
+
                 if (hasMoved) {
                     tabElement.dataset.wasDragging = 'true';
                 }
-                
+
                 dragType = null;
             }
         };
@@ -245,8 +235,7 @@ export class SectionsManager {
         tabElement.style.zIndex = '1000';
         tabElement.style.position = 'relative';
         tabElement.classList.add('dragging');
-        
-        // Create placeholder
+
         const placeholder = document.createElement('div');
         placeholder.className = 'section-tab-placeholder';
         placeholder.style.width = `${tabElement.offsetWidth}px`;
@@ -259,7 +248,7 @@ export class SectionsManager {
     updateReorderTab(tabElement, e) {
         const tabsContainer = document.getElementById('sections-tabs');
         const placeholder = tabsContainer.querySelector('.section-tab-placeholder');
-        
+
         if (!placeholder) return;
 
         const mouseX = (e.pageX || e.clientX || 0);
@@ -270,7 +259,7 @@ export class SectionsManager {
             if (tab === tabElement) continue;
             const rect = tab.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
-            
+
             if (mouseX < centerX) {
                 targetTab = tab;
                 break;
@@ -287,19 +276,18 @@ export class SectionsManager {
     endReorderTab(tabElement, e) {
         const tabsContainer = document.getElementById('sections-tabs');
         const placeholder = tabsContainer.querySelector('.section-tab-placeholder');
-        
+
         if (placeholder) {
             tabsContainer.insertBefore(tabElement, placeholder);
             placeholder.remove();
         }
-        
+
         tabElement.style.opacity = '';
         tabElement.style.zIndex = '';
         tabElement.style.position = '';
         tabElement.classList.remove('dragging');
         delete tabElement.dataset.placeholder;
 
-        // Update sections array order to match DOM order
         this.updateSectionsOrder();
     }
 
@@ -307,8 +295,7 @@ export class SectionsManager {
         const tabsContainer = document.getElementById('sections-tabs');
         const tabs = Array.from(tabsContainer.querySelectorAll('.section-tab:not(.section-tab-placeholder)'));
         const newOrder = tabs.map(tab => Number(tab.dataset.sectionId));
-        
-        // Reorder sections array
+
         const reorderedSections = [];
         newOrder.forEach(sectionId => {
             const section = this.app.sections.find(s => s.id === sectionId);
@@ -316,8 +303,7 @@ export class SectionsManager {
                 reorderedSections.push(section);
             }
         });
-        
-        // Check if order actually changed
+
         let orderChanged = false;
         if (reorderedSections.length === this.app.sections.length) {
             for (let i = 0; i < reorderedSections.length; i++) {
@@ -327,14 +313,12 @@ export class SectionsManager {
                 }
             }
         }
-        
+
         if (orderChanged) {
             this.app.sections = reorderedSections;
-            
-            // Reorder content elements by moving them to correct positions
+
             const contentContainer = document.getElementById('sections-content');
-            
-            // Build array of content elements in new order
+
             const contentsInNewOrder = [];
             newOrder.forEach(sectionId => {
                 const content = contentContainer.querySelector(`.section-content[data-section-id="${sectionId}"]`);
@@ -342,16 +326,14 @@ export class SectionsManager {
                     contentsInNewOrder.push(content);
                 }
             });
-            
-            // Move each content to its correct position (without removing from DOM first)
+
             contentsInNewOrder.forEach((content, index) => {
                 const currentPosition = Array.from(contentContainer.children).indexOf(content);
                 if (currentPosition !== index) {
-                    // Get reference node (next sibling in new order, or null if should be last)
-                    const referenceNode = index < contentsInNewOrder.length - 1 
-                        ? contentsInNewOrder[index + 1] 
+                    const referenceNode = index < contentsInNewOrder.length - 1
+                        ? contentsInNewOrder[index + 1]
                         : null;
-                    
+
                     if (referenceNode) {
                         contentContainer.insertBefore(content, referenceNode);
                     } else {
@@ -360,7 +342,6 @@ export class SectionsManager {
                 }
             });
 
-            // Save if auto-save is enabled
             if (this.app.autoSaveEnabled) {
                 this.app.storageManager.saveNotesToLocalStorage(true);
             }

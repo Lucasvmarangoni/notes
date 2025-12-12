@@ -34,7 +34,6 @@ export class JWTAnalyzer {
             this.decodeAndUpdate();
         });
 
-        // Tab switching
         document.querySelectorAll('.jwt-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 const tabName = tab.dataset.tab;
@@ -42,12 +41,10 @@ export class JWTAnalyzer {
             });
         });
 
-        // Copy button
         document.getElementById('jwt-copy-btn').addEventListener('click', () => {
             this.copyToClipboard(this.jwt);
         });
 
-        // Edit tab actions
         document.getElementById('jwt-edit-header').addEventListener('input', (e) => {
             this.editedHeader = e.target.value;
         });
@@ -64,7 +61,6 @@ export class JWTAnalyzer {
             this.rebuildToken(false);
         });
 
-        // Sign tab
         document.getElementById('jwt-sign-btn').addEventListener('click', () => {
             this.signToken();
         });
@@ -74,12 +70,10 @@ export class JWTAnalyzer {
             });
         });
 
-        // Verify tab
         document.getElementById('jwt-verify-btn').addEventListener('click', () => {
             this.verifySignature();
         });
 
-        // ESC to close
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && jwtModal.style.display === 'flex') {
                 this.closeModal();
@@ -89,7 +83,6 @@ export class JWTAnalyzer {
 
     openModal() {
         document.getElementById('jwt-modal').style.display = 'flex';
-        // Switch to edit tab by default
         this.switchTab('edit');
     }
 
@@ -100,7 +93,6 @@ export class JWTAnalyzer {
     switchTab(tabName) {
         this.activeTab = tabName;
         
-        // Update tab buttons
         document.querySelectorAll('.jwt-tab').forEach(tab => {
             tab.classList.remove('active');
             if (tab.dataset.tab === tabName) {
@@ -108,7 +100,6 @@ export class JWTAnalyzer {
             }
         });
 
-        // Update tab content
         document.querySelectorAll('.jwt-tab-content').forEach(content => {
             content.classList.remove('active');
         });
@@ -239,7 +230,6 @@ export class JWTAnalyzer {
     }
 
     updateUI() {
-        // Show/hide copy button
         const copyBtn = document.getElementById('jwt-copy-btn');
         if (this.jwt) {
             copyBtn.style.display = 'inline-block';
@@ -247,7 +237,6 @@ export class JWTAnalyzer {
             copyBtn.style.display = 'none';
         }
 
-        // Update vulnerabilities
         const vulnsContainer = document.getElementById('jwt-vulnerabilities');
         const vulnsList = document.getElementById('jwt-vulns-list');
         if (this.vulnerabilities.length > 0) {
@@ -266,7 +255,6 @@ export class JWTAnalyzer {
             vulnsContainer.style.display = 'none';
         }
 
-        // Update edit tab
         if (this.decoded) {
             document.getElementById('jwt-edit-header').value = this.editedHeader;
             document.getElementById('jwt-edit-payload').value = this.editedPayload;
@@ -284,7 +272,6 @@ export class JWTAnalyzer {
 
             let signature = keepSignature ? this.editedSignature : '';
             
-            // Se mudou para none, remove assinatura
             if (header.alg === 'none') {
                 signature = '';
             }
@@ -312,11 +299,9 @@ export class JWTAnalyzer {
             
             let signatureBase64 = '';
             
-            // Se não há secret, usa assinatura fixa
             if (!secret || secret.trim() === '') {
                 signatureBase64 = '1wfcqr7A5MmJi6oX6VgCNxHNsfo0Z0f_xr-MoVHLZTw';
             } else {
-                // Use Web Crypto API for HMAC
                 const enc = new TextEncoder();
                 const algorithm = { name: 'HMAC', hash: { name: 'SHA-256' } };
                 

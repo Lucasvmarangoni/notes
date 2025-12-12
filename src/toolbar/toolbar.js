@@ -35,8 +35,7 @@ export class ToolbarManager {
         parentElement.insertBefore(toolbarElement, sectionsContent);
 
         this.setupToolbarEvents(toolbarElement);
-        
-        // Update layout positions after toolbar is created
+
         setTimeout(() => this.layoutManager.updateLayoutPositions(), 0);
     }
 
@@ -80,7 +79,6 @@ export class ToolbarManager {
             });
         });
 
-        // List conversion buttons
         const bulletBtn = toolbar.querySelector('.bullet-list-btn');
         const numberedBtn = toolbar.querySelector('.numbered-list-btn');
         const checkboxBtn = toolbar.querySelector('.checkbox-list-btn');
@@ -104,35 +102,30 @@ export class ToolbarManager {
 
         const range = selection.getRangeAt(0);
         let noteContent = null;
-        
-        // Find the note-content element
+
         const container = range.commonAncestorContainer;
         if (container.nodeType === Node.ELEMENT_NODE) {
             noteContent = container.closest('.note-content');
         } else {
             noteContent = container.parentElement?.closest('.note-content');
         }
-        
+
         if (!noteContent) return;
 
-        // Get selected text
         let text = selection.toString();
-        
-        // If nothing is selected, try to get the current line
+
         if (!text.trim()) {
             const lineText = this.markdownProcessor.getCurrentLineText(noteContent, range);
             if (lineText.trim()) {
                 text = lineText.trim();
             } else {
-                return; // Nothing to convert
+                return; 
             }
         }
 
-        // Split text into lines and filter empty lines
         const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
         if (lines.length === 0) return;
 
-        // Create markdown text based on type
         let markdownText = '';
         lines.forEach((line, index) => {
             const trimmed = line.trim();
@@ -150,26 +143,21 @@ export class ToolbarManager {
             }
         });
 
-        // Convert markdown to HTML directly and insert in one operation
-        // This ensures it's recorded as a single undo operation
         const html = this.markdownProcessor.markdownToHTML(markdownText);
-        
-        // Select the range and replace with HTML in one operation (records in history)
+
         selection.removeAllRanges();
         selection.addRange(range);
         document.execCommand('insertHTML', false, html);
-        
-        // Move cursor to end of inserted content
+
         setTimeout(() => {
             const newSelection = window.getSelection();
             if (newSelection.rangeCount > 0) {
                 const newRange = newSelection.getRangeAt(0);
-                // Find last list item or checkbox
                 const container = newRange.commonAncestorContainer;
                 const parent = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
                 const lists = noteContent.querySelectorAll('ul, ol');
                 const checkboxes = noteContent.querySelectorAll('.checkbox-item');
-                
+
                 let targetElement = null;
                 if (lists.length > 0) {
                     const lastList = lists[lists.length - 1];
@@ -180,7 +168,7 @@ export class ToolbarManager {
                 } else if (checkboxes.length > 0) {
                     targetElement = checkboxes[checkboxes.length - 1].querySelector('span');
                 }
-                
+
                 if (targetElement) {
                     const finalRange = document.createRange();
                     if (targetElement.tagName === 'SPAN') {
