@@ -1,5 +1,5 @@
 # Notes 
-A minimalist and fast app for taking notes.
+A minimalist and fast app to take notes and analyze them.
 
 It was created to quickly and offiline record information and gather data during pentests or bug bounty.
 
