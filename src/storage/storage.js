@@ -4,7 +4,7 @@
 
 export class StorageManager {
     constructor(app) {
-        this.app = app; 
+        this.app = app;
         this.isLoading = false;
     }
 
@@ -32,7 +32,14 @@ export class StorageManager {
             });
         });
 
-        localStorage.setItem('notesApp', JSON.stringify(this.app.sections));
+        const data = {
+            sections: this.app.sections,
+            autoSave: this.app.autoSaveEnabled,
+            theme: this.app.settingsManager.getThemeSettings(),
+            customColors: this.app.customColors
+        };
+
+        localStorage.setItem('notesApp', JSON.stringify(data));
 
         if (!silent) {
             const saveMessage = document.createElement('div');
@@ -53,8 +60,38 @@ export class StorageManager {
     loadNotesFromLocalStorage(silent = false) {
         this.isLoading = true;
 
-        const savedRaw = JSON.parse(localStorage.getItem('notesApp') || '{}');
-        const savedSections = Array.isArray(savedRaw) ? savedRaw : savedRaw.data || [];
+        const savedRaw = localStorage.getItem('notesApp');
+        let savedSections = [];
+        let savedAutoSave = this.app.autoSaveEnabled;
+        let savedTheme = null;
+
+        if (savedRaw) {
+            try {
+                const parsed = JSON.parse(savedRaw);
+
+                if (Array.isArray(parsed)) {
+                    savedSections = parsed;
+                } else {
+                    savedSections = parsed.sections || [];
+                    if (parsed.autoSave !== undefined) {
+                        savedAutoSave = parsed.autoSave;
+                    }
+                    if (parsed.theme) {
+                        savedTheme = parsed.theme;
+                    }
+                    if (parsed.customColors) {
+                        this.app.customColors = parsed.customColors;
+                        this.app.color1 = this.app.customColors[0];
+                        this.app.color2 = this.app.customColors[1];
+                        this.app.color3 = this.app.customColors[2];
+                        this.app.color4 = this.app.customColors[3];
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading data:', e);
+                savedSections = [];
+            }
+        }
 
         const wasAutoSaveEnabled = this.app.autoSaveEnabled;
         this.app.autoSaveEnabled = false;
@@ -74,6 +111,10 @@ export class StorageManager {
         document.getElementById('sections-content').innerHTML = '';
         this.app.sections = [];
 
+        if (savedTheme) {
+            this.app.settingsManager.applyTheme(savedTheme);
+        }
+
         savedSections.forEach(section => {
             const newSection = this.app.sectionsManager.addSection(section.title, section.id, false);
             section.notes.forEach(note => {
@@ -86,7 +127,7 @@ export class StorageManager {
                     note.height,
                     note.style,
                     note.id,
-                    section.id  
+                    section.id
                 );
 
                 if (note.currentColor) {
@@ -124,7 +165,10 @@ export class StorageManager {
         const data = {
             version: '1.0',
             exportDate: new Date().toISOString(),
-            data: this.app.sections
+            sections: this.app.sections,
+            autoSave: this.app.autoSaveEnabled,
+            theme: this.app.settingsManager.getThemeSettings(),
+            customColors: this.app.customColors
         };
 
         const json = JSON.stringify(data, null, 2);
@@ -149,9 +193,27 @@ export class StorageManager {
         reader.onload = (e) => {
             try {
                 const importedData = JSON.parse(e.target.result);
-                const importedSections = Array.isArray(importedData) ? importedData : importedData.data || [];
+                let sectionsToImport = [];
+                let themeToApply = null;
 
-                if (importedSections.length === 0) {
+                if (Array.isArray(importedData)) {
+                    sectionsToImport = importedData;
+                } else if (importedData && typeof importedData === 'object' && importedData.sections) {
+                    sectionsToImport = importedData.sections;
+                    themeToApply = importedData.theme;
+                    if (importedData.customColors) {
+                        this.app.customColors = importedData.customColors;
+                        this.app.color1 = this.app.customColors[0];
+                        this.app.color2 = this.app.customColors[1];
+                        this.app.color3 = this.app.customColors[2];
+                        this.app.color4 = this.app.customColors[3];
+                    }
+                } else {
+                    this.app.showNotification('No valid data found in file', 'error-message');
+                    return;
+                }
+
+                if (sectionsToImport.length === 0) {
                     this.app.showNotification('No valid data found in file', 'error-message');
                     return;
                 }
@@ -162,9 +224,13 @@ export class StorageManager {
                 document.getElementById('sections-content').innerHTML = '';
                 this.app.sections = [];
 
-                importedSections.forEach(section => {
-                    const newSection = this.app.sectionsManager.addSection(section.title, section.id, false);
-                    section.notes.forEach(note => {
+                if (themeToApply) {
+                    this.app.settingsManager.applyTheme(themeToApply);
+                }
+
+                sectionsToImport.forEach(importedSection => {
+                    const newSection = this.app.sectionsManager.addSection(importedSection.title, importedSection.id, false);
+                    importedSection.notes.forEach(note => {
                         this.app.notesManager.addNote(
                             note.title,
                             note.content,
@@ -174,7 +240,7 @@ export class StorageManager {
                             note.height,
                             note.style,
                             note.id,
-                            section.id  
+                            importedSection.id
                         );
                     });
                 });

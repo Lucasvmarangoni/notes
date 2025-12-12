@@ -119,7 +119,7 @@ export class ToolbarManager {
             if (lineText.trim()) {
                 text = lineText.trim();
             } else {
-                return; 
+                return;
             }
         }
 

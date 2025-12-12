@@ -5,6 +5,7 @@
 import { Colors } from './core/colors.js';
 import { JWTAnalyzer } from './jwt/jwt.js';
 import { EncoderDecoder } from './encoder/encoder.js';
+import { SettingsManager } from './settings/settings.js';
 import { MarkdownProcessor } from './markdown/markdown.js';
 import { SectionsManager } from './sections/sections.js';
 import { ToolbarManager } from './toolbar/toolbar.js';
@@ -24,6 +25,13 @@ class NotesApp {
         this.default = Colors.default;
         this.colorPickerCurrentColor = Colors.default;
 
+        this.customColors = [
+            Colors.color1,
+            Colors.color2,
+            Colors.color3,
+            Colors.color4
+        ];
+
         this.sections = [];
         this.activeSection = null;
         this.activeSectionId = null;
@@ -38,6 +46,7 @@ class NotesApp {
 
         this.markdownProcessor = new MarkdownProcessor();
         this.encoderDecoder = new EncoderDecoder();
+        this.settingsManager = new SettingsManager(this);
         this.storageManager = new StorageManager(this);
         this.layoutManager = new LayoutManager();
         this.sectionsManager = new SectionsManager(this);
@@ -46,9 +55,10 @@ class NotesApp {
         this.toolbarManager = new ToolbarManager(this, this.markdownProcessor, this.layoutManager);
         this.notesOverviewManager = new NotesOverviewManager(this);
 
-        this.app = this; 
+        this.app = this;
 
         this.notesOverviewManager.init();
+        this.settingsManager.init();
         this.sectionsManager.createDefaultSection();
         this.setupKeyboardShortcuts();
         this.toolbarManager.createToolbar();
@@ -121,7 +131,8 @@ class NotesApp {
                     <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
                     <p><strong>Auto Save</strong>: Automatically save and load your content.</p>
                     <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
-                    <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>                    
+                    <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>
+                    <p><strong>Settings</strong>: Customize the application theme and preset colors.</p>
                     <p><strong>Keyboard Shortcuts</strong>:</p>
                     <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
                     <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>
@@ -944,8 +955,8 @@ class NotesApp {
 
 document.addEventListener('DOMContentLoaded', () => {
     const notesApp = new NotesApp();
-    window.notesApp = notesApp; 
+    window.notesApp = notesApp;
 
     const jwtAnalyzer = new JWTAnalyzer();
-    window.jwtAnalyzer = jwtAnalyzer; 
+    window.jwtAnalyzer = jwtAnalyzer;
 });

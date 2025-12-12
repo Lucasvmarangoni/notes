@@ -19,20 +19,16 @@ See the LICENSE file for more information.
     box-sizing: border-box;
     position: fixed;
     top: 0px;
-    /* Default, will be updated by JS */
     left: 0;
     right: 0;
     z-index: 9;
     padding: 0px 2px;
     scroll-behavior: smooth;
-    /* Hide scrollbar for Chrome, Safari and Opera */
     scrollbar-width: none;
     /* Firefox */
     -ms-overflow-style: none;
-    /* IE and Edge */
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 #sections-tabs::-webkit-scrollbar {
     display: none;
 }
@@ -40,7 +36,7 @@ See the LICENSE file for more information.
 .section-tab {
     padding: 5px 12px;
     background-color: var(--bg-tertiary);
-    color: var(--text-primary);
+    color: var(--text-white);
     border: none;
     border-radius: 5px 5px 0 0;
     margin-right: 5px;

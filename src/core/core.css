@@ -5,51 +5,35 @@ See the LICENSE file for more information.
 */
 
 :root {
-    /* Brand */
     --my-green-color: #5a7552;
     --green-transparent: rgba(90, 117, 82, 0.2);
     --green-border-transparent: rgba(90, 117, 82, 0.3);
 
-    /* Backgrounds */
-    --bg-primary: #202124; 
-    /* Main dark background */
+    --bg-primary: #202124;
     --bg-secondary: #252629;
-    /* Slightly lighter (body, headers) */
     --bg-tertiary: #28292c;
-    /* Even lighter */
     --bg-hover: #3a3a3d;
-    /* Hover states */
     --bg-popup: #3a3d40;
-    /* Popups/Modals */
     --bg-input: #474747;
-    /* Inputs */
     --bg-code: #1E1E1E;
-    /* Code blocks */
     --bg-overlay: rgba(0, 0, 0, 0.7);
     --bg-white-transparent: rgba(255, 255, 255, 0.1);
 
-    /* Text */
     --text-primary: #e0e0e0;
     --text-secondary: #aaaaaa;
-    /* Also #aaa */
     --text-white: #ffffff;
-    /* Also #fff */
     --text-code: #D4D4D4;
 
-    /* Borders */
     --border-primary: #313131;
     --border-secondary: #3e3e42;
     --border-focus: #4a4a4a;
     --border-handle: #5f6368;
-    /* Resize handles, buttons */
     --border-code: #3c3c3c;
 
-    /* Shadows */
     --shadow-sm: rgba(0, 0, 0, 0.2);
     --shadow-md: rgba(0, 0, 0, 0.3);
     --shadow-lg: rgba(0, 0, 0, 0.4);
 
-    /* Scrollbar */
     --scrollbar-thumb: rgba(255, 255, 255, 0.2);
     --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
 }
@@ -74,7 +58,6 @@ body {
     padding: 8px;
 }
 
-/* Header */
 .header {
     display: flex;
     flex-direction: row;
@@ -133,7 +116,6 @@ body {
     background-color: #7a7e83;
 }
 
-/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -169,7 +151,6 @@ body {
 .modal-content input {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px;
     background-color: var(--bg-input);
     border: 1px solid var(--border-handle);
     color: var(--text-white);
@@ -183,7 +164,7 @@ body {
 }
 
 .modal-header {
-    padding: 6px 20px 0px 20px;
+    padding: 6px 20px 0px 0px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -200,7 +181,6 @@ body {
     color: var(--text-white);
 }
 
-/* Notifications */
 .save-message {
     position: fixed;
     bottom: 20px;
@@ -250,7 +230,6 @@ body {
     color: white;
 }
 
-/* Info Popup */
 .info-wrapper {
     position: relative;
     display: inline-flex;
@@ -325,15 +304,14 @@ body {
 
 .info-popup kbd {
     background-color: var(--bg-popup);
-    border: 1px solid #5a7552;
+    border: 1px solid var(--my-green-color);
     border-radius: 4px;
     padding: 2px 6px;
     font-family: monospace;
     font-size: 0.9em;
-    color: #98c09a;
+    color: var(--my-green-color);
 }
 
-/* Auto Save */
 .auto-save-container {
     display: flex;
     align-items: center;
@@ -388,7 +366,6 @@ input:checked+.toggle-slider:before {
     transform: translateX(20px);
 }
 
-/* Code */
 .note-code-block {
     background-color: var(--bg-code);
     color: var(--text-code);
@@ -445,7 +422,6 @@ input:checked+.toggle-slider:before {
     font-style: italic !important;
 }
 
-/* Responsive */
 @media screen and (max-width: 768px) {
     .info-popup {
         max-width: min(98vw, 1100px);

@@ -12,4 +12,5 @@ See the LICENSE file for more information.
 @import url('./toolbar/toolbar.css');
 @import url('./jwt/jwt.css');
 @import url('./notes-overview/notes-overview.css');
+@import url('./settings/settings.css');
 @import url('./layout/layout.css');
