@@ -9,22 +9,22 @@
     margin: 100px auto 20px auto;
     padding: 0;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    background-color: #252629;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    background-color: var(--bg-secondary);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px var(--shadow-md);
 }
 
 .encoder-container {
     padding: 20px;
-    background-color: #252629;
+    background-color: var(--bg-secondary);
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
 .close-encoder-modal {
-    color: #aaa;
+    color: var(--text-secondary);
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -32,7 +32,7 @@
 }
 
 .close-encoder-modal:hover {
-    color: #fff;
+    color: var(--text-white);
 }
 
 .encoder-type-buttons {
@@ -44,8 +44,8 @@
 
 .encoder-type-btn {
     background-color: transparent;
-    color: #aaa;
-    border: 1px solid #3e3e42;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
     padding: 6px 12px;
     border-radius: 4px;
     cursor: pointer;
@@ -54,12 +54,12 @@
 }
 
 .encoder-type-btn:hover {
-    background-color: #3a3d40;
-    color: #e0e0e0;
+    background-color: var(--bg-popup);
+    color: var(--text-primary);
 }
 
 .encoder-type-btn.active {
-    background-color: rgba(90, 117, 82, 0.2);
+    background-color: var(--green-transparent);
     border-color: var(--my-green-color);
     color: var(--my-green-color);
 }
@@ -67,9 +67,9 @@
 .encoder-swap-btn {
     padding: 2px;
     border-radius: 4px;
-    border: 1px solid #3e3e42;
+    border: 1px solid var(--border-secondary);
     background-color: transparent;
-    color: #aaa;
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -78,14 +78,14 @@
 }
 
 .encoder-swap-btn:hover {
-    background-color: #3a3d40;
-    color: #fff;
-    border-color: #aaa;
+    background-color: var(--bg-popup);
+    color: var(--text-white);
+    border-color: var(--text-secondary);
 }
 
 .encoder-tab {
     background-color: transparent;
-    color: #aaa;
+    color: var(--text-secondary);
     border: none;
     padding: 10px 16px;
     cursor: pointer;
@@ -95,11 +95,11 @@
 }
 
 .encoder-tab:hover {
-    color: #e0e0e0;
+    color: var(--text-primary);
 }
 
 .encoder-tab.active {
-    color: #e0e0e0;
+    color: var(--text-primary);
     border-bottom-color: var(--my-green-color);
 }
 

@@ -9,7 +9,7 @@ See the LICENSE file for more information.
 }
 
 #notes-overview-modal .modal-content {
-    background-color: #252629;
+    background-color: var(--bg-secondary);
     margin: 2% auto;
     padding: 0;
     border-radius: 4px;
@@ -22,6 +22,7 @@ See the LICENSE file for more information.
 
 #notes-overview-modal .modal-header {
     padding: 6px 20px 0px 20px;
+    box-shadow: 0 4px 12px var(--shadow-md);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -34,14 +35,14 @@ See the LICENSE file for more information.
 }
 
 #notes-overview-modal .close-modal {
-    color: #aaa;
+    color: var(--text-secondary);
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
 }
 
 #notes-overview-modal .close-modal:hover {
-    color: #fff;
+    color: var(--text-white);
 }
 
 #notes-overview-modal .search-container {
@@ -52,10 +53,10 @@ See the LICENSE file for more information.
 #notes-search {
     width: 100%;
     padding: 10px;
-    border: 1px solid var(--my-green-color);
+    border: 1px solid var(--border-handle);
     border-radius: 6px;
-    background-color: #1e1e1e;
-    color: #ffffff;
+    background-color: var(--bg-input);
+    color: var(--text-white);
     font-size: 14px;
 }
 
@@ -71,7 +72,6 @@ See the LICENSE file for more information.
 
 .section-header {
     padding: 10px 20px;
-    background-color: #252526;
     color: var(--my-green-color);
     font-weight: bold;
     font-size: 18px;
@@ -95,7 +95,7 @@ See the LICENSE file for more information.
 
 .note-item {
     padding: 2px 10px 2px 2px;
-    border-bottom: 1px solid #3e3e42;
+    border-bottom: 1px solid var(--border-secondary);
     color: #d4d4d4;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -130,12 +130,13 @@ See the LICENSE file for more information.
 
 .section-group-placeholder {
     background-color: #2a2d2e;
-    border: 2px dashed #5a7552;
+    border: 2px dashed var(--my-green-color);
     border-radius: 4px;
 }
 
 .drop-indicator {
     background-color: #5a7552;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
     transition: all 0.2s;
 }
 
@@ -161,4 +162,3 @@ See the LICENSE file for more information.
     align-items: center;
     gap: 2px;
 }
-

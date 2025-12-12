@@ -8,15 +8,17 @@ See the LICENSE file for more information.
 .jwt-modal-content {
     max-width: min(95vw, 900px);
     width: 100%;
-    max-height: calc(100vh - 120px); /* Espaço para header + tabs + note-actions */
+    max-height: calc(100vh - 120px);
+    /* Espaço para header + tabs + note-actions */
     overflow-y: auto;
-    margin: 100px auto 20px auto; /* Top margin para ficar abaixo do header */
+    margin: 100px auto 20px auto;
+    /* Top margin para ficar abaixo do header */
     padding: 0;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    background-color: #252629;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    background-color: var(--bg-secondary);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px var(--shadow-md);
 }
 
 .jwt-modal-header {
@@ -24,19 +26,19 @@ See the LICENSE file for more information.
     justify-content: space-between;
     align-items: center;
     padding: 6px 20px;
-    border-bottom: 1px solid #3e3e42;
-    background-color: #202124; 
+    border-bottom: 1px solid var(--border-secondary);
+    background-color: var(--bg-primary);
 }
 
 .jwt-modal-header h2 {
     margin: 0;
-    color: #e0e0e0;
+    color: var(--text-primary);
     font-size: 18px;
     z-index: 999999;
 }
 
 .close-jwt-modal {
-    color: #aaa;
+    color: var(--text-secondary);
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -44,12 +46,12 @@ See the LICENSE file for more information.
 }
 
 .close-jwt-modal:hover {
-    color: #fff;
+    color: var(--text-white);
 }
 
 .jwt-container {
     padding: 20px;
-    background-color: #252629;
+    background-color: var(--bg-secondary);
 }
 
 .jwt-section {
@@ -65,7 +67,7 @@ See the LICENSE file for more information.
 
 .jwt-section-header label,
 .jwt-section h3 {
-    color: #e0e0e0;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
     margin: 0 0 8px 0;
@@ -76,9 +78,9 @@ See the LICENSE file for more information.
     min-height: 80px;
     padding: 10px;
     background-color: #1e1e1e;
-    border: 1px solid #3e3e42;
+    border: 1px solid var(--border-secondary);
     border-radius: 4px;
-    color: #e0e0e0;
+    color: var(--text-primary);
     font-family: 'Courier New', monospace;
     font-size: 12px;
     resize: vertical;
@@ -93,9 +95,9 @@ See the LICENSE file for more information.
     width: 100%;
     padding: 10px;
     background-color: #1e1e1e;
-    border: 1px solid #3e3e42;
+    border: 1px solid var(--border-secondary);
     border-radius: 4px;
-    color: #e0e0e0;
+    color: var(--text-primary);
     font-family: 'Courier New', monospace;
     font-size: 12px;
 }
@@ -178,12 +180,12 @@ See the LICENSE file for more information.
 
 .jwt-vuln-title {
     font-weight: 600;
-    color: #e0e0e0;
+    color: var(--text-primary);
     font-size: 12px;
 }
 
 .jwt-vuln-desc {
-    color: #aaa;
+    color: var(--text-secondary);
     font-size: 11px;
     margin: 0;
 }
@@ -192,12 +194,12 @@ See the LICENSE file for more information.
     display: flex;
     gap: 4px;
     margin-bottom: 20px;
-    border-bottom: 1px solid #3e3e42;
+    border-bottom: 1px solid var(--border-secondary);
 }
 
 .jwt-tab {
     background-color: transparent;
-    color: #aaa;
+    color: var(--text-secondary);
     border: none;
     padding: 10px 16px;
     cursor: pointer;
@@ -246,7 +248,7 @@ See the LICENSE file for more information.
     grid-column: 1 / -1;
 }
 
-.jwt-code-block {    
+.jwt-code-block {
     color: #e0e0e0;
     padding: 12px;
     border-radius: 4px;
@@ -293,7 +295,7 @@ See the LICENSE file for more information.
 }
 
 .jwt-info-green {
-    background-color: rgba(90, 117, 82, 0.2);
+    background-color: var(--green-transparent);
     border-color: rgba(90, 117, 82, 0.4);
     color: #98c09a;
 }
@@ -343,7 +345,8 @@ See the LICENSE file for more information.
 }
 
 .jwt-btn-primary:hover {
-    background-color: var(--my-green-color);;
+    background-color: var(--my-green-color);
+    ;
 }
 
 .jwt-btn-danger {
@@ -383,7 +386,7 @@ See the LICENSE file for more information.
 }
 
 .jwt-secret-btn {
-    background-color: #3a3d40;
+    background-color: var(--bg-popup);
     color: #e0e0e0;
     border: 1px solid #5a7552;
     padding: 6px 12px;
@@ -395,7 +398,7 @@ See the LICENSE file for more information.
 
 .jwt-secret-btn:hover {
     background-color: #4a4d50;
-    border-color: #7a9572;
+    border-color: var(--text-secondary);
 }
 
 .jwt-copy-btn {
@@ -425,7 +428,7 @@ See the LICENSE file for more information.
 }
 
 .jwt-verify-valid {
-    background-color: rgba(90, 117, 82, 0.2);
+    background-color: var(--green-transparent);
     border: 1px solid rgba(90, 117, 82, 0.4);
     color: #98c09a;
 }
@@ -479,4 +482,3 @@ See the LICENSE file for more information.
         grid-template-columns: 1fr;
     }
 }
-

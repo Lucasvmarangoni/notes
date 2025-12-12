@@ -7,7 +7,7 @@ See the LICENSE file for more information.
 .note-actions {
     display: flex;
     align-items: center;
-    background-color: #202124;
+    background-color: var(--bg-primary);
     padding: 12px 3px;
     max-height: 18px;
     position: fixed;
@@ -17,7 +17,7 @@ See the LICENSE file for more information.
     right: 0;
     width: 100%;
     z-index: 11;
-    box-sizing: border-box;    
+    box-sizing: border-box;
 }
 
 .note-toolbar {
@@ -28,8 +28,8 @@ See the LICENSE file for more information.
 }
 
 .note-toolbar button {
-    background-color: #5f6368;
-    color: #ffffff;
+    background-color: var(--border-handle);
+    color: var(--text-white);
     border: none;
     cursor: pointer;
     border-radius: 3px;
@@ -79,7 +79,7 @@ See the LICENSE file for more information.
 
 .color-preset-btn {
     filter: brightness(60%);
-    border: 20px solid #202124;
+    border: 20px solid var(--bg-primary);
     border-radius: 5px;
     width: 20px;
     height: 20px;
@@ -101,4 +101,3 @@ See the LICENSE file for more information.
         gap: 3px;
     }
 }
-
