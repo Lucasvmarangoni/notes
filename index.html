@@ -263,15 +263,15 @@ See the LICENSE file for more information.
     <!-- Encoder Modal -->
     <div id="encoder-modal" class="modal">
         <div class="modal-content encoder-modal-content">
-            <div class="jwt-modal-header">
+            <div class="encoder-modal-header">
                 <h2>Encoder / Decoder</h2>
                 <span class="close-encoder-modal">&times;</span>
             </div>
             <div class="encoder-container">
 
                 <!-- Tabs for Mode -->
-                <div class="jwt-tabs" style="display: flex; align-items: center; gap: 10px;">
-                    <button id="encoder-swap-btn" class="encoder-swap-btn" title="Swap Input/Output"
+                <div class="encoder-tabs" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="encoder-swap-btn" class="encoder-swap-btn" title="Swap Input/Output (Switch Mode)"
                         style="margin-right: 5px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -281,6 +281,16 @@ See the LICENSE file for more information.
                             <path d="M17 21l3-3 3 3"></path>
                             <rect x="3" y="3" width="7" height="7" rx="1"></rect>
                             <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                        </svg>
+                    </button>
+                    <button id="encoder-use-output-btn" class="encoder-swap-btn" title="Use Output as Input (Keep Mode)"
+                        style="margin-right: 5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="17 1 21 5 17 9"></polyline>
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                            <polyline points="7 23 3 19 7 15"></polyline>
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
                         </svg>
                     </button>
                     <button class="encoder-tab active" data-mode="encode">Encode</button>
@@ -298,25 +308,25 @@ See the LICENSE file for more information.
                 </div>
 
                 <div class="encoder-section">
-                    <div class="jwt-section-header">
+                    <div class="encoder-section-header">
                         <label>Input</label>
-                        <button id="encoder-copy-input" class="jwt-small-btn" style="display: none;">
+                        <button id="encoder-copy-input" class="encoder-small-btn" style="display: none;">
                             <span>Copy</span>
                         </button>
                     </div>
-                    <textarea id="encoder-input" class="jwt-textarea" placeholder="Type here..."></textarea>
+                    <textarea id="encoder-input" class="encoder-textarea" placeholder="Type here..."></textarea>
                 </div>
 
 
 
                 <div class="encoder-section">
-                    <div class="jwt-section-header">
+                    <div class="encoder-section-header">
                         <label>Output</label>
-                        <button id="encoder-copy-output" class="jwt-small-btn" style="display: none;">
+                        <button id="encoder-copy-output" class="encoder-small-btn" style="display: none;">
                             <span>Copy</span>
                         </button>
                     </div>
-                    <textarea id="encoder-output" class="jwt-textarea" readonly
+                    <textarea id="encoder-output" class="encoder-textarea" readonly
                         placeholder="Result will appear here..."></textarea>
                 </div>
             </div>

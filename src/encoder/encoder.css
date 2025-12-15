@@ -1,5 +1,4 @@
 /* Encoder/Decoder Modal Styles */
-/* Reusing JWT styles where possible, adding specific overrides */
 
 .encoder-modal-content {
     max-width: min(95vw, 800px);
@@ -13,6 +12,22 @@
     background-color: var(--bg-secondary);
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-md);
+}
+
+.encoder-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 20px;
+    border-bottom: 1px solid var(--border-secondary);
+    background-color: var(--bg-primary);
+}
+
+.encoder-modal-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 18px;
+    z-index: 999999;
 }
 
 .encoder-container {
@@ -33,6 +48,83 @@
 
 .close-encoder-modal:hover {
     color: var(--text-white);
+}
+
+.encoder-section {
+    margin-bottom: 0px;
+}
+
+.encoder-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.encoder-section-header label {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.encoder-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    background-color: #1e1e1e;
+    border: 1px solid var(--border-secondary);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+
+.encoder-textarea:focus {
+    outline: none;
+    border-color: var(--my-green-color);
+}
+
+.encoder-small-btn {
+    background-color: #5f6368;
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.encoder-small-btn:hover {
+    background-color: #7a7e83;
+}
+
+.encoder-tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.encoder-tab {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.encoder-tab:hover {
+    color: var(--text-primary);
+}
+
+.encoder-tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--my-green-color);
 }
 
 .encoder-type-buttons {
@@ -81,26 +173,6 @@
     background-color: var(--bg-popup);
     color: var(--text-white);
     border-color: var(--text-secondary);
-}
-
-.encoder-tab {
-    background-color: transparent;
-    color: var(--text-secondary);
-    border: none;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 13px;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-}
-
-.encoder-tab:hover {
-    color: var(--text-primary);
-}
-
-.encoder-tab.active {
-    color: var(--text-primary);
-    border-bottom-color: var(--my-green-color);
 }
 
 /* Responsive */

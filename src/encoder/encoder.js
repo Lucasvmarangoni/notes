@@ -6,8 +6,8 @@ export class EncoderDecoder {
     constructor() {
         this.input = '';
         this.output = '';
-        this.mode = 'encode'; 
-        this.type = 'base64'; 
+        this.mode = 'encode';
+        this.type = 'base64';
         this.init();
     }
 
@@ -79,6 +79,18 @@ export class EncoderDecoder {
                     }
                 });
 
+                this.process();
+            });
+        }
+
+        const useOutputBtn = document.getElementById('encoder-use-output-btn');
+        if (useOutputBtn) {
+            useOutputBtn.addEventListener('click', () => {
+                const currentOutput = document.getElementById('encoder-output').value;
+                if (!currentOutput) return;
+
+                document.getElementById('encoder-input').value = currentOutput;
+                this.input = currentOutput;
                 this.process();
             });
         }
