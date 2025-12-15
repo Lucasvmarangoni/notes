@@ -8,11 +8,20 @@ export class MultiCursorManager {
         this.selections = []; // Array of { range: Range, type: 'caret' | 'range' }
         this.activeNote = null;
         this.isAltDown = false;
+        this.undoStack = [];
 
         this.init();
     }
 
     init() {
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && this.selections.length > 0 && this.activeNote) {
+                if (this.undoStack.length > 0) {
+                    e.preventDefault();
+                    this.restoreState();
+                }
+            }
+        });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Alt') this.isAltDown = true;
         });
@@ -28,11 +37,26 @@ export class MultiCursorManager {
         });
     }
 
+    saveState() {
+        if (!this.activeNote) return;
+        if (this.undoStack.length > 20) this.undoStack.shift();
+
+        this.undoStack.push({
+            html: this.activeNote.innerHTML,
+            note: this.activeNote
+        });
+    }
+
+    restoreState() {
+        const state = this.undoStack.pop();
+        if (state && state.note) {
+            state.note.innerHTML = state.html;
+            this.clearSelections();
+        }
+    }
+
     handleMouseDown(e, noteContent) {
-        if (!e.altKey) {
-            // If clicking without Alt, clear previous multi-selections unless we are just starting a drag
-            // We'll clear on mouseup if no multi-selection was added? 
-            // Actually standard behavior: click without modifier clears other cursors.
+        if (!e.altKey || !e.ctrlKey) {
             this.clearSelections();
             this.activeNote = noteContent;
             return;
@@ -43,38 +67,22 @@ export class MultiCursorManager {
         }
         this.activeNote = noteContent;
 
-        // We need to capture the *previous* selection before the browser updates it for the new click
-        // But mousedown happens *before* selection change usually.
-        // Wait, Alt+Click in VSCode adds a cursor.
-        // The browser will set the caret to the clicked location.
-        // We want to KEEP the existing selection.
-
         const selection = window.getSelection();
         if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0).cloneRange();
             this.addSelection(range);
         }
-
-        // The browser will now process the click and create a NEW selection at the click target.
-        // We need to let that happen, then add THAT new selection to our list?
-        // No, the browser only supports ONE selection.
-        // So we store the OLD one as a "virtual" selection, and let the browser hold the NEW one.
     }
 
     handleMouseUp(e) {
-        if (e.altKey && this.activeNote) {
-            // The click has finished, the browser has set the new selection.
-            // We don't need to do anything, the "live" selection is the one the user just made.
-            // Our stored selections are the "previous" ones.
+        if (e.altKey && e.ctrlKey && this.activeNote) {
             this.renderSelections();
         }
     }
 
     addSelection(range) {
-        // Check if range is valid and inside active note
         if (!this.activeNote.contains(range.commonAncestorContainer)) return;
 
-        // Avoid duplicates
         const isDuplicate = this.selections.some(s =>
             s.range.compareBoundaryPoints(Range.START_TO_START, range) === 0 &&
             s.range.compareBoundaryPoints(Range.END_TO_END, range) === 0
@@ -110,7 +118,6 @@ export class MultiCursorManager {
                 for (const r of rects) {
                     const div = document.createElement('div');
                     div.className = 'multi-cursor-highlight';
-                    // Fix: Use offset relative to the note content container
                     div.style.left = `${r.left - rect.left + this.activeNote.scrollLeft}px`;
                     div.style.top = `${r.top - rect.top + this.activeNote.scrollTop}px`;
                     div.style.width = `${r.width}px`;
@@ -118,11 +125,7 @@ export class MultiCursorManager {
                     this.activeNote.appendChild(div);
                 }
             } else {
-                // Caret
                 let r = sel.range.getBoundingClientRect();
-
-                // If collapsed, getBoundingClientRect might be 0 width/height or wrong position if at start of line
-                // Try to use getClientRects first
                 const rects = sel.range.getClientRects();
                 if (rects.length > 0) {
                     r = rects[0];
@@ -132,18 +135,15 @@ export class MultiCursorManager {
                 let top = r.top;
                 let height = r.height;
 
-                // Fallback for empty lines or weird positions
                 if (height === 0) {
-                    // Create a temp span to measure position
                     const span = document.createElement('span');
-                    span.textContent = '\u200b'; // Zero-width space
+                    span.textContent = '\u200b';
                     sel.range.insertNode(span);
                     const spanRect = span.getBoundingClientRect();
                     left = spanRect.left;
                     top = spanRect.top;
                     height = spanRect.height;
                     span.remove();
-                    // Normalize range
                     sel.range.collapse(true);
                 }
 
@@ -166,11 +166,9 @@ export class MultiCursorManager {
             return document.execCommand(command, showUI, value);
         }
 
-        // Apply to all selections
-        // 1. Apply to the current "live" selection (handled by browser or we do it explicitly)
-        document.execCommand(command, showUI, value);
+        this.saveState();
 
-        // 2. Apply to stored selections
+        document.execCommand(command, showUI, value);
         const selection = window.getSelection();
         const liveRange = selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
 
@@ -178,7 +176,6 @@ export class MultiCursorManager {
             selection.removeAllRanges();
             selection.addRange(sel.range);
             document.execCommand(command, showUI, value);
-            // Update the range in our list because formatting might have split nodes
             sel.range = selection.getRangeAt(0).cloneRange();
         });
 
@@ -195,20 +192,11 @@ export class MultiCursorManager {
     handleInput(e) {
         if (this.selections.length === 0) return;
 
-        // We need to apply the same action to all stored selections.
-        // Important: Process in reverse order to avoid invalidating ranges due to offsets shifting.
-        // But for typing, we want to insert at each cursor.
-
         const selection = window.getSelection();
         const liveRange = selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
 
-        // We temporarily remove the live range to avoid interference, or just be careful.
-        // Actually, the live event ALREADY happened for the live cursor.
-        // So we only need to apply to the stored selections.
-
         if (e.inputType === 'insertText' && e.data) {
             const text = e.data;
-            // Reverse order is crucial for insertions
             for (let i = this.selections.length - 1; i >= 0; i--) {
                 const sel = this.selections[i];
                 const range = sel.range;
@@ -231,14 +219,10 @@ export class MultiCursorManager {
                     range.deleteContents();
                     sel.type = 'caret';
                 } else {
-                    // Backspace on caret
-                    // Move start back by 1 character
                     if (range.startOffset > 0) {
                         range.setStart(range.startContainer, range.startOffset - 1);
                         range.deleteContents();
                     } else {
-                        // Complex case: crossing node boundaries. 
-                        // Simplified: try execCommand 'delete' on the range?
                         selection.removeAllRanges();
                         selection.addRange(range);
                         document.execCommand('delete');
@@ -248,7 +232,6 @@ export class MultiCursorManager {
             }
         }
 
-        // Restore live selection
         if (liveRange) {
             selection.removeAllRanges();
             selection.addRange(liveRange);
@@ -258,6 +241,5 @@ export class MultiCursorManager {
     }
 
     applyToSelections(action) {
-        // Not used anymore, logic moved to handleInput for better control
     }
 }

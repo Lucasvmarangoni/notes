@@ -377,6 +377,12 @@ export class NotesManager {
             this.markdownProcessor.removeEmptyBullets(noteContent);
         });
 
+        noteContent.addEventListener('beforeinput', (e) => {
+            if (this.multiCursorManager.selections.length > 0) {
+                this.multiCursorManager.saveState();
+            }
+        });
+
         noteContent.addEventListener('input', (e) => {
             // Delegate to MultiCursorManager
             this.multiCursorManager.handleInput(e);
