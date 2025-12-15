@@ -60,6 +60,7 @@ See the LICENSE file for more information.
     scrollbar-color: var(--scrollbar-thumb) transparent;
     padding: 4px;
     cursor: auto;
+    position: relative;
 }
 
 .note-title:focus,
@@ -149,4 +150,33 @@ See the LICENSE file for more information.
 
 .alignment-guide.horizontal {
     height: 1.2px;
+}
+
+/* Multi-Cursor Visuals */
+.multi-cursor-highlight {
+    position: absolute;
+    background-color: rgba(90, 117, 82, 0.3);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.multi-cursor-caret {
+    position: absolute;
+    width: 2px;
+    background-color: var(--text-primary);
+    pointer-events: none;
+    z-index: 11;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }

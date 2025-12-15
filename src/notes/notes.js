@@ -2,6 +2,8 @@
 // Licensed under Creative Commons BY-NC 4.0
 // See the LICENSE file for more information.
 
+import { MultiCursorManager } from './multi-cursor.js';
+
 export class NotesManager {
     constructor(app, markdownProcessor, storageManager) {
         this.app = app;
@@ -14,6 +16,7 @@ export class NotesManager {
         this.SNAP_THRESHOLD = 5;
         this.GUIDE_THRESHOLD = 20;
         this.guides = [];
+        this.multiCursorManager = new MultiCursorManager(app);
     }
 
     clearGuides() {
@@ -49,7 +52,7 @@ export class NotesManager {
     getSnapLines(noteRect, otherNotes, sectionRect, isResize = false) {
         const snaps = { x: null, y: null };
         const guides = [];
-        
+
         const hCandidates = isResize
             ? [{ y: noteRect.bottom, type: 'bottom' }]
             : [
@@ -57,7 +60,7 @@ export class NotesManager {
                 { y: noteRect.top + noteRect.height / 2, type: 'center' },
                 { y: noteRect.bottom, type: 'bottom' }
             ];
-        
+
         const vCandidates = isResize
             ? [{ x: noteRect.right, type: 'right' }]
             : [
@@ -71,7 +74,7 @@ export class NotesManager {
 
         otherNotes.forEach(other => {
             const otherRect = other.getBoundingClientRect();
-            
+
             const otherH = [
                 otherRect.top,
                 otherRect.top + otherRect.height / 2,
@@ -81,10 +84,10 @@ export class NotesManager {
             hCandidates.forEach(candidate => {
                 otherH.forEach(targetY => {
                     const diff = Math.abs(candidate.y - targetY);
-                    
+
                     if (diff < this.GUIDE_THRESHOLD && diff < closestH.diff) {
                         let snapValue = null;
-                        if (diff < this.SNAP_THRESHOLD) {                            
+                        if (diff < this.SNAP_THRESHOLD) {
                             snapValue = isResize ? targetY : targetY - (candidate.y - noteRect.top);
                         }
 
@@ -110,7 +113,7 @@ export class NotesManager {
 
                     if (diff < this.GUIDE_THRESHOLD && diff < closestV.diff) {
                         let snapValue = null;
-                        if (diff < this.SNAP_THRESHOLD) {                            
+                        if (diff < this.SNAP_THRESHOLD) {
                             snapValue = isResize ? targetX : targetX - (candidate.x - noteRect.left);
                         }
 
@@ -126,7 +129,7 @@ export class NotesManager {
         });
 
         if (closestH.diff < Infinity) {
-            snaps.y = closestH.snapY;          
+            snaps.y = closestH.snapY;
             const x1 = Math.min(noteRect.left, closestH.otherRect.left);
             const x2 = Math.max(noteRect.right, closestH.otherRect.right);
             guides.push({
@@ -375,6 +378,9 @@ export class NotesManager {
         });
 
         noteContent.addEventListener('input', (e) => {
+            // Delegate to MultiCursorManager
+            this.multiCursorManager.handleInput(e);
+
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
                 const range = selection.getRangeAt(0);
@@ -509,6 +515,11 @@ export class NotesManager {
         });
 
         noteElement.addEventListener('mousedown', (e) => {
+            const noteContent = e.target.closest('.note-content');
+            if (noteContent) {
+                this.multiCursorManager.handleMouseDown(e, noteContent);
+            }
+
             if (e.ctrlKey && e.shiftKey) {
                 e.preventDefault();
                 if (this.selectedNotes.has(noteElement)) {
@@ -522,6 +533,13 @@ export class NotesManager {
                 if (!this.selectedNotes.has(noteElement)) {
                     this.clearSelectedNotes();
                 }
+            }
+        });
+
+        noteElement.addEventListener('mouseup', (e) => {
+            const noteContent = e.target.closest('.note-content');
+            if (noteContent) {
+                this.multiCursorManager.handleMouseUp(e);
             }
         });
 

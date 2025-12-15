@@ -51,11 +51,11 @@ export class ToolbarManager {
             this.app.formatAsCode();
         });
         boldBtn.addEventListener('click', () => {
-            document.execCommand('bold', false, null);
+            this.execCommand('bold', false, null);
         });
 
         underlineBtn.addEventListener('click', () => {
-            document.execCommand('underline', false, null);
+            this.execCommand('underline', false, null);
         });
 
         colorPicker.addEventListener('input', () => {
@@ -192,7 +192,7 @@ export class ToolbarManager {
     }
 
     applyColor(color) {
-        document.execCommand('foreColor', false, color);
+        this.execCommand('foreColor', false, color);
         this.fixUnderlineColor();
     }
 
@@ -253,8 +253,16 @@ export class ToolbarManager {
         selection.addRange(range);
 
         if (document.queryCommandState('underline')) {
-            document.execCommand('underline');
-            document.execCommand('underline');
+            this.execCommand('underline');
+            this.execCommand('underline');
+        }
+    }
+
+    execCommand(command, showUI, value) {
+        if (this.app.notesManager && this.app.notesManager.multiCursorManager) {
+            this.app.notesManager.multiCursorManager.execCommand(command, showUI, value);
+        } else {
+            document.execCommand(command, showUI, value);
         }
     }
 }
