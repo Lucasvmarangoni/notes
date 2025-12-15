@@ -60,7 +60,7 @@ export class ToolbarManager {
 
         colorPicker.addEventListener('input', () => {
             this.app.colorPickerCurrentColor = colorPicker.value;
-            document.execCommand('foreColor', false, colorPicker.value);
+            this.applyColor(colorPicker.value);
 
             if (this.app.autoSaveEnabled) {
                 this.app.storageManager.saveNotesToLocalStorage(true);
@@ -75,7 +75,7 @@ export class ToolbarManager {
             btn.addEventListener('click', () => {
                 const colorProperty = `color${index + 1}`;
                 const color = this.app[colorProperty];
-                document.execCommand('foreColor', false, color);
+                this.applyColor(color);
             });
         });
 
@@ -189,6 +189,73 @@ export class ToolbarManager {
                 }
             }
         }, 0);
+    }
+
+    applyColor(color) {
+        document.execCommand('foreColor', false, color);
+        this.fixUnderlineColor();
+    }
+
+    fixUnderlineColor() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        const commonAncestor = range.commonAncestorContainer;
+
+        const container = commonAncestor.nodeType === Node.TEXT_NODE
+            ? commonAncestor.parentElement
+            : commonAncestor;
+
+        const candidates = [];
+        if (this.isColorNode(container)) {
+            candidates.push(container);
+        }
+
+        const walker = document.createTreeWalker(
+            container,
+            NodeFilter.SHOW_ELEMENT,
+            {
+                acceptNode: (node) => {
+                    if (this.isColorNode(node)) return NodeFilter.FILTER_ACCEPT;
+                    return NodeFilter.FILTER_SKIP;
+                }
+            }
+        );
+
+        while (walker.nextNode()) {
+            candidates.push(walker.currentNode);
+        }
+
+        const processed = new Set();
+        candidates.forEach(node => {
+            if (processed.has(node)) return;
+
+            if (range.intersectsNode(node)) {
+                const uParent = node.closest('u');
+                if (uParent) {
+                    this.swapUAndColor(node);
+                    processed.add(node);
+                }
+            }
+        });
+    }
+
+    isColorNode(node) {
+        return node.tagName === 'FONT' || (node.tagName === 'SPAN' && node.style.color);
+    }
+
+    swapUAndColor(colorNode) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(colorNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        if (document.queryCommandState('underline')) {
+            document.execCommand('underline');
+            document.execCommand('underline');
+        }
     }
 }
 
