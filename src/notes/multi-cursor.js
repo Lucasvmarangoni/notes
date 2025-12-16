@@ -188,7 +188,6 @@ export class MultiCursorManager {
         this.renderSelections();
     }
 
-    // Handle typing (basic support)
     handleInput(e) {
         if (this.selections.length === 0) return;
 
@@ -205,7 +204,6 @@ export class MultiCursorManager {
                 const textNode = document.createTextNode(text);
                 range.insertNode(textNode);
 
-                // Move cursor to end of inserted text
                 range.setStartAfter(textNode);
                 range.setEndAfter(textNode);
                 sel.type = 'caret';
@@ -229,6 +227,39 @@ export class MultiCursorManager {
                         sel.range = selection.getRangeAt(0).cloneRange();
                     }
                 }
+            }
+        } else if (e.inputType === 'deleteContentForward') {
+            for (let i = this.selections.length - 1; i >= 0; i--) {
+                const sel = this.selections[i];
+                const range = sel.range;
+
+                if (!range.collapsed) {
+                    range.deleteContents();
+                    sel.type = 'caret';
+                } else {
+                    const textLength = range.startContainer.textContent?.length || 0;
+                    if (range.startOffset < textLength) {
+                        range.setEnd(range.startContainer, range.startOffset + 1);
+                        range.deleteContents();
+                    } else {
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        document.execCommand('forwardDelete');
+                        sel.range = selection.getRangeAt(0).cloneRange();
+                    }
+                }
+            }
+        } else if (e.inputType === 'insertLineBreak') {
+            // Handle Enter key
+            for (let i = this.selections.length - 1; i >= 0; i--) {
+                const sel = this.selections[i];
+                const range = sel.range;
+
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('insertLineBreak', false, null);
+                sel.range = selection.getRangeAt(0).cloneRange();
+                sel.type = 'caret';
             }
         }
 

@@ -217,6 +217,11 @@ class NotesApp {
             const lineText = this.markdownProcessor.getCurrentLineText(noteContent, range);
 
             if (event.key === 'Enter') {
+                // Let handleInput handle multi-cursor Enter
+                if (this.notesManager.multiCursorManager.selections.length > 0) {
+                    return; // Let the input event be handled by handleInput
+                }
+
                 const parentElement = container.nodeType === Node.TEXT_NODE
                     ? container.parentElement
                     : container;
