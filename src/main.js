@@ -259,13 +259,30 @@ class NotesApp {
                     event.preventDefault();
                     const list = li.parentElement;
                     const newLi = document.createElement('li');
-                    const newTextNode = document.createTextNode('');
-                    newLi.appendChild(newTextNode);
+
+                    const range = selection.getRangeAt(0);
+                    const rangeToEnd = document.createRange();
+                    rangeToEnd.setStart(range.startContainer, range.startOffset);
+                    rangeToEnd.setEndAfter(li.lastChild);
+
+                    const fragment = rangeToEnd.extractContents();
+                    newLi.appendChild(fragment);
+
                     list.insertBefore(newLi, li.nextSibling);
 
                     const newRange = document.createRange();
-                    newRange.setStart(newTextNode, 0);
-                    newRange.setEnd(newTextNode, 0);
+                    if (newLi.firstChild) {
+                        if (newLi.firstChild.nodeType === Node.TEXT_NODE) {
+                            newRange.setStart(newLi.firstChild, 0);
+                        } else {
+                            newRange.setStart(newLi, 0);
+                        }
+                    } else {
+                        const textNode = document.createTextNode('');
+                        newLi.appendChild(textNode);
+                        newRange.setStart(textNode, 0);
+                    }
+                    newRange.collapse(true);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                     return;
