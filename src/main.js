@@ -217,9 +217,8 @@ class NotesApp {
             const lineText = this.markdownProcessor.getCurrentLineText(noteContent, range);
 
             if (event.key === 'Enter') {
-                // Let handleInput handle multi-cursor Enter
                 if (this.notesManager.multiCursorManager.selections.length > 0) {
-                    return; // Let the input event be handled by handleInput
+                    return;
                 }
 
                 const parentElement = container.nodeType === Node.TEXT_NODE
@@ -292,8 +291,28 @@ class NotesApp {
                     event.preventDefault();
                     const checkboxItem = isInCheckbox;
                     const label = checkboxItem.querySelector('span');
-                    const cursorPos = selection.getRangeAt(0).startOffset;
-                    const text = label.textContent;
+                    const range = selection.getRangeAt(0);
+                    let cursorPos = range.startOffset;
+
+                    let text = '';
+                    if (label) {
+                        text = label.textContent;
+                    } else {
+                        // Fallback: if span is missing, get text from the item itself (excluding input value which isn't textContent)
+                        text = checkboxItem.textContent;
+                    }
+
+                    // Fix: Handle case where cursor is on the element boundary (not text node)
+                    if (range.startContainer.nodeType !== Node.TEXT_NODE) {
+                        // If we are on the checkboxItem div or label span
+                        if (cursorPos === 0) {
+                            cursorPos = 0;
+                        } else {
+                            // If offset is greater than 0, assume we are at the end of the text
+                            // This is a simplification but safe for "Enter" behavior (create new item)
+                            cursorPos = text.length;
+                        }
+                    }
 
                     if (cursorPos >= text.length) {
                         const newCheckboxItem = document.createElement('div');
@@ -315,7 +334,18 @@ class NotesApp {
                     } else {
                         const beforeText = text.substring(0, cursorPos);
                         const afterText = text.substring(cursorPos);
-                        label.textContent = beforeText;
+
+                        if (label) {
+                            label.textContent = beforeText;
+                        } else {
+                            // Restore structure if missing
+                            checkboxItem.childNodes.forEach(child => {
+                                if (child.nodeType === Node.TEXT_NODE) child.remove();
+                            });
+                            const newLabel = document.createElement('span');
+                            newLabel.textContent = beforeText;
+                            checkboxItem.appendChild(newLabel);
+                        }
 
                         const newCheckboxItem = document.createElement('div');
                         newCheckboxItem.className = 'checkbox-item';
