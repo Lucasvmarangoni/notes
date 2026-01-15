@@ -141,7 +141,7 @@ class NotesApp {
                     <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>    
                     <kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting<br>
                     <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously<br>
-                    <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Click</kbd>: Multi-cursor selection<br>
+                    <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Click</kbd>: <span class="beta-badge">BETA</span> Multi-cursor selection<br>
                     <kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Enter</kbd> on empty items to exit the list.<br>                               
                 </div>
             `;

@@ -422,6 +422,19 @@ input:checked+.toggle-slider:before {
     font-style: italic !important;
 }
 
+.beta-badge {
+    display: inline-block;
+    background-color: var(--my-green-color);
+    color: #fff;
+    font-size: 0.7em;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 4px;
+    letter-spacing: 0.5px;
+}
+
 @media screen and (max-width: 768px) {
     .info-popup {
         max-width: min(98vw, 1100px);

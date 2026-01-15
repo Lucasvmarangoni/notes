@@ -263,6 +263,7 @@ export class NotesManager {
                     offsetY
                 };
                 this.draggingNote = this.app.draggingNote;
+                this.startAutoScroll();
             }
         });
 
@@ -275,96 +276,177 @@ export class NotesManager {
                 element: noteElement,
                 startWidth,
                 startHeight,
-                startX: e.clientX,
-                startY: e.clientY
+                startX: e.pageX,
+                startY: e.pageY
             };
             this.resizingNote = this.app.resizingNote;
+            this.startAutoScroll();
         });
     }
 
     handleMouseMove(e) {
+        this.lastMouseX = e.clientX;
+        this.lastMouseY = e.clientY;
+
         if (this.multiDragStartPositions) {
-            const sectionContent = this.app.activeSection
-                ? document.querySelector(`.section-content[data-section-id="${this.app.activeSection.id}"]`)
-                : null;
-            if (!sectionContent) return;
-
-            const sectionRect = sectionContent.getBoundingClientRect();
-
-            this.multiDragStartPositions.forEach(pos => {
-                const x = e.clientX - pos.offsetX - sectionRect.left;
-                const y = e.clientY - pos.offsetY - sectionRect.top;
-                pos.element.style.left = `${Math.max(0, x)}px`;
-                pos.element.style.top = `${Math.max(0, y)}px`;
-            });
+            this.updateMultiDragPosition(e.clientX, e.clientY);
             return;
         }
 
         if (this.app.draggingNote) {
-            const sectionContent = this.app.draggingNote.element.closest('.section-content');
-            const sectionRect = sectionContent.getBoundingClientRect();
-
-            const x = e.clientX - sectionRect.left - this.app.draggingNote.offsetX;
-            const y = e.clientY - sectionRect.top - this.app.draggingNote.offsetY;
-
-            const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.draggingNote.element);
-
-            const currentRect = this.app.draggingNote.element.getBoundingClientRect();
-            const newRect = {
-                left: e.clientX - this.app.draggingNote.offsetX,
-                top: e.clientY - this.app.draggingNote.offsetY,
-                width: currentRect.width,
-                height: currentRect.height,
-                right: e.clientX - this.app.draggingNote.offsetX + currentRect.width,
-                bottom: e.clientY - this.app.draggingNote.offsetY + currentRect.height
-            };
-
-            const { snaps, guides } = this.getSnapLines(newRect, otherNotes, sectionRect);
-
-            const finalX = snaps.x !== null ? snaps.x - sectionRect.left : x;
-            const finalY = snaps.y !== null ? snaps.y - sectionRect.top : y;
-
-            this.app.draggingNote.element.style.left = `${Math.max(0, finalX)}px`;
-            this.app.draggingNote.element.style.top = `${Math.max(0, finalY)}px`;
-
-            this.drawGuides(guides, sectionContent);
+            this.updateDragPosition(e.clientX, e.clientY);
         }
 
         if (this.app.resizingNote) {
-            const sectionContent = this.app.resizingNote.element.closest('.section-content');
-            const sectionRect = sectionContent.getBoundingClientRect();
+            this.updateResizeDimensions(e.clientX, e.clientY);
+        }
+    }
 
-            const dx = e.clientX - this.app.resizingNote.startX;
-            const dy = e.clientY - this.app.resizingNote.startY;
+    updateMultiDragPosition(clientX, clientY) {
+        const sectionContent = this.app.activeSection
+            ? document.querySelector(`.section-content[data-section-id="${this.app.activeSection.id}"]`)
+            : null;
+        if (!sectionContent) return;
 
-            let newWidth = Math.max(130, this.app.resizingNote.startWidth + dx);
-            let newHeight = Math.max(85, this.app.resizingNote.startHeight + dy);
+        const sectionRect = sectionContent.getBoundingClientRect();
 
-            const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.resizingNote.element);
+        this.multiDragStartPositions.forEach(pos => {
+            const x = clientX - pos.offsetX - sectionRect.left;
+            const y = clientY - pos.offsetY - sectionRect.top;
+            pos.element.style.left = `${Math.max(0, x)}px`;
+            pos.element.style.top = `${Math.max(0, y)}px`;
+        });
+    }
 
-            const currentRect = this.app.resizingNote.element.getBoundingClientRect();
-            const newRect = {
-                left: currentRect.left,
-                top: currentRect.top,
-                width: newWidth,
-                height: newHeight,
-                right: currentRect.left + newWidth,
-                bottom: currentRect.top + newHeight
-            };
+    updateDragPosition(clientX, clientY) {
+        const sectionContent = this.app.draggingNote.element.closest('.section-content');
+        const sectionRect = sectionContent.getBoundingClientRect();
 
-            const { snaps, guides } = this.getSnapLines(newRect, otherNotes, sectionRect, true);
+        const x = clientX - sectionRect.left - this.app.draggingNote.offsetX;
+        const y = clientY - sectionRect.top - this.app.draggingNote.offsetY;
 
-            if (snaps.x !== null) {
-                newWidth = snaps.x - currentRect.left;
+        const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.draggingNote.element);
+
+        const currentRect = this.app.draggingNote.element.getBoundingClientRect();
+        const newRect = {
+            left: clientX - this.app.draggingNote.offsetX,
+            top: clientY - this.app.draggingNote.offsetY,
+            width: currentRect.width,
+            height: currentRect.height,
+            right: clientX - this.app.draggingNote.offsetX + currentRect.width,
+            bottom: clientY - this.app.draggingNote.offsetY + currentRect.height
+        };
+
+        const { snaps, guides } = this.getSnapLines(newRect, otherNotes, sectionRect);
+
+        const finalX = snaps.x !== null ? snaps.x - sectionRect.left : x;
+        const finalY = snaps.y !== null ? snaps.y - sectionRect.top : y;
+
+        this.app.draggingNote.element.style.left = `${Math.max(0, finalX)}px`;
+        this.app.draggingNote.element.style.top = `${Math.max(0, finalY)}px`;
+
+        this.drawGuides(guides, sectionContent);
+    }
+
+    updateResizeDimensions(clientX, clientY) {
+        const sectionContent = this.app.resizingNote.element.closest('.section-content');
+        const sectionRect = sectionContent.getBoundingClientRect();
+
+        const pageX = clientX + window.scrollX;
+        const pageY = clientY + window.scrollY;
+
+        const dx = pageX - this.app.resizingNote.startX;
+        const dy = pageY - this.app.resizingNote.startY;
+
+        let newWidth = Math.max(130, this.app.resizingNote.startWidth + dx);
+        let newHeight = Math.max(85, this.app.resizingNote.startHeight + dy);
+
+        const otherNotes = Array.from(sectionContent.querySelectorAll('.note')).filter(n => n !== this.app.resizingNote.element);
+
+        const currentRect = this.app.resizingNote.element.getBoundingClientRect();
+        const newRect = {
+            left: currentRect.left,
+            top: currentRect.top,
+            width: newWidth,
+            height: newHeight,
+            right: currentRect.left + newWidth,
+            bottom: currentRect.top + newHeight
+        };
+
+        const { snaps, guides } = this.getSnapLines(newRect, otherNotes, sectionRect, true);
+
+        if (snaps.x !== null) {
+            newWidth = snaps.x - currentRect.left;
+        }
+        if (snaps.y !== null) {
+            newHeight = snaps.y - currentRect.top;
+        }
+
+        this.app.resizingNote.element.style.width = `${newWidth}px`;
+        this.app.resizingNote.element.style.height = `${newHeight}px`;
+
+        this.drawGuides(guides, sectionContent);
+    }
+
+    startAutoScroll() {
+        if (this.autoScrollInterval) return;
+
+        const scrollZone = 50;
+        const maxScrollSpeed = 2; 
+
+        const loop = () => {
+            if (!this.app.draggingNote && !this.app.resizingNote && !this.multiDragStartPositions) {
+                this.stopAutoScroll();
+                return;
             }
-            if (snaps.y !== null) {
-                newHeight = snaps.y - currentRect.top;
+
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            let scrolled = false;
+
+            let scrollX = 0;
+            if (this.lastMouseX < scrollZone) {
+                const intensity = Math.pow(1 - (this.lastMouseX / scrollZone), 2);
+                scrollX = -maxScrollSpeed * intensity;
+            } else if (this.lastMouseX > viewportWidth - scrollZone) {
+                const intensity = Math.pow(1 - ((viewportWidth - this.lastMouseX) / scrollZone), 2);
+                scrollX = maxScrollSpeed * intensity;
             }
 
-            this.app.resizingNote.element.style.width = `${newWidth}px`;
-            this.app.resizingNote.element.style.height = `${newHeight}px`;
+            let scrollY = 0;
+            if (this.lastMouseY < scrollZone) {
+                const intensity = Math.pow(1 - (this.lastMouseY / scrollZone), 2);
+                scrollY = -maxScrollSpeed * intensity;
+            } else if (this.lastMouseY > viewportHeight - scrollZone) {
+                const intensity = Math.pow(1 - ((viewportHeight - this.lastMouseY) / scrollZone), 2);
+                scrollY = maxScrollSpeed * intensity;
+            }
 
-            this.drawGuides(guides, sectionContent);
+            if (scrollX !== 0 || scrollY !== 0) {
+                window.scrollBy(scrollX, scrollY);
+                scrolled = true;
+            }
+
+            if (scrolled) {
+                if (this.multiDragStartPositions) {
+                    this.updateMultiDragPosition(this.lastMouseX, this.lastMouseY);
+                } else if (this.app.draggingNote) {
+                    this.updateDragPosition(this.lastMouseX, this.lastMouseY);
+                } else if (this.app.resizingNote) {
+                    this.updateResizeDimensions(this.lastMouseX, this.lastMouseY);
+                }
+            }
+
+            this.autoScrollInterval = requestAnimationFrame(loop);
+        };
+
+        this.autoScrollInterval = requestAnimationFrame(loop);
+    }
+
+    stopAutoScroll() {
+        if (this.autoScrollInterval) {
+            cancelAnimationFrame(this.autoScrollInterval);
+            this.autoScrollInterval = null;
         }
     }
 
@@ -384,7 +466,6 @@ export class NotesManager {
         });
 
         noteContent.addEventListener('input', (e) => {
-            // Delegate to MultiCursorManager
             this.multiCursorManager.handleInput(e);
 
             const selection = window.getSelection();
@@ -641,8 +722,10 @@ export class NotesManager {
 
             this.app.draggingNote = null;
             this.app.resizingNote = null;
+
             this.multiDragStartPositions = null;
             this.clearGuides();
+            this.stopAutoScroll();
         });
 
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
