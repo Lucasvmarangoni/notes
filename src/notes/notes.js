@@ -391,7 +391,7 @@ export class NotesManager {
     startAutoScroll() {
         if (this.autoScrollInterval) return;
 
-        const scrollZone = 50;
+        const scrollZone = 10;
         const maxScrollSpeed = 2; 
 
         const loop = () => {
