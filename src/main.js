@@ -898,8 +898,7 @@ class NotesApp {
             }
 
             else if (e.ctrlKey && e.key === '\\') {
-                e.preventDefault();
-                document.execCommand('removeFormat', false, null);
+                this.cleanFormatting(e);
             }
 
             else if (e.ctrlKey && e.key === 'e') {
@@ -940,44 +939,125 @@ class NotesApp {
         const range = selection.getRangeAt(0);
         if (selection.isCollapsed) return;
 
-        const walker = document.createTreeWalker(
-            range.commonAncestorContainer,
-            NodeFilter.SHOW_TEXT,
-            {
-                acceptNode: node => range.intersectsNode(node)
-                    ? NodeFilter.FILTER_ACCEPT
-                    : NodeFilter.FILTER_REJECT
-            }
-        );
-
         const textNodes = [];
-        while (walker.nextNode()) textNodes.push(walker.currentNode);
+        const container = range.commonAncestorContainer;
 
-        const hasCode = textNodes.some(n => n.parentElement?.classList?.contains('inline-code'));
-        if (hasCode) {
-            textNodes.forEach(node => {
-                const parent = node.parentElement;
-                if (parent?.classList?.contains('inline-code')) {
-                    const textNode = document.createTextNode(parent.textContent);
-                    parent.replaceWith(textNode);
+        if (container.nodeType === Node.TEXT_NODE) {
+            textNodes.push(container);
+        } else {
+            const walker = document.createTreeWalker(
+                container,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: node => range.intersectsNode(node)
+                        ? NodeFilter.FILTER_ACCEPT
+                        : NodeFilter.FILTER_REJECT
                 }
+            );
+            while (walker.nextNode()) textNodes.push(walker.currentNode);
+        }
+
+        const hasCode = textNodes.some(n => n.parentElement?.closest('.inline-code'));
+
+        if (hasCode) {
+            const nodesToUnwrap = new Set();
+            textNodes.forEach(node => {
+                const codeElement = node.parentElement?.closest('.inline-code');
+                if (codeElement) {
+                    nodesToUnwrap.add(codeElement);
+                }
+            });
+
+            nodesToUnwrap.forEach(node => {
+                const textNode = document.createTextNode(node.textContent);
+                node.replaceWith(textNode);
+                textNode.parentElement?.normalize();
             });
             return;
         }
 
+        const startContainer = range.startContainer;
+        const startOffset = range.startOffset;
+        const endContainer = range.endContainer;
+        const endOffset = range.endOffset;
+
         textNodes.forEach(node => {
-            const parent = node.parentElement;
-            if (!parent.classList.contains('inline-code')) {
-                const codeSpan = document.createElement('span');
-                codeSpan.className = 'inline-code';
-                node.parentNode.replaceChild(codeSpan, node);
-                codeSpan.appendChild(node);
-                if (typeof hljs !== 'undefined') {
-                    hljs.highlightElement(codeSpan);
+            let targetNode = node;
+
+            if (node === endContainer && endOffset < node.textContent.length) {
+                node.splitText(endOffset);
+            }
+
+            if (node === startContainer && startOffset > 0) {
+                targetNode = node.splitText(startOffset);
+            }
+
+            if (targetNode.textContent.length > 0) {
+                const parent = targetNode.parentElement;
+                if (!parent.closest('.inline-code')) {
+                    const span = document.createElement('span');
+                    span.className = 'inline-code';
+                    targetNode.parentNode.replaceChild(span, targetNode);
+                    span.appendChild(targetNode);
+                    if (typeof hljs !== 'undefined') {
+                        hljs.highlightElement(span);
+                    }
                 }
             }
         });
+
+        selection.removeAllRanges();
     }
+
+    cleanFormatting(e) {
+        if (e) e.preventDefault();
+        document.execCommand('removeFormat', false, null);
+
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+
+        const nodesToUnwrap = new Set();
+
+        let node = range.commonAncestorContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+
+        while (node && node.tagName !== 'BODY') {
+            if (node.classList?.contains('inline-code')) {
+                nodesToUnwrap.add(node);
+            }
+            node = node.parentElement;
+        }
+
+        const container = range.commonAncestorContainer;
+        const walkerRoot = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
+
+        const walker = document.createTreeWalker(
+            walkerRoot,
+            NodeFilter.SHOW_ELEMENT,
+            {
+                acceptNode: node => {
+                    if (node.classList.contains('inline-code') && range.intersectsNode(node)) {
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                    return NodeFilter.FILTER_SKIP;
+                }
+            }
+        );
+
+        while (walker.nextNode()) {
+            nodesToUnwrap.add(walker.currentNode);
+        }
+
+        nodesToUnwrap.forEach(node => {
+            const textNode = document.createTextNode(node.textContent);
+            node.replaceWith(textNode);
+            textNode.parentElement?.normalize();
+        });
+    }
+
+
 
     showNotification(message, className) {
         const notification = document.createElement('div');
