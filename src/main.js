@@ -133,16 +133,19 @@ class NotesApp {
                     <p><strong>Export & Import</strong>: Export notes as JSON and import them later.</p>
                     <p><strong>Event Storage</strong>: Enables real-time synchronization between multiple windows.</p>
                     <p><strong>Settings</strong>: Customize the application theme and preset colors.</p>
-                    <p><strong>Keyboard Shortcuts</strong>:</p>
-                    <kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors <br>
-                    <kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color <br>
-                    <kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold <br>
-                    <kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline <br>
-                    <kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting <br>    
-                    <kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting<br>
-                    <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously<br>
-                    <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Click</kbd>: <span class="beta-badge">BETA</span> Multi-cursor selection<br>
-                    <kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Enter</kbd> on empty items to exit the list.<br>                               
+                    <div class="info-popup-shortcuts">
+                        <strong>Keyboard Shortcuts</strong>
+                        <div><kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>4</kbd>: Apply one of the four predefined colors.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>'</kbd>: Apply color-picker defined color.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>B</kbd>: Toggle bold.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting.</div>    
+                        <div><kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Click</kbd>: <span class="beta-badge">BETA</span> Multi-cursor selection.</div>
+                        <div><kbd>Alt</kbd> + <kbd>N</kbd>: Create a new note.</div>
+                        <div><kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Enter</kbd> on empty items to exit the list.</div>      
+                    </div>
                 </div>
             `;
 
@@ -881,6 +884,17 @@ class NotesApp {
 
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
+            // Global shortcuts
+            if (e.altKey && (e.key === 'n' || e.key === 'N')) {
+                e.preventDefault();
+                if (this.activeSection) {
+                    this.notesManager.addNote();
+                } else {
+                    alert('Please create or select a section first.');
+                }
+                return;
+            }
+
             const isNoteEditing =
                 e.target.closest('.note-content') ||
                 e.target.closest('.note-title');

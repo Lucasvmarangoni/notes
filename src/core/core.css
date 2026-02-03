@@ -306,11 +306,20 @@ body {
     background-color: var(--bg-popup);
     border: 1px solid var(--my-green-color);
     border-radius: 4px;
-    padding: 2px 6px;
+    padding: 2px 4px;
     font-family: monospace;
     font-size: 0.9em;
     color: var(--my-green-color);
 }
+
+.info-popup-shortcuts {
+    padding: 10px 0;
+    font-size: 0.95em;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 
 .auto-save-container {
     display: flex;
