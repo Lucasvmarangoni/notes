@@ -696,18 +696,15 @@ class NotesApp {
                                 summaryText.textContent = textAfterToggle;
                             }
 
-                            // Instead of opening and moving inside, move outside/below
-                            // Always insert a BR and a text node to ensure the cursor stays on the new line
-                            const br = document.createElement('br');
-                            const textNode = document.createTextNode('');
-                            const nextNode = currentToggle.nextSibling;
-
-                            currentToggle.parentNode.insertBefore(br, nextNode);
-                            currentToggle.parentNode.insertBefore(textNode, br.nextSibling);
-
+                            // Move cursor to the end of the title so the user can continue typing
                             const newRange = document.createRange();
-                            newRange.setStart(textNode, 0);
-                            newRange.setEnd(textNode, 0);
+                            if (summaryText) {
+                                newRange.selectNodeContents(summaryText);
+                                newRange.collapse(false);
+                            } else {
+                                newRange.setStartAfter(currentToggle);
+                                newRange.collapse(true);
+                            }
                             selection.removeAllRanges();
                             selection.addRange(newRange);
                         } else {

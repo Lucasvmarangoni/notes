@@ -151,7 +151,7 @@ export class MarkdownProcessor {
                 }
                 const textContent = trimmed.substring(2).trim();
                 const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                html += `<details class="toggle-block"><summary><span class="toggle-icon" contenteditable="false"></span><span class="toggle-summary-text">${escapedText}</span></summary><div class="toggle-content"><br></div></details><br>`;
+                html += `<details class="toggle-block"><summary><span class="toggle-icon" contenteditable="false"></span><span class="toggle-summary-text">${escapedText}</span></summary><div class="toggle-content"><br></div></details>`;
             }
             else {
                 if (currentList) {
@@ -385,8 +385,6 @@ export class MarkdownProcessor {
                             content.innerHTML = '<br>';
                             toggleBlock.appendChild(content);
                             fragment.appendChild(toggleBlock);
-                            // Ensure there is always a line below to escape the toggle
-                            fragment.appendChild(document.createElement('br'));
                             lastCreatedElement = summaryText;
                         }
                         else {
