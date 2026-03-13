@@ -235,25 +235,59 @@ class NotesApp {
                 const isInListItem = parentElement?.closest('li');
                 const isInCheckbox = parentElement?.closest('.checkbox-item');
                 const isInToggleSummary = parentElement?.closest('.toggle-summary-text');
+                const isInToggleContent = parentElement?.closest('.toggle-content');
 
                 if (isInToggleSummary) {
                     event.preventDefault();
                     const toggleBlock = isInToggleSummary.closest('.toggle-block');
-                    const content = toggleBlock.querySelector('.toggle-content');
-                    toggleBlock.open = true;
+                    const parent = toggleBlock.parentNode;
+
+                    // Create a new line with a targetable text node
+                    const br = document.createElement('br');
+                    const textNode = document.createTextNode('');
+                    const nextNode = toggleBlock.nextSibling;
+
+                    parent.insertBefore(br, nextNode);
+                    parent.insertBefore(textNode, br.nextSibling);
 
                     const newRange = document.createRange();
-                    if (content.firstChild) {
-                        newRange.setStart(content.firstChild, 0);
-                    } else {
-                        const textNode = document.createTextNode('');
-                        content.appendChild(textNode);
-                        newRange.setStart(textNode, 0);
-                    }
-                    newRange.collapse(true);
+                    newRange.setStart(textNode, 0);
+                    newRange.setEnd(textNode, 0);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                     return;
+                }
+
+                if (isInToggleContent && !event.shiftKey) {
+                    // Check if current line is empty to escape
+                    const range = selection.getRangeAt(0);
+                    const lineText = range.startContainer.textContent || '';
+                    if (lineText.trim() === '' && (range.startContainer === isInToggleContent || range.startContainer.parentNode === isInToggleContent)) {
+                        event.preventDefault();
+                        const toggleBlock = isInToggleContent.closest('.toggle-block');
+
+                        // Create escape line below if needed
+                        let nextNode = toggleBlock.nextSibling;
+                        if (!nextNode || (nextNode.nodeName !== 'BR' && (!nextNode.textContent || !nextNode.textContent.trim()))) {
+                            const br = document.createElement('br');
+                            toggleBlock.parentNode.insertBefore(br, nextNode);
+                            nextNode = br;
+                        }
+
+                        // Move cursor to the next line/element
+                        const newRange = document.createRange();
+                        newRange.setStartAfter(toggleBlock);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+
+                        // Clean up the empty line in toggle if any
+                        if (isInToggleContent.innerHTML === '<br>' || isInToggleContent.textContent.trim() === '') {
+                            // Keep one br for structure
+                            isInToggleContent.innerHTML = '<br>';
+                        }
+                        return;
+                    }
                 }
 
                 if (isInListItem) {
@@ -631,45 +665,54 @@ class NotesApp {
                     event.preventDefault();
                     const textAfterToggle = trimmed.substring(2).trim();
 
+                    // Mark currently processing line area
+                    const range = selection.getRangeAt(0);
+                    const marker = document.createElement('span');
+                    marker.id = 'temp-toggle-marker';
+                    range.insertNode(marker);
+
                     this.markdownProcessor.processMarkdown(noteContent, true);
 
                     setTimeout(() => {
                         const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                            const range = selection.getRangeAt(0);
-                            const container = range.startContainer;
-                            const parentElement = container.nodeType === Node.TEXT_NODE
-                                ? container.parentElement
-                                : container;
+                        const marker = noteContent.querySelector('#temp-toggle-marker');
 
-                            // Find the toggle block we just created
-                            const currentToggle = parentElement?.closest('.toggle-block') ||
-                                noteContent.querySelector('.toggle-block:last-of-type');
+                        // Find the toggle block that replaced our marker area
+                        let currentToggle = null;
+                        if (marker) {
+                            currentToggle = marker.closest('.toggle-block') ||
+                                marker.previousElementSibling?.closest('.toggle-block') ||
+                                marker.nextElementSibling?.closest('.toggle-block');
+                            marker.remove();
+                        }
 
-                            if (currentToggle) {
-                                const summaryText = currentToggle.querySelector('.toggle-summary-text');
-                                if (textAfterToggle && summaryText && summaryText.textContent.trim() !== textAfterToggle) {
-                                    summaryText.textContent = textAfterToggle;
-                                }
+                        if (!currentToggle) {
+                            currentToggle = noteContent.querySelector('.toggle-block:last-of-type');
+                        }
 
-                                const content = currentToggle.querySelector('.toggle-content');
-                                currentToggle.open = true;
-
-                                const newRange = document.createRange();
-                                if (content.firstChild) {
-                                    newRange.setStart(content.firstChild, 0);
-                                } else {
-                                    const textNode = document.createTextNode('');
-                                    content.appendChild(textNode);
-                                    newRange.setStart(textNode, 0);
-                                }
-                                newRange.collapse(true);
-                                selection.removeAllRanges();
-                                selection.addRange(newRange);
-                            } else {
-                                document.execCommand('insertText', false, '\n> ');
-                                this.markdownProcessor.processMarkdown(noteContent, true);
+                        if (currentToggle) {
+                            const summaryText = currentToggle.querySelector('.toggle-summary-text');
+                            if (textAfterToggle && summaryText && summaryText.textContent.trim() !== textAfterToggle) {
+                                summaryText.textContent = textAfterToggle;
                             }
+
+                            // Instead of opening and moving inside, move outside/below
+                            // Always insert a BR and a text node to ensure the cursor stays on the new line
+                            const br = document.createElement('br');
+                            const textNode = document.createTextNode('');
+                            const nextNode = currentToggle.nextSibling;
+
+                            currentToggle.parentNode.insertBefore(br, nextNode);
+                            currentToggle.parentNode.insertBefore(textNode, br.nextSibling);
+
+                            const newRange = document.createRange();
+                            newRange.setStart(textNode, 0);
+                            newRange.setEnd(textNode, 0);
+                            selection.removeAllRanges();
+                            selection.addRange(newRange);
+                        } else {
+                            document.execCommand('insertText', false, '\n> ');
+                            this.markdownProcessor.processMarkdown(noteContent, true);
                         }
                     }, 50);
                     return;

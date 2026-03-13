@@ -176,7 +176,7 @@ export class ToolbarManager {
                 } else if (checkboxes.length > 0) {
                     targetElement = checkboxes[checkboxes.length - 1].querySelector('span');
                 } else {
-                    targetElement = noteContent.querySelector('.toggle-block:last-of-type summary');
+                    targetElement = noteContent.querySelector('.toggle-block:last-of-type .toggle-summary-text');
                 }
 
                 if (targetElement) {

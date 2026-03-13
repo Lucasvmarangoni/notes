@@ -42,14 +42,18 @@ See the LICENSE file for more information.
 
 /* Toggle Blocks */
 .toggle-block {
-    margin: 4px 0;
+    margin: 8px 0;
+    /* Increased margin for better separation */
     border-radius: 4px;
     transition: background-color 0.2s;
+    display: block;
+    /* Ensure it's a block element */
 }
 
 .toggle-block summary {
-    cursor: default;
-    padding: 2px 4px;
+    cursor: pointer;
+    /* Change to pointer to show it's interactive */
+    padding: 4px;
     font-weight: 500;
     outline: none;
     list-style: none;
@@ -67,6 +71,11 @@ See the LICENSE file for more information.
     display: none;
 }
 
+.toggle-block summary::marker {
+    display: none;
+    font-size: 0;
+}
+
 .toggle-icon {
     display: inline-flex;
     align-items: center;
@@ -76,6 +85,7 @@ See the LICENSE file for more information.
     cursor: pointer;
     user-select: none;
     transition: transform 0.2s;
+    margin-right: 4px;
 }
 
 .toggle-icon::before {
@@ -90,5 +100,8 @@ See the LICENSE file for more information.
 .toggle-content {
     padding-left: 20px;
     margin-top: 4px;
+    margin-bottom: 8px;
     border-left: 2px solid rgba(255, 255, 255, 0.1);
+    min-height: 20px;
+    /* Ensure space is visible even if empty */
 }

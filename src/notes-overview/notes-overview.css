@@ -162,3 +162,7 @@ See the LICENSE file for more information.
     align-items: center;
     gap: 2px;
 }
+
+#notes-overview-btn:hover {
+    background-color: #7a7e83;
+}
