@@ -143,7 +143,7 @@ export class MarkdownProcessor {
                 const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 html += `<div class="checkbox-item"><input type="checkbox" class="markdown-checkbox"><span>${escapedText}</span></div>`;
             }
-            else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+            else if (trimmed.startsWith('> ') && trimmed.substring(2).trim().length > 0) {
                 if (currentList) {
                     html += currentList + (listType === 'bullet' ? '</ul>' : '</ol>');
                     currentList = null;
@@ -190,7 +190,9 @@ export class MarkdownProcessor {
                         node.parentElement.closest('.checkbox-item') ||
                         node.parentElement.closest('ul') ||
                         node.parentElement.closest('ol') ||
-                        node.parentElement.closest('.toggle-block')) {
+                        node.parentElement.closest('.toggle-block') ||
+                        node.parentElement.closest('summary') ||
+                        node.parentElement.closest('.toggle-content')) {
                         return NodeFilter.FILTER_REJECT;
                     }
                     return NodeFilter.FILTER_ACCEPT;
@@ -229,7 +231,7 @@ export class MarkdownProcessor {
                     hasMarkdown = true;
                     markdownType = 'checkbox';
                     break;
-                } else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                } else if (trimmed.startsWith('> ') && trimmed.substring(2).trim().length > 0) {
                     hasMarkdown = true;
                     markdownType = 'toggle';
                     break;
@@ -356,7 +358,7 @@ export class MarkdownProcessor {
                             fragment.appendChild(checkboxItem);
                             lastCreatedElement = label;
                         }
-                        else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                        else if (trimmed.startsWith('> ') && trimmed.substring(2).trim().length > 0) {
                             if (currentList) {
                                 fragment.appendChild(currentList);
                                 currentList = null;

@@ -641,40 +641,28 @@ class NotesApp {
                             const parentElement = container.nodeType === Node.TEXT_NODE
                                 ? container.parentElement
                                 : container;
-                            const currentToggle = parentElement?.closest('.toggle-block');
+
+                            // Find the toggle block we just created
+                            const currentToggle = parentElement?.closest('.toggle-block') ||
+                                noteContent.querySelector('.toggle-block:last-of-type');
 
                             if (currentToggle) {
-                                const summary = currentToggle.querySelector('summary');
-                                if (textAfterToggle && summary && summary.textContent.trim() !== textAfterToggle) {
-                                    summary.textContent = textAfterToggle;
+                                const summaryText = currentToggle.querySelector('.toggle-summary-text');
+                                if (textAfterToggle && summaryText && summaryText.textContent.trim() !== textAfterToggle) {
+                                    summaryText.textContent = textAfterToggle;
                                 }
 
-                                const newToggleBlock = document.createElement('details');
-                                newToggleBlock.className = 'toggle-block';
-                                const newSummary = document.createElement('summary');
-                                const newIcon = document.createElement('span');
-                                newIcon.className = 'toggle-icon';
-                                newSummary.appendChild(newIcon);
-                                const newSummaryText = document.createElement('span');
-                                newSummaryText.className = 'toggle-summary-text';
-                                newSummary.appendChild(newSummaryText);
-                                newToggleBlock.appendChild(newSummary);
-
-                                const newContent = document.createElement('div');
-                                newContent.className = 'toggle-content';
-                                newContent.innerHTML = '<br>';
-                                newToggleBlock.appendChild(newContent);
-
-                                currentToggle.parentNode.insertBefore(newToggleBlock, currentToggle.nextSibling);
-
-                                // Ensure there is always a line below to escape the toggle
-                                if (!newToggleBlock.nextSibling || (newToggleBlock.nextSibling.nodeName !== 'BR' && !newToggleBlock.nextSibling.textContent.trim())) {
-                                    const escapeLine = document.createElement('br');
-                                    newToggleBlock.parentNode.insertBefore(escapeLine, newToggleBlock.nextSibling);
-                                }
+                                const content = currentToggle.querySelector('.toggle-content');
+                                currentToggle.open = true;
 
                                 const newRange = document.createRange();
-                                newRange.selectNodeContents(newSummaryText);
+                                if (content.firstChild) {
+                                    newRange.setStart(content.firstChild, 0);
+                                } else {
+                                    const textNode = document.createTextNode('');
+                                    content.appendChild(textNode);
+                                    newRange.setStart(textNode, 0);
+                                }
                                 newRange.collapse(true);
                                 selection.removeAllRanges();
                                 selection.addRange(newRange);
