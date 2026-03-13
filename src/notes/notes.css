@@ -63,6 +63,14 @@ See the LICENSE file for more information.
     position: relative;
 }
 
+/* Force ALL content inside notes to use the app's default font and size.
+   This prevents pasted content (H1, external fonts, etc.) from overriding the defaults.
+   .inline-code is intentionally excluded since it uses a monospace font. */
+.note-content *:not(.inline-code):not(.inline-code *) {
+    font-family: inherit !important;
+    font-size: inherit !important;
+}
+
 .note-title:focus,
 .note-content:focus {
     outline: none;
