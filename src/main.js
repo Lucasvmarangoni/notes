@@ -125,7 +125,8 @@ class NotesApp {
                     <p><strong>Drag and Drop</strong>: Move and position multiple notes freely.</p>
                     <p><strong>Bulleted Lists</strong>: Type <kbd>*</kbd> + space at the start of a line, or select text and click the bullet (•) button.</p>
                     <p><strong>Numbered Lists</strong>: Type <kbd>1.</kbd> + space at the start of a line, or select text and click the numbered (1.) button.</p>
-                    <p><strong>Checkboxes</strong>: Type <kbd>&gt;</kbd> + space at the start of a line, or select text and click the checkbox (☐) button.</p>
+                    <p><strong>Checkboxes</strong>: Type <kbd>&lt;</kbd> + space at the start of a line, or select text and click the checkbox (☐) button.</p>
+                    <p><strong>Toggle Blocks</strong>: Type <kbd>&gt;</kbd> + space at the start of a line, or click the toggle (⏷) button.</p>
                     <p><strong>List Conversion</strong>: Select text and click the bullet (•), numbered (1.), or checkbox (☐) buttons to convert each line to the selected list type.</p>
                     <p><strong>Organize by Sections</strong>: Divide notes into different sections.</p>
                     <p><strong>Local Storage</strong>: Save notes to your browser's local storage.</p>
@@ -144,6 +145,10 @@ class NotesApp {
                         <div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously.</div>
                         <div><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Click</kbd>: <span class="beta-badge">BETA</span> Multi-cursor selection.</div>
                         <div><kbd>Alt</kbd> + <kbd>N</kbd>: Create a new note.</div>
+                        <div><kbd>*</kbd> + <kbd>Space</kbd>: Bulleted list.</div>
+                        <div><kbd>1.</kbd> + <kbd>Space</kbd>: Numbered list.</div>
+                        <div><kbd>&lt;</kbd> + <kbd>Space</kbd>: Checkbox.</div>
+                        <div><kbd>&gt;</kbd> + <kbd>Space</kbd>: Toggle Block.</div>
                         <div><kbd>Enter</kbd>: In lists, creates a new item. Press <kbd>Enter</kbd> on empty items to exit the list.</div>      
                     </div>
                 </div>
@@ -229,6 +234,27 @@ class NotesApp {
                     : container;
                 const isInListItem = parentElement?.closest('li');
                 const isInCheckbox = parentElement?.closest('.checkbox-item');
+                const isInToggleSummary = parentElement?.closest('.toggle-summary-text');
+
+                if (isInToggleSummary) {
+                    event.preventDefault();
+                    const toggleBlock = isInToggleSummary.closest('.toggle-block');
+                    const content = toggleBlock.querySelector('.toggle-content');
+                    toggleBlock.open = true;
+
+                    const newRange = document.createRange();
+                    if (content.firstChild) {
+                        newRange.setStart(content.firstChild, 0);
+                    } else {
+                        const textNode = document.createTextNode('');
+                        content.appendChild(textNode);
+                        newRange.setStart(textNode, 0);
+                    }
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                    return;
+                }
 
                 if (isInListItem) {
                     const li = isInListItem;
@@ -554,7 +580,7 @@ class NotesApp {
                     return;
                 }
 
-                if (trimmed.startsWith('> ')) {
+                if (trimmed.startsWith('< ')) {
                     event.preventDefault();
                     const textAfterCheckbox = trimmed.substring(2).trim();
 
@@ -589,6 +615,66 @@ class NotesApp {
 
                                 const newRange = document.createRange();
                                 newRange.selectNodeContents(newLabel);
+                                newRange.collapse(true);
+                                selection.removeAllRanges();
+                                selection.addRange(newRange);
+                            } else {
+                                document.execCommand('insertText', false, '\n< ');
+                                this.markdownProcessor.processMarkdown(noteContent, true);
+                            }
+                        }
+                    }, 50);
+                    return;
+                }
+
+                if (trimmed.startsWith('> ')) {
+                    event.preventDefault();
+                    const textAfterToggle = trimmed.substring(2).trim();
+
+                    this.markdownProcessor.processMarkdown(noteContent, true);
+
+                    setTimeout(() => {
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            const range = selection.getRangeAt(0);
+                            const container = range.startContainer;
+                            const parentElement = container.nodeType === Node.TEXT_NODE
+                                ? container.parentElement
+                                : container;
+                            const currentToggle = parentElement?.closest('.toggle-block');
+
+                            if (currentToggle) {
+                                const summary = currentToggle.querySelector('summary');
+                                if (textAfterToggle && summary && summary.textContent.trim() !== textAfterToggle) {
+                                    summary.textContent = textAfterToggle;
+                                }
+
+                                const newToggleBlock = document.createElement('details');
+                                newToggleBlock.className = 'toggle-block';
+                                const newSummary = document.createElement('summary');
+                                const newIcon = document.createElement('span');
+                                newIcon.className = 'toggle-icon';
+                                newSummary.appendChild(newIcon);
+                                const newSummaryText = document.createElement('span');
+                                newSummaryText.className = 'toggle-summary-text';
+                                newSummary.appendChild(newSummaryText);
+                                newToggleBlock.appendChild(newSummary);
+
+                                const newContent = document.createElement('div');
+                                newContent.className = 'toggle-content';
+                                newContent.innerHTML = '<br>';
+                                newToggleBlock.appendChild(newContent);
+
+                                currentToggle.parentNode.insertBefore(newToggleBlock, currentToggle.nextSibling);
+
+                                // Ensure there is always a line below to escape the toggle
+                                if (!newToggleBlock.nextSibling || (newToggleBlock.nextSibling.nodeName !== 'BR' && !newToggleBlock.nextSibling.textContent.trim())) {
+                                    const escapeLine = document.createElement('br');
+                                    newToggleBlock.parentNode.insertBefore(escapeLine, newToggleBlock.nextSibling);
+                                }
+
+                                const newRange = document.createRange();
+                                newRange.selectNodeContents(newSummaryText);
                                 newRange.collapse(true);
                                 selection.removeAllRanges();
                                 selection.addRange(newRange);

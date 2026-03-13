@@ -18,7 +18,8 @@ See the LICENSE file for more information.
 }
 
 .note-content li:empty::before {
-    content: '\200B'; /* Zero-width space to maintain cursor position */
+    content: '\200B';
+    /* Zero-width space to maintain cursor position */
 }
 
 .checkbox-item {
@@ -39,3 +40,55 @@ See the LICENSE file for more information.
     flex: 1;
 }
 
+/* Toggle Blocks */
+.toggle-block {
+    margin: 4px 0;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.toggle-block summary {
+    cursor: default;
+    padding: 2px 4px;
+    font-weight: 500;
+    outline: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-summary-text {
+    cursor: text;
+    flex: 1;
+    padding: 2px 0;
+}
+
+.toggle-block summary::-webkit-details-marker {
+    display: none;
+}
+
+.toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s;
+}
+
+.toggle-icon::before {
+    content: '▶';
+    font-size: 0.8em;
+}
+
+.toggle-block[open]>summary .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.toggle-content {
+    padding-left: 20px;
+    margin-top: 4px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}

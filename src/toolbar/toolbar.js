@@ -22,6 +22,7 @@ export class ToolbarManager {
                     <button class="bullet-list-btn" title="Convert to bullet list">•</button>
                     <button class="numbered-list-btn" title="Convert to numbered list">1.</button>
                     <button class="checkbox-list-btn" title="Convert to checkbox list">☐</button>
+                    <button class="toggle-list-btn" title="Convert to toggle block">⏷</button>
                     <input type="color" class="color-picker" value="#ffffff" title="Text color">
                     <button class="color-preset" style="background-color: ${this.app.color1};" title="Color 1 (Ctrl+1)"></button>
                     <button class="color-preset" style="background-color: ${this.app.color2};" title="Color 2 (Ctrl+2)"></button>
@@ -82,6 +83,7 @@ export class ToolbarManager {
         const bulletBtn = toolbar.querySelector('.bullet-list-btn');
         const numberedBtn = toolbar.querySelector('.numbered-list-btn');
         const checkboxBtn = toolbar.querySelector('.checkbox-list-btn');
+        const toggleBtn = toolbar.querySelector('.toggle-list-btn');
 
         bulletBtn.addEventListener('click', () => {
             this.convertSelectionToList('bullet');
@@ -93,6 +95,10 @@ export class ToolbarManager {
 
         checkboxBtn.addEventListener('click', () => {
             this.convertSelectionToList('checkbox');
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            this.convertSelectionToList('toggle');
         });
     }
 
@@ -135,6 +141,8 @@ export class ToolbarManager {
                 } else if (type === 'numbered') {
                     markdownText += `${index + 1}. ${trimmed}`;
                 } else if (type === 'checkbox') {
+                    markdownText += `< ${trimmed}`;
+                } else if (type === 'toggle') {
                     markdownText += `> ${trimmed}`;
                 }
                 if (index < lines.length - 1) {
@@ -167,6 +175,8 @@ export class ToolbarManager {
                     }
                 } else if (checkboxes.length > 0) {
                     targetElement = checkboxes[checkboxes.length - 1].querySelector('span');
+                } else {
+                    targetElement = noteContent.querySelector('.toggle-block:last-of-type summary');
                 }
 
                 if (targetElement) {

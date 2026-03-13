@@ -37,7 +37,7 @@ export class MarkdownProcessor {
             const listItems = noteContent.querySelectorAll('li');
             listItems.forEach(li => {
                 const text = li.textContent.trim();
-                if (!text || text === '*' || text === '* ' || text === '> ' || /^\d+\.\s*$/.test(text)) {
+                if (!text || text === '*' || text === '* ' || text === '> ' || text === '< ' || /^\d+\.\s*$/.test(text)) {
                     li.remove();
                 }
             });
@@ -52,8 +52,21 @@ export class MarkdownProcessor {
             const checkboxes = noteContent.querySelectorAll('.checkbox-item');
             checkboxes.forEach(checkbox => {
                 const text = checkbox.textContent.trim();
-                if (!text || text === '> ') {
+                if (!text || text === '> ' || text === '< ') {
                     checkbox.remove();
+                }
+            });
+
+            const toggles = noteContent.querySelectorAll('.toggle-block');
+            toggles.forEach(toggle => {
+                const summary = toggle.querySelector('summary');
+                const content = toggle.querySelector('.toggle-content');
+                const summaryText = summary ? summary.textContent.trim() : '';
+                const contentText = content ? content.textContent.trim() : '';
+
+                // Only remove if BOTH are empty
+                if (!summaryText && !contentText) {
+                    toggle.remove();
                 }
             });
 
@@ -77,7 +90,7 @@ export class MarkdownProcessor {
 
             textNodes.forEach(textNode => {
                 const text = textNode.textContent.trim();
-                if (text === '*' || text === '* ' || text === '> ' || /^\d+\.\s*$/.test(text)) {
+                if (text === '*' || text === '* ' || text === '> ' || text === '< ' || /^\d+\.\s*$/.test(text)) {
                     const parent = textNode.parentNode;
                     if (parent && parent.childNodes.length === 1) {
                         parent.remove();
@@ -120,7 +133,7 @@ export class MarkdownProcessor {
                 const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 currentList += `<li>${escapedText}</li>`;
             }
-            else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+            else if (trimmed.startsWith('< ') && trimmed.length > 2) {
                 if (currentList) {
                     html += currentList + (listType === 'bullet' ? '</ul>' : '</ol>');
                     currentList = null;
@@ -129,6 +142,16 @@ export class MarkdownProcessor {
                 const textContent = trimmed.substring(2).trim();
                 const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 html += `<div class="checkbox-item"><input type="checkbox" class="markdown-checkbox"><span>${escapedText}</span></div>`;
+            }
+            else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                if (currentList) {
+                    html += currentList + (listType === 'bullet' ? '</ul>' : '</ol>');
+                    currentList = null;
+                    listType = null;
+                }
+                const textContent = trimmed.substring(2).trim();
+                const escapedText = textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                html += `<details class="toggle-block"><summary><span class="toggle-icon" contenteditable="false"></span><span class="toggle-summary-text">${escapedText}</span></summary><div class="toggle-content"><br></div></details><br>`;
             }
             else {
                 if (currentList) {
@@ -154,7 +177,7 @@ export class MarkdownProcessor {
     }
 
     processMarkdown(element, useHistory = false) {
-        if (element.closest('li') || element.closest('.checkbox-item')) {
+        if (element.closest('li') || element.closest('.checkbox-item') || element.closest('.toggle-block')) {
             return null;
         }
 
@@ -166,7 +189,8 @@ export class MarkdownProcessor {
                     if (node.parentElement.closest('li') ||
                         node.parentElement.closest('.checkbox-item') ||
                         node.parentElement.closest('ul') ||
-                        node.parentElement.closest('ol')) {
+                        node.parentElement.closest('ol') ||
+                        node.parentElement.closest('.toggle-block')) {
                         return NodeFilter.FILTER_REJECT;
                     }
                     return NodeFilter.FILTER_ACCEPT;
@@ -201,9 +225,13 @@ export class MarkdownProcessor {
                     hasMarkdown = true;
                     markdownType = 'numbered';
                     break;
-                } else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                } else if (trimmed.startsWith('< ') && trimmed.length > 2) {
                     hasMarkdown = true;
                     markdownType = 'checkbox';
+                    break;
+                } else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                    hasMarkdown = true;
+                    markdownType = 'toggle';
                     break;
                 }
             }
@@ -242,7 +270,7 @@ export class MarkdownProcessor {
                                 lastCheckbox = checkboxes[checkboxes.length - 1];
                             }
 
-                            const targetElement = lastLi || lastCheckbox?.querySelector('span');
+                            const targetElement = lastLi || lastCheckbox?.querySelector('span') || element.querySelector('.toggle-block:last-of-type summary');
                             if (targetElement) {
                                 const finalRange = document.createRange();
                                 if (targetElement.tagName === 'SPAN') {
@@ -307,7 +335,7 @@ export class MarkdownProcessor {
                             currentList.appendChild(li);
                             lastCreatedElement = li;
                         }
-                        else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                        else if (trimmed.startsWith('< ') && trimmed.length > 2) {
                             if (currentList) {
                                 fragment.appendChild(currentList);
                                 currentList = null;
@@ -327,6 +355,37 @@ export class MarkdownProcessor {
                             checkboxItem.appendChild(label);
                             fragment.appendChild(checkboxItem);
                             lastCreatedElement = label;
+                        }
+                        else if (trimmed.startsWith('> ') && trimmed.length > 2) {
+                            if (currentList) {
+                                fragment.appendChild(currentList);
+                                currentList = null;
+                                listType = null;
+                            }
+                            const toggleBlock = document.createElement('details');
+                            toggleBlock.className = 'toggle-block';
+                            const summary = document.createElement('summary');
+                            const toggleIcon = document.createElement('span');
+                            toggleIcon.className = 'toggle-icon';
+                            toggleIcon.contentEditable = 'false';
+                            summary.appendChild(toggleIcon);
+
+                            const summaryText = document.createElement('span');
+                            summaryText.className = 'toggle-summary-text';
+                            const textContent = trimmed.substring(2).trim();
+                            if (textContent) {
+                                summaryText.textContent = textContent;
+                            }
+                            summary.appendChild(summaryText);
+                            toggleBlock.appendChild(summary);
+                            const content = document.createElement('div');
+                            content.className = 'toggle-content';
+                            content.innerHTML = '<br>';
+                            toggleBlock.appendChild(content);
+                            fragment.appendChild(toggleBlock);
+                            // Ensure there is always a line below to escape the toggle
+                            fragment.appendChild(document.createElement('br'));
+                            lastCreatedElement = summaryText;
                         }
                         else {
                             if (currentList) {
@@ -389,4 +448,3 @@ export class MarkdownProcessor {
         return lastCreatedElement;
     }
 }
-

@@ -392,7 +392,7 @@ export class NotesManager {
         if (this.autoScrollInterval) return;
 
         const scrollZone = 10;
-        const maxScrollSpeed = 2; 
+        const maxScrollSpeed = 2;
 
         const loop = () => {
             if (!this.app.draggingNote && !this.app.resizingNote && !this.multiDragStartPositions) {
@@ -459,6 +459,14 @@ export class NotesManager {
             this.markdownProcessor.removeEmptyBullets(noteContent);
         });
 
+        noteContent.addEventListener('click', (e) => {
+            const summaryText = e.target.closest('.toggle-summary-text');
+            if (summaryText) {
+                // Prevent the <details> from toggling when clicking the text
+                e.preventDefault();
+            }
+        });
+
         noteContent.addEventListener('beforeinput', (e) => {
             if (this.multiCursorManager.selections.length > 0) {
                 this.multiCursorManager.saveState();
@@ -501,6 +509,36 @@ export class NotesManager {
                     : container;
                 const li = parentElement?.closest('li');
                 const list = parentElement?.closest('ul, ol');
+                const isInToggleSummary = parentElement?.closest('.toggle-summary-text');
+
+                if (isInToggleSummary && selection.isCollapsed) {
+                    const isAtStart = (range.startContainer === isInToggleSummary && range.startOffset === 0) ||
+                        (range.startContainer.nodeType === Node.TEXT_NODE &&
+                            range.startContainer === isInToggleSummary.firstChild &&
+                            range.startOffset === 0);
+
+                    if (isAtStart) {
+                        e.preventDefault();
+                        const toggleBlock = isInToggleSummary.closest('.toggle-block');
+                        const content = toggleBlock.querySelector('.toggle-content');
+                        const parent = toggleBlock.parentNode;
+
+                        const summaryText = isInToggleSummary.innerHTML;
+                        const contentHtml = content.innerHTML;
+
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = summaryText + (contentHtml === '<br>' ? '' : contentHtml);
+
+                        parent.replaceChild(tempDiv, toggleBlock);
+
+                        const newRange = document.createRange();
+                        newRange.setStart(tempDiv.firstChild || tempDiv, 0);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                        return;
+                    }
+                }
 
                 if (list && !li && selection.isCollapsed) {
                     const isAtStart = this.isCursorAtElementStart(parentElement, range, list);
