@@ -242,17 +242,16 @@ class NotesApp {
                     const toggleBlock = isInToggleSummary.closest('.toggle-block');
                     const parent = toggleBlock.parentNode;
 
-                    // Create a new line with a targetable text node
-                    const br = document.createElement('br');
-                    const textNode = document.createTextNode('');
+                    // Create a proper block-level div for the new line
+                    const newDiv = document.createElement('div');
+                    newDiv.innerHTML = '<br>';
                     const nextNode = toggleBlock.nextSibling;
 
-                    parent.insertBefore(br, nextNode);
-                    parent.insertBefore(textNode, br.nextSibling);
+                    parent.insertBefore(newDiv, nextNode);
 
                     const newRange = document.createRange();
-                    newRange.setStart(textNode, 0);
-                    newRange.setEnd(textNode, 0);
+                    newRange.setStart(newDiv, 0);
+                    newRange.collapse(true);
                     selection.removeAllRanges();
                     selection.addRange(newRange);
                     return;

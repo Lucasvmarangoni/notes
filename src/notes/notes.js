@@ -462,7 +462,6 @@ export class NotesManager {
         noteContent.addEventListener('click', (e) => {
             const summaryText = e.target.closest('.toggle-summary-text');
             if (summaryText) {
-                // Prevent the <details> from toggling when clicking the text
                 e.preventDefault();
             }
         });
@@ -498,41 +497,77 @@ export class NotesManager {
         });
 
         noteContent.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace') {
-                const selection = window.getSelection();
-                if (!selection.rangeCount) return;
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
 
-                const range = selection.getRangeAt(0);
-                const container = range.startContainer;
-                const parentElement = container.nodeType === Node.TEXT_NODE
-                    ? container.parentElement
-                    : container;
-                const li = parentElement?.closest('li');
-                const list = parentElement?.closest('ul, ol');
-                const isInToggleSummary = parentElement?.closest('.toggle-summary-text');
+            const range = selection.getRangeAt(0);
+            const container = range.startContainer;
+            const parentElement = container.nodeType === Node.TEXT_NODE
+                ? container.parentElement
+                : container;
 
-                if (isInToggleSummary && selection.isCollapsed) {
-                    const isAtStart = (range.startContainer === isInToggleSummary && range.startOffset === 0) ||
-                        (range.startContainer.nodeType === Node.TEXT_NODE &&
-                            range.startContainer === isInToggleSummary.firstChild &&
-                            range.startOffset === 0);
+            const isInToggleSummary = parentElement?.closest('.toggle-summary-text');
+            const isInToggleContent = parentElement?.closest('.toggle-content');
+            const li = parentElement?.closest('li');
+            const list = parentElement?.closest('ul, ol');
 
-                    if (isAtStart) {
-                        e.preventDefault();
-                        const toggleBlock = isInToggleSummary.closest('.toggle-block');
-                        const content = toggleBlock.querySelector('.toggle-content');
-                        const parent = toggleBlock.parentNode;
+            const isAtStart = (range.startOffset === 0) ||
+                (container.nodeType === Node.TEXT_NODE && container === parentElement.firstChild && range.startOffset === 0);
 
-                        const summaryText = isInToggleSummary.innerHTML;
-                        const contentHtml = content.innerHTML;
+            if (e.key === 'Backspace' && selection.isCollapsed) {
+                // Scenario 1: Cursor following a toggle-block
+                let nodeBefore = null;
+                if (range.startContainer === noteContent) {
+                    nodeBefore = noteContent.childNodes[range.startOffset - 1];
+                } else if (isAtStart) {
+                    let current = parentElement;
+                    while (current && current.parentNode !== noteContent) current = current.parentNode;
+                    if (current) nodeBefore = current.previousSibling;
+                }
 
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = summaryText + (contentHtml === '<br>' ? '' : contentHtml);
+                if (nodeBefore && nodeBefore.classList && nodeBefore.classList.contains('toggle-block')) {
+                    e.preventDefault();
+                    const summaryText = nodeBefore.querySelector('.toggle-summary-text');
+                    const contentDiv = nodeBefore.querySelector('.toggle-content');
+                    const isOpen = nodeBefore.hasAttribute('open');
 
-                        parent.replaceChild(tempDiv, toggleBlock);
+                    // If the current line is just a text node or empty, clean it up
+                    let lineNode = range.startContainer;
+                    if (lineNode === noteContent) {
+                        lineNode = noteContent.childNodes[range.startOffset];
+                    } else {
+                        while (lineNode && lineNode.parentNode !== noteContent) lineNode = lineNode.parentNode;
+                    }
+
+                    const textToMove = lineNode ? lineNode.textContent.replace(/\u00A0/g, ' ').trim() : '';
+
+                    let targetBlock = summaryText;
+                    if (isOpen && contentDiv) {
+                        targetBlock = contentDiv;
+                    }
+
+                    if (targetBlock) {
+                        if (textToMove) {
+                            if (targetBlock.innerHTML === '<br>') targetBlock.innerHTML = textToMove;
+                            else targetBlock.innerHTML += ' ' + textToMove;
+                        }
+
+                        if (lineNode && lineNode !== noteContent && noteContent.childNodes.length > 1) {
+                            lineNode.remove();
+                        }
 
                         const newRange = document.createRange();
-                        newRange.setStart(tempDiv.firstChild || tempDiv, 0);
+                        newRange.selectNodeContents(targetBlock);
+                        if (textToMove) {
+                            // Find the position where we moved text
+                            const walker = document.createTreeWalker(targetBlock, NodeFilter.SHOW_TEXT, null);
+                            let lastText = null;
+                            let node;
+                            while (node = walker.nextNode()) lastText = node;
+                            if (lastText) {
+                                newRange.setStart(lastText, Math.max(0, lastText.textContent.length - textToMove.length));
+                            }
+                        }
                         newRange.collapse(true);
                         selection.removeAllRanges();
                         selection.addRange(newRange);
@@ -540,101 +575,130 @@ export class NotesManager {
                     }
                 }
 
-                if (list && !li && selection.isCollapsed) {
-                    const isAtStart = this.isCursorAtElementStart(parentElement, range, list);
+                // Scenario 2: At start of Toggle Summary
+                if (isInToggleSummary && isAtStart) {
+                    const toggleBlock = isInToggleSummary.closest('.toggle-block');
+                    const prev = toggleBlock.previousSibling;
 
-                    if (isAtStart) {
+                    if (prev) {
                         e.preventDefault();
+                        const text = isInToggleSummary.textContent.trim();
 
-                        const elementToMove = this.getTopLevelElementInList(parentElement, list);
-                        if (elementToMove) {
-                            const listParent = list.parentNode;
-                            const listNextSibling = list.nextSibling;
-
-                            listParent.insertBefore(elementToMove, list);
-
-                            const newRange = document.createRange();
-                            if (elementToMove.nodeType === Node.TEXT_NODE) {
-                                newRange.setStart(elementToMove, 0);
-                                newRange.setEnd(elementToMove, 0);
-                            } else {
-                                const walker = document.createTreeWalker(
-                                    elementToMove,
-                                    NodeFilter.SHOW_TEXT,
-                                    null
-                                );
-                                const firstTextNode = walker.nextNode();
-                                if (firstTextNode) {
-                                    newRange.setStart(firstTextNode, 0);
-                                    newRange.setEnd(firstTextNode, 0);
-                                } else {
-                                    newRange.selectNodeContents(elementToMove);
-                                    newRange.collapse(true);
-                                }
-                            }
-                            selection.removeAllRanges();
-                            selection.addRange(newRange);
+                        let targetBlock = prev;
+                        if (prev.classList && prev.classList.contains('toggle-block')) {
+                            const prevSummary = prev.querySelector('.toggle-summary-text');
+                            const prevContent = prev.querySelector('.toggle-content');
+                            targetBlock = (prev.hasAttribute('open') && prevContent) ? prevContent : prevSummary;
                         }
-                        return;
-                    }
-                }
 
-                if (li) {
-                    const liText = li.textContent.trim();
-                    const isAtStart = range.startOffset === 0 ||
-                        (container.nodeType === Node.TEXT_NODE && container === li.firstChild && range.startOffset === 0);
-
-                    if (isAtStart && (!liText || liText.length === 0)) {
-                        e.preventDefault();
-
-                        const list = li.parentElement;
-                        const parent = list.parentNode;
-
-                        const br = document.createElement('br');
-                        const textNode = document.createTextNode('');
-
-                        li.parentNode.insertBefore(br, li);
-                        li.parentNode.insertBefore(textNode, br.nextSibling);
-                        li.remove();
-
-                        if (list.children.length === 0) {
-                            list.remove();
+                        if (text && targetBlock) {
+                            if (targetBlock.innerHTML === '<br>') targetBlock.innerHTML = text;
+                            else targetBlock.innerHTML += (targetBlock.innerHTML === '' ? '' : ' ') + text;
                         }
 
                         const newRange = document.createRange();
-                        newRange.setStart(textNode, 0);
-                        newRange.setEnd(textNode, 0);
+                        if (targetBlock) {
+                            newRange.selectNodeContents(targetBlock);
+                            if (text) {
+                                // Find where we appended
+                                const walker = document.createTreeWalker(targetBlock, NodeFilter.SHOW_TEXT, null);
+                                let lastText = null, node;
+                                while (node = walker.nextNode()) lastText = node;
+                                if (lastText) newRange.setStart(lastText, Math.max(0, lastText.textContent.length - text.length));
+                            }
+                            newRange.collapse(true);
+                        }
+
+                        // Move content if any
+                        const content = toggleBlock.querySelector('.toggle-content');
+                        if (content && content.innerHTML !== '<br>') {
+                            toggleBlock.parentNode.insertBefore(content, toggleBlock.nextSibling);
+                        }
+                        toggleBlock.remove();
+
                         selection.removeAllRanges();
                         selection.addRange(newRange);
                         return;
                     }
-
-                    if (isAtStart && liText.length > 0) {
-                        setTimeout(() => {
-                            const liTextAfter = li.textContent.trim();
-                            if (!liTextAfter || liTextAfter.length === 0) {
-                                const list = li.parentElement;
-
-                                const br = document.createElement('br');
-                                const textNode = document.createTextNode('');
-
-                                li.parentNode.insertBefore(br, li);
-                                li.parentNode.insertBefore(textNode, br.nextSibling);
-                                li.remove();
-
-                                if (list.children.length === 0) {
-                                    list.remove();
-                                }
-
-                                const newRange = document.createRange();
-                                newRange.setStart(textNode, 0);
-                                newRange.setEnd(textNode, 0);
-                                const sel = window.getSelection();
-                                sel.removeAllRanges();
-                                sel.addRange(newRange);
-                            }
-                        }, 0);
+                    else {
+                        // First block in note: Unwrap
+                        e.preventDefault();
+                        const content = toggleBlock.querySelector('.toggle-content');
+                        const text = isInToggleSummary.innerHTML;
+                        const div = document.createElement('div');
+                        div.innerHTML = text + (content && content.innerHTML !== '<br>' ? '<br>' + content.innerHTML : '');
+                        toggleBlock.parentNode.replaceChild(div, toggleBlock);
+                        const newRange = document.createRange();
+                        newRange.setStart(div, 0);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                        return;
                     }
+                }
+
+                // Scenario 3: At start of Toggle Content
+                if (isInToggleContent && isAtStart) {
+                    e.preventDefault();
+                    const toggleBlock = isInToggleContent.closest('.toggle-block');
+                    const summary = toggleBlock.querySelector('.toggle-summary-text');
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(summary);
+                    newRange.collapse(false);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                    return;
+                }
+
+                // Scenario 4: Standard list escape on Backspace
+                if (li && isAtStart) {
+                    const liText = li.textContent.trim();
+                    if (!liText || liText.length === 0) {
+                        e.preventDefault();
+                        const listElement = li.parentElement;
+                        const br = document.createElement('br');
+                        const textNode = document.createTextNode('');
+                        li.parentNode.insertBefore(br, li);
+                        li.parentNode.insertBefore(textNode, br.nextSibling);
+                        li.remove();
+                        if (listElement.children.length === 0) listElement.remove();
+                        const newRange = document.createRange();
+                        newRange.setStart(textNode, 0);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                        return;
+                    }
+                }
+            }
+
+            if (e.key === 'Delete' && selection.isCollapsed) {
+                // Determine if at end of a selectable block
+                const nodeLen = container.nodeType === Node.TEXT_NODE ? container.length : parentElement.childNodes.length;
+                const isAtEnd = range.startOffset === nodeLen;
+
+                if (isInToggleSummary && isAtEnd) {
+                    e.preventDefault();
+                    const toggleBlock = isInToggleSummary.closest('.toggle-block');
+                    const next = toggleBlock.nextSibling;
+                    if (next) {
+                        const text = next.textContent.trim();
+                        if (text) {
+                            isInToggleSummary.innerHTML += (isInToggleSummary.innerHTML === '' || isInToggleSummary.innerHTML === '<br>' ? '' : ' ') + text;
+                        }
+                        next.remove();
+                    } else if (toggleBlock.hasAttribute('open')) {
+                        // Move cursor to start of content
+                        const content = toggleBlock.querySelector('.toggle-content');
+                        if (content) {
+                            const newRange = document.createRange();
+                            newRange.selectNodeContents(content);
+                            newRange.collapse(true);
+                            selection.removeAllRanges();
+                            selection.addRange(newRange);
+                        }
+                    }
+                    return;
                 }
             }
         });
@@ -787,5 +851,16 @@ export class NotesManager {
             this.markdownProcessor.removeEmptyBullets();
         });
     }
-}
 
+    isCursorAtElementStart(element, range, list) {
+        return range.startOffset === 0;
+    }
+
+    getTopLevelElementInList(parentElement, list) {
+        let current = parentElement;
+        while (current && current.parentElement !== list) {
+            current = current.parentElement;
+        }
+        return current;
+    }
+}
