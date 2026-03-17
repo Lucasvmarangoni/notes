@@ -17,6 +17,22 @@ export class NotesManager {
         this.GUIDE_THRESHOLD = 20;
         this.guides = [];
         this.multiCursorManager = new MultiCursorManager(app);
+        this.lastCreatedNotes = new Map(); // sectionId -> lastNoteId
+        this.isUnplacedNotePending = false;
+        this.dragStartPos = null;
+    }
+
+    checkOverlap(rect, excludeElement = null, sectionContent = null) {
+        const targetSection = sectionContent || (excludeElement ? excludeElement.closest('.section-content') : null);
+        if (!targetSection) return false;
+
+        const otherNotes = Array.from(targetSection.querySelectorAll('.note'))
+            .filter(n => n !== excludeElement);
+
+        return otherNotes.some(other => {
+            const otherRect = other.getBoundingClientRect();
+            return this.rectsOverlap(rect, otherRect);
+        });
     }
 
     clearGuides() {
@@ -170,17 +186,35 @@ export class NotesManager {
         const noteId = id || Date.now() + Math.random();
 
         if (x === null || y === null) {
-            const sectionRect = sectionContent.getBoundingClientRect();
-            const scrollX = sectionContent.scrollLeft;
-            const scrollY = sectionContent.scrollTop;
-            const viewportCenterX = window.innerWidth / 2;
-            const viewportCenterY = window.innerHeight / 2;
+            const lastNoteId = this.lastCreatedNotes.get(targetSectionIdNum);
+            const lastNote = targetSection.notes.find(n => n.id === lastNoteId);
 
-            x = (viewportCenterX - sectionRect.left + scrollX) - (width / 2);
-            y = (viewportCenterY - sectionRect.top + scrollY) - 50;
+            if (this.isUnplacedNotePending) {
+                this.showNotification('The current note must be positioned first.', 'error');
+                return;
+            }
 
-            x = Math.max(0, Math.min(x, sectionContent.scrollWidth - width));
-            y = Math.max(0, Math.min(y, sectionContent.scrollHeight - height));
+            const space = this.findEmptySpace(sectionContent, width, height, lastNote);
+            if (space) {
+                x = space.x;
+                y = space.y;
+            } else {
+                const sectionRect = sectionContent.getBoundingClientRect();
+                const scrollX = sectionContent.scrollLeft;
+                const scrollY = sectionContent.scrollTop;
+                const viewportCenterX = window.innerWidth / 2;
+                const viewportCenterY = window.innerHeight / 2;
+
+                x = (viewportCenterX - sectionRect.left + scrollX) - (width / 2);
+                y = (viewportCenterY - sectionRect.top + scrollY) - 50;
+
+                x = Math.max(0, Math.min(x, sectionContent.scrollWidth - width));
+                y = Math.max(0, Math.min(y, sectionContent.scrollHeight - height));
+
+                if (!id) {
+                    this.isUnplacedNotePending = true;
+                }
+            }
         }
 
         const noteElement = document.createElement('div');
@@ -210,6 +244,10 @@ export class NotesManager {
         this.setupNoteDragAndResize(noteElement);
         this.setupNoteActions(noteElement);
 
+        if (this.isUnplacedNotePending && !id) {
+            noteElement.classList.add('unplaced-note');
+        }
+
         sectionContent.appendChild(noteElement);
 
         const note = {
@@ -224,12 +262,58 @@ export class NotesManager {
         };
 
         targetSection.notes.push(note);
+        this.lastCreatedNotes.set(targetSectionIdNum, noteId);
 
         if (this.app.autoSaveEnabled) {
             this.storageManager.saveNotesToLocalStorage(true);
         }
 
         return noteElement;
+    }
+
+    findEmptySpace(sectionContent, width, height, lastNote) {
+        const step = 20;
+        const maxRange = 1000;
+        const startX = lastNote ? lastNote.x : 20;
+        const startY = lastNote ? lastNote.y : 20;
+
+        const sectionWidth = sectionContent.scrollWidth || 2000;
+        const sectionHeight = sectionContent.scrollHeight || 2000;
+
+        // Spiral search
+        for (let r = step; r < maxRange; r += step) {
+            for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+                const x = Math.round(startX + r * Math.cos(angle));
+                const y = Math.round(startY + r * Math.sin(angle));
+
+                if (x < 0 || y < 0 || x + width > sectionWidth || y + height > sectionHeight) continue;
+
+                const sectionRect = sectionContent.getBoundingClientRect();
+                const testRect = {
+                    left: sectionRect.left + x,
+                    top: sectionRect.top + y,
+                    right: sectionRect.left + x + width,
+                    bottom: sectionRect.top + y + height
+                };
+
+                if (!this.checkOverlap(testRect, null, sectionContent)) {
+                    return { x, y };
+                }
+            }
+        }
+        return null;
+    }
+
+    showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type === 'error' ? 'error-message' : 'success-message'}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 1500);
+        }, 3000);
     }
 
     setupNoteDragAndResize(noteElement) {
@@ -248,15 +332,30 @@ export class NotesManager {
             if (isMultiDrag) {
                 this.multiDragStartPositions = Array.from(this.selectedNotes).map(n => {
                     const rect = n.getBoundingClientRect();
+                    const sectionRect = n.closest('.section-content').getBoundingClientRect();
                     return {
                         element: n,
-                        startX: rect.left,
-                        startY: rect.top,
+                        startX: rect.left - sectionRect.left,
+                        startY: rect.top - sectionRect.top,
                         offsetX: e.clientX - rect.left,
                         offsetY: e.clientY - rect.top
                     };
                 });
+                this.app.draggingNote = {
+                    element: noteElement,
+                    offsetX,
+                    offsetY
+                };
+                this.draggingNote = this.app.draggingNote;
+                this.startAutoScroll();
             } else {
+                const rect = noteElement.getBoundingClientRect();
+                const sectionRect = noteElement.closest('.section-content').getBoundingClientRect();
+                this.dragStartPos = {
+                    left: rect.left - sectionRect.left,
+                    top: rect.top - sectionRect.top
+                };
+
                 this.app.draggingNote = {
                     element: noteElement,
                     offsetX,
@@ -382,10 +481,75 @@ export class NotesManager {
             newHeight = snaps.y - currentRect.top;
         }
 
+        const widthChange = newWidth - parseFloat(this.app.resizingNote.element.style.width);
+        const heightChange = newHeight - parseFloat(this.app.resizingNote.element.style.height);
+
         this.app.resizingNote.element.style.width = `${newWidth}px`;
         this.app.resizingNote.element.style.height = `${newHeight}px`;
 
+        if (widthChange > 0 || heightChange > 0) {
+            this.pushNotes(this.app.resizingNote.element, widthChange, heightChange, sectionContent);
+        }
+
         this.drawGuides(guides, sectionContent);
+    }
+
+    rectsOverlap(r1, r2) {
+        return !(r1.right <= r2.left ||
+            r1.left >= r2.right ||
+            r1.bottom <= r2.top ||
+            r1.top >= r2.bottom);
+    }
+
+    pushNotes(triggerNote, dx, dy, sectionContent) {
+        const otherNotes = Array.from(sectionContent.querySelectorAll('.note'))
+            .filter(n => n !== triggerNote);
+
+        const triggerRect = triggerNote.getBoundingClientRect();
+
+        otherNotes.forEach(other => {
+            const otherRect = other.getBoundingClientRect();
+
+            if (this.rectsOverlap(triggerRect, otherRect)) {
+                // Determine collision direction based on which edge crossed into the other note's space in this frame
+                const prevTriggerRight = triggerRect.right - dx;
+                const prevTriggerBottom = triggerRect.bottom - dy;
+
+                const hitFromLeft = prevTriggerRight <= otherRect.left;
+                const hitFromAbove = prevTriggerBottom <= otherRect.top;
+
+                if (hitFromLeft && dx > 0) {
+                    const pushAmount = triggerRect.right - otherRect.left;
+                    const currentLeft = parseFloat(other.style.left) || 0;
+                    other.style.left = `${currentLeft + pushAmount}px`;
+                    this.pushNotes(other, pushAmount, 0, sectionContent);
+                }
+                else if (hitFromAbove && dy > 0) {
+                    const pushAmount = triggerRect.bottom - otherRect.top;
+                    const currentTop = parseFloat(other.style.top) || 0;
+                    other.style.top = `${currentTop + pushAmount}px`;
+                    this.pushNotes(other, 0, pushAmount, sectionContent);
+                }
+                else {
+                    // Fallback: Use the dominant change direction if we can't determine the hit-edge (e.g. diagonal expansion)
+                    if (dx >= dy && dx > 0) {
+                        const pushAmount = triggerRect.right - otherRect.left;
+                        if (pushAmount > 0) {
+                            const currentLeft = parseFloat(other.style.left) || 0;
+                            other.style.left = `${currentLeft + pushAmount}px`;
+                            this.pushNotes(other, pushAmount, 0, sectionContent);
+                        }
+                    } else if (dy > 0) {
+                        const pushAmount = triggerRect.bottom - otherRect.top;
+                        if (pushAmount > 0) {
+                            const currentTop = parseFloat(other.style.top) || 0;
+                            other.style.top = `${currentTop + pushAmount}px`;
+                            this.pushNotes(other, 0, pushAmount, sectionContent);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     startAutoScroll() {
@@ -733,6 +897,9 @@ export class NotesManager {
         });
 
         deleteBtn.addEventListener('click', () => {
+            if (noteElement.classList.contains('unplaced-note')) {
+                this.isUnplacedNotePending = false;
+            }
             const noteId = Number(noteElement.dataset.noteId);
             const sectionId = Number(noteElement.closest('.section-content').dataset.sectionId);
             noteElement.remove();
@@ -811,19 +978,61 @@ export class NotesManager {
     }
 
     setupGlobalEventListeners() {
-        document.addEventListener('mouseup', () => {
-            if (this.app.draggingNote && this.app.autoSaveEnabled) {
-                this.storageManager.saveNotesToLocalStorage(true);
+        document.addEventListener('mouseup', (e) => {
+            if (this.app.draggingNote) {
+                const noteElement = this.app.draggingNote.element;
+                const rect = noteElement.getBoundingClientRect();
+
+                if (this.checkOverlap(rect, noteElement)) {
+                    // Revert position
+                    if (this.dragStartPos) {
+                        noteElement.style.left = `${this.dragStartPos.left}px`;
+                        noteElement.style.top = `${this.dragStartPos.top}px`;
+                    }
+                } else {
+                    // Valid position
+                    if (this.isUnplacedNotePending && noteElement.classList.contains('unplaced-note')) {
+                        this.isUnplacedNotePending = false;
+                        noteElement.classList.remove('unplaced-note');
+                    }
+                }
+
+                if (this.app.autoSaveEnabled) {
+                    this.storageManager.saveNotesToLocalStorage(true);
+                }
             }
+
             if (this.app.resizingNote && this.app.autoSaveEnabled) {
                 this.storageManager.saveNotesToLocalStorage(true);
             }
-            if (this.multiDragStartPositions && this.app.autoSaveEnabled) {
-                this.storageManager.saveNotesToLocalStorage(true);
+            if (this.multiDragStartPositions) {
+                const anyOverlap = this.multiDragStartPositions.some(pos => {
+                    const rect = pos.element.getBoundingClientRect();
+                    return this.checkOverlap(rect, pos.element);
+                });
+
+                if (anyOverlap) {
+                    this.multiDragStartPositions.forEach(pos => {
+                        pos.element.style.left = `${pos.startX}px`;
+                        pos.element.style.top = `${pos.startY}px`;
+                    });
+                } else {
+                    this.multiDragStartPositions.forEach(pos => {
+                        if (this.isUnplacedNotePending && pos.element.classList.contains('unplaced-note')) {
+                            this.isUnplacedNotePending = false;
+                            pos.element.classList.remove('unplaced-note');
+                        }
+                    });
+                }
+
+                if (this.app.autoSaveEnabled) {
+                    this.storageManager.saveNotesToLocalStorage(true);
+                }
             }
 
             this.app.draggingNote = null;
             this.app.resizingNote = null;
+            this.dragStartPos = null;
 
             this.multiDragStartPositions = null;
             this.clearGuides();
