@@ -431,6 +431,39 @@ input:checked+.toggle-slider:before {
     font-style: italic !important;
 }
 
+.easy-copy {
+    background-color: var(--green-transparent);
+    border: 1px solid var(--green-border-transparent);
+    border-radius: 4px;
+    padding: 1px 6px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block;
+    color: var(--my-green-color);
+    font-weight: 500;
+    user-select: text;
+}
+
+.easy-copy:hover {
+    box-shadow: 0 0 8px var(--green-transparent);
+    filter: brightness(1.5);
+}
+
+.easy-copy::after {
+    margin-left: 6px;
+    font-size: 0.85em;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.easy-copy:hover::after {
+    opacity: 1;
+}
+
+.easy-copy:active {
+    transform: scale(0.95);
+}
+
 .beta-badge {
     display: inline-block;
     background-color: var(--my-green-color);

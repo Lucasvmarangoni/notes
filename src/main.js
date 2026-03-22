@@ -142,6 +142,7 @@ class NotesApp {
                         <div><kbd>Ctrl</kbd> + <kbd>U</kbd>: Toggle underline.</div>
                         <div><kbd>Ctrl</kbd> + <kbd>\\</kbd>: Remove all formatting.</div>    
                         <div><kbd>Ctrl</kbd> + <kbd>E</kbd>: Toggle to code formatting or remove code formatting.</div>
+                        <div><kbd>Ctrl</kbd> + <kbd>K</kbd>: Toggle Easy Copy (click to copy).</div>
                         <div><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Click</kbd>: Select and drag multiple notes simultaneously.</div>
                         <div><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Click</kbd>: <span class="beta-badge">BETA</span> Multi-cursor selection.</div>
                         <div><kbd>Alt</kbd> + <kbd>N</kbd>: Create a new note.</div>
@@ -197,7 +198,18 @@ class NotesApp {
             }
         };
 
-        document.addEventListener('click', function (event) {
+        document.addEventListener('click', (event) => {
+            const easyCopy = event.target.closest('.easy-copy');
+            if (easyCopy) {
+                const text = easyCopy.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showNotification('Copied to clipboard!', 'success-message');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+                return;
+            }
+
             const isInfoBtn = event.target.closest('.info-btn');
             const isInfoPopup = event.target.closest('.info-popup');
             const isInfoWrapper = event.target.closest('.info-wrapper');
@@ -224,6 +236,30 @@ class NotesApp {
             const container = range.startContainer;
             const lineText = this.markdownProcessor.getCurrentLineText(noteContent, range);
 
+            // Prevent easy-copy propagation when typing at the end of it
+            if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                const parentElement = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
+                const isInEasyCopy = parentElement?.closest('.easy-copy');
+                if (isInEasyCopy && selection.isCollapsed) {
+                    const offset = range.startOffset;
+                    if (offset === container.textContent.length) {
+                        event.preventDefault();
+                        const textNode = document.createTextNode(event.key);
+                        if (isInEasyCopy.nextSibling) {
+                            isInEasyCopy.parentNode.insertBefore(textNode, isInEasyCopy.nextSibling);
+                        } else {
+                            isInEasyCopy.parentNode.appendChild(textNode);
+                        }
+                        const newRange = document.createRange();
+                        newRange.setStart(textNode, 1);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                        return;
+                    }
+                }
+            }
+
             if (event.key === 'Enter') {
                 if (this.notesManager.multiCursorManager.selections.length > 0) {
                     return;
@@ -236,6 +272,27 @@ class NotesApp {
                 const isInCheckbox = parentElement?.closest('.checkbox-item');
                 const isInToggleSummary = parentElement?.closest('.toggle-summary-text');
                 const isInToggleContent = parentElement?.closest('.toggle-content');
+                const isInEasyCopy = parentElement?.closest('.easy-copy');
+
+                if (isInEasyCopy && !isInListItem && !isInCheckbox && !isInToggleSummary && !isInToggleContent) {
+                    event.preventDefault();
+                    const nextNode = isInEasyCopy.nextSibling;
+                    const div = document.createElement('div');
+                    div.innerHTML = '<br>';
+
+                    if (nextNode) {
+                        isInEasyCopy.parentNode.insertBefore(div, nextNode);
+                    } else {
+                        isInEasyCopy.parentNode.appendChild(div);
+                    }
+
+                    const newRange = document.createRange();
+                    newRange.setStart(div, 0);
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                    return;
+                }
 
                 if (isInToggleSummary) {
                     event.preventDefault();
@@ -1033,6 +1090,11 @@ class NotesApp {
                 this.formatAsCode();
             }
 
+            else if (e.ctrlKey && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                this.toggleEasyCopy();
+            }
+
             else if (e.ctrlKey && e.key === '1') {
                 e.preventDefault();
                 document.execCommand('foreColor', false, this.color1);
@@ -1136,6 +1198,81 @@ class NotesApp {
         selection.removeAllRanges();
     }
 
+    toggleEasyCopy() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        if (selection.isCollapsed) return;
+
+        const textNodes = [];
+        const container = range.commonAncestorContainer;
+
+        if (container.nodeType === Node.TEXT_NODE) {
+            textNodes.push(container);
+        } else {
+            const walker = document.createTreeWalker(
+                container,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: node => range.intersectsNode(node)
+                        ? NodeFilter.FILTER_ACCEPT
+                        : NodeFilter.FILTER_REJECT
+                }
+            );
+            while (walker.nextNode()) textNodes.push(walker.currentNode);
+        }
+
+        const hasEasyCopy = textNodes.some(n => n.parentElement?.closest('.easy-copy'));
+
+        if (hasEasyCopy) {
+            const nodesToUnwrap = new Set();
+            textNodes.forEach(node => {
+                const easyCopyElement = node.parentElement?.closest('.easy-copy');
+                if (easyCopyElement) {
+                    nodesToUnwrap.add(easyCopyElement);
+                }
+            });
+
+            nodesToUnwrap.forEach(node => {
+                const textNode = document.createTextNode(node.textContent);
+                node.replaceWith(textNode);
+                textNode.parentElement?.normalize();
+            });
+            return;
+        }
+
+        const startContainer = range.startContainer;
+        const startOffset = range.startOffset;
+        const endContainer = range.endContainer;
+        const endOffset = range.endOffset;
+
+        textNodes.forEach(node => {
+            let targetNode = node;
+
+            if (node === endContainer && endOffset < node.textContent.length) {
+                node.splitText(endOffset);
+            }
+
+            if (node === startContainer && startOffset > 0) {
+                targetNode = node.splitText(startOffset);
+            }
+
+            if (targetNode.textContent.length > 0) {
+                const parent = targetNode.parentElement;
+                if (!parent.closest('.easy-copy')) {
+                    const span = document.createElement('span');
+                    span.className = 'easy-copy';
+                    span.title = 'Click to copy';
+                    targetNode.parentNode.replaceChild(span, targetNode);
+                    span.appendChild(targetNode);
+                }
+            }
+        });
+
+        selection.removeAllRanges();
+    }
+
     cleanFormatting(e) {
         if (e) e.preventDefault();
         document.execCommand('removeFormat', false, null);
@@ -1151,7 +1288,7 @@ class NotesApp {
         if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
 
         while (node && node.tagName !== 'BODY') {
-            if (node.classList?.contains('inline-code')) {
+            if (node.classList?.contains('inline-code') || node.classList?.contains('easy-copy')) {
                 nodesToUnwrap.add(node);
             }
             node = node.parentElement;
@@ -1165,7 +1302,7 @@ class NotesApp {
             NodeFilter.SHOW_ELEMENT,
             {
                 acceptNode: node => {
-                    if (node.classList.contains('inline-code') && range.intersectsNode(node)) {
+                    if ((node.classList.contains('inline-code') || node.classList.contains('easy-copy')) && range.intersectsNode(node)) {
                         return NodeFilter.FILTER_ACCEPT;
                     }
                     return NodeFilter.FILTER_SKIP;

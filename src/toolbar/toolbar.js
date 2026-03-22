@@ -23,6 +23,7 @@ export class ToolbarManager {
                     <button class="numbered-list-btn" title="Convert to numbered list">1.</button>
                     <button class="checkbox-list-btn" title="Convert to checkbox list">☐</button>
                     <button class="toggle-list-btn" title="Convert to toggle block">⏷</button>
+                    <button class="easy-copy-btn" title="Easy Copy (Ctrl+K)">❐</button>
                     <input type="color" class="color-picker" value="#ffffff" title="Text color">
                     <button class="color-preset" style="background-color: ${this.app.color1};" title="Color 1 (Ctrl+1)"></button>
                     <button class="color-preset" style="background-color: ${this.app.color2};" title="Color 2 (Ctrl+2)"></button>
@@ -99,6 +100,11 @@ export class ToolbarManager {
 
         toggleBtn.addEventListener('click', () => {
             this.convertSelectionToList('toggle');
+        });
+
+        const easyCopyBtn = toolbar.querySelector('.easy-copy-btn');
+        easyCopyBtn.addEventListener('click', () => {
+            this.app.toggleEasyCopy();
         });
     }
 
